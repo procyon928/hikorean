@@ -3,9 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <title>메일 발송</title>
 </head>
 <body>
-  test
+  <h1>메일 발송하기</h1>
+  <form action="/send-email" method="POST">
+    <label for="recipient">수신인:</label><br>
+    <input type="email" id="recipient" name="recipient" required><br><br>
+    <label for="subject">제목:</label><br>
+    <input type="text" id="subject" name="subject" required><br><br>
+    <label for="message">내용:</label><br>
+    <textarea id="message" name="message" required></textarea><br><br>
+    <button type="submit">발송</button>
+  </form>
 </body>
 </html>
