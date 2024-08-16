@@ -77,12 +77,10 @@ app.put('/admin/users/:id/role', isAdmin, async (req, res) => {
 });
 
 function isAdmin(req, res, next) {
-    // if (req.user.role === 'admin' || req.user.role === 'superadmin') {
-    //     return next(); // 관리자일 경우 다음 미들웨어로 넘어감
-    // }
-    // return res.status(403).send('권한이 없습니다.'); // 권한이 없을 경우 에러 응답
-    // 임시로 모든 사용자에게 접근 허용
-    return next();
+    if (req.user.role === 'admin' || req.user.role === 'superadmin') {
+        return next(); // 관리자일 경우 다음 미들웨어로 넘어감
+    }
+    return res.status(403).send('권한이 없습니다.'); // 권한이 없을 경우 에러 응답
 }
 
 // 메일 발송 기능
