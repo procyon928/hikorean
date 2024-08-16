@@ -30,6 +30,11 @@ app.get('/signup', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'signup.html'));
 });
 
+app.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
+
 // 회원가입 기능
 app.post('/signup', async (req, res) => {
     const { username, email, password } = req.body;
