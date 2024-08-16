@@ -5,6 +5,14 @@ const app = express();
 const PORT = process.env.PORT || 8000;
 require('dotenv').config();
 
+const mongoose = require('mongoose');
+
+const uri = process.env.MONGODB_URI;
+
+mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(() => console.log('MongoDB 연결 성공'))
+    .catch(err => console.error('MongoDB 연결 실패:', err));
+
 // body-parser 미들웨어 설정
 app.use(bodyParser.urlencoded({ extended: true }));
 
