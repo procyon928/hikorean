@@ -31,7 +31,12 @@ app.get('/signup', (req, res) => {
 });
 
 app.get('/admin', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+    const userRole = req.user.role; // 예시: 사용자 역할을 가져오는 방법
+    if (userRole !== 'admin' && userRole !== 'superadmin') {
+        return res.status(403).json({ message: '접근 권한이 없습니다.' });
+    }
+    // 관리자 페이지 로드 로직
+    res.sendFile(path.join(__dirname, 'admin.html'));
 });
 
 // 회원가입 기능

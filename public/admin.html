@@ -26,13 +26,12 @@
             try {
                 const response = await fetch('/admin');
                 if (response.status === 403) {
-                    const data = await response.json();
-                    alert(data.message); // "접근 권한이 없습니다." 알림 표시
+                    alert("접근 권한이 없습니다."); // 알림 표시
                     window.location.href = '/'; // 홈 페이지로 리디렉션
+                } else if (response.ok) {
+                    fetchUsers(); // 권한이 있는 경우 사용자 목록 가져오기
                 } else {
-                    // 정상적으로 응답을 받았을 경우 (예: admin.html을 정상적으로 로드)
-                    const adminPage = await response.text();
-                    document.body.innerHTML = adminPage; // admin.html 로드
+                    alert('서버와의 통신 중 오류가 발생했습니다.'); // 기타 오류 처리
                 }
             } catch (error) {
                 console.error('오류 발생:', error);
