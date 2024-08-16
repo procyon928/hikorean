@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 페이지</title>
+</head>
+<body>
+    <h1>회원 목록</h1>
+    <table id="userTable">
+        <thead>
+            <tr>
+                <th>아이디</th>
+                <th>이메일</th>
+                <th>역할</th>
+                <th>역할 변경</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- 사용자 목록이 여기에 추가됩니다 -->
+        </tbody>
+    </table>
+
+    <script>
+        async function fetchUsers() {
+            const response = await fetch('/admin/users', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + localStorage.getItem('token') // JWT 토큰 예시
+                }
+            });
+            const users = await response.json();
+            const tbody = document.querySelector('#userTable tbody');
+            tbody.innerHTML = ''; // 기존 내용 삭제
+
+            users.forEach(user => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${user.username}</td>
+                    <td>${user.email}</td>
+                    <td>${user.role}</td>
+                    <td>
+                        <select onchange="changeRole('${user._id}', this.value)">
+                            <option value="user">일반 사용자</option>
+                            <option value="admin">관리자</option>
+                            <option value="superadmin">최고 관리자</option>
+                        </select>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        async function changeRole(userId, newRole) {
+            const response = await fetch(`/admin/users/${userId}/role`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + localStorage.getItem('token') // JWT 토큰 예시
+                },
+                body: JSON.stringify({ role: newRole })
+            });
+
+            if (response.ok) {
+                alert('역할이 변경되었습니다.');
+                fetchUsers(); // 사용자 목록 새로고침
+            } else {
+                alert('역할 변경 중 오류가 발생했습니다.');
+            }
+        }
+
+        // 페이지 로드 시 사용자 목록 가져오기
+        fetchUsers();
+    </script>
+</body>
+</html>
