@@ -22,6 +22,27 @@
     </table>
 
     <script>
+        async function checkAdminAccess() {
+            try {
+                const response = await fetch('/admin');
+                if (response.status === 403) {
+                    const data = await response.json();
+                    alert(data.message); // "접근 권한이 없습니다." 알림 표시
+                    window.location.href = '/'; // 홈 페이지로 리디렉션
+                } else {
+                    // 정상적으로 응답을 받았을 경우 (예: admin.html을 정상적으로 로드)
+                    const adminPage = await response.text();
+                    document.body.innerHTML = adminPage; // admin.html 로드
+                }
+            } catch (error) {
+                console.error('오류 발생:', error);
+                alert('서버와의 통신 중 오류가 발생했습니다.');
+            }
+        }
+
+        // 페이지 로드 시 관리자 접근 확인
+        window.onload = checkAdminAccess;
+
         async function fetchUsers() {
             const response = await fetch('/admin/users', {
                 method: 'GET',
@@ -30,6 +51,12 @@
                     'Authorization': 'Bearer ' + localStorage.getItem('token') // JWT 토큰 예시
                 }
             });
+
+            if (!response.ok) {
+                alert('사용자 목록을 가져오는 데 실패했습니다.');
+                return;
+            }
+
             const users = await response.json();
             const tbody = document.querySelector('#userTable tbody');
             tbody.innerHTML = ''; // 기존 내용 삭제
@@ -69,9 +96,6 @@
                 alert('역할 변경 중 오류가 발생했습니다.');
             }
         }
-
-        // 페이지 로드 시 사용자 목록 가져오기
-        fetchUsers();
     </script>
 </body>
 </html>
