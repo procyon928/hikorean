@@ -6,6 +6,7 @@ const session = require('express-session');
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
 const emailRoutes = require('./routes/email');
+const postsRoutes = require('./routes/posts');
 const { isAdmin } = require('./middleware/auth'); // isAdmin 미들웨어 경로에 맞게 수정
 
 const app = express();
@@ -67,6 +68,7 @@ app.get('/admin', (req, res) => {
 app.use(authRoutes);
 app.use('/admin', adminRoutes);
 app.use(emailRoutes);
+app.use('/posts', postsRoutes);
 
 // 서버 시작
 app.listen(PORT, () => {

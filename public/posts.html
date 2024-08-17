@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>게시글 목록</title>
+</head>
+<body>
+    <h1>게시글 목록</h1>
+    <div id="posts"></div>
+
+    <script>
+        fetch('/posts')
+            .then(response => response.json())
+            .then(posts => {
+                const postsContainer = document.getElementById('posts');
+                posts.forEach(post => {
+                    const postDiv = document.createElement('div');
+                    postDiv.innerHTML = `<h2>${post.title}</h2><p>${post.content}</p>`;
+                    postsContainer.appendChild(postDiv);
+                });
+            });
+    </script>
+</body>
+</html>
