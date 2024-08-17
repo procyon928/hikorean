@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const User = require('../models/User');
 const Post = require('../models/post');
 const path = require('path');
 const { ensureAuthenticated } = require('../middleware/auth');
@@ -46,17 +47,17 @@ router.get('/list', async (req, res) => {
 // 게시글 상세보기
 router.get('/:id', async (req, res) => {
     try {
-        const post = await Post.findById(req.params.id).populate('author');
-        if (!post) return res.status(404).send('게시글을 찾을 수 없습니다.');
-
-        // 게시글 상세보기 페이지를 렌더링
-        res.sendFile(path.join(__dirname, '../public', 'post-details.html'));
+      const post = await Post.findById(req.params.id).populate('author');
+      if (!post) return res.status(404).send('게시글을 찾을 수 없습니다.');
+  
+      // 게시글 데이터를 JSON 형식으로 반환
+      res.json(post);
     } catch (error) {
-        console.error(error);
-        res.status(500).send('서버 오류');
+      console.error(error);
+      res.status(500).send('서버 오류');
     }
-});
-
+  });
+  
 // 게시글 수정
 router.put('/:id', ensureAuthenticated, async (req, res) => {
     const { title, content } = req.body;
