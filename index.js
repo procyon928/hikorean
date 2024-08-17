@@ -61,7 +61,7 @@ app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: false } // HTTPS 사용 시 true로 설정
+    cookie: { secure: true } // HTTPS 사용 시 true로 설정
 }));
 
 // 서버 시작
