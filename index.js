@@ -52,9 +52,10 @@ app.get('/admin', (req, res) => {
     }
 
     const userRole = req.session.user.role;
+    console.log('사용자 역할:', userRole);
 
     if (userRole !== 'admin' && userRole !== 'superadmin') {
-        return res.status(403).json({ message: '접근 권한이 없습니다.' });
+        return res.status(403).json({ message: '접근 권한이 없습니당.' });
     }
     res.sendFile(path.join(__dirname, 'admin.html'));
 });
