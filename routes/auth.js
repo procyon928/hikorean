@@ -29,7 +29,11 @@ router.post('/login', async (req, res) => {
             return res.status(401).send('아이디 또는 비밀번호가 잘못되었습니다.');
         }
 
-        // 사용자 역할에 따라 세션 또는 JWT 토큰을 생성하는 로직 추가 가능
+        // 사용자 정보를 세션에 저장
+        req.session.user = {
+            id: user._id,
+            role: user.role
+        };
 
         res.send('로그인 성공!');
     } catch (error) {
@@ -37,6 +41,5 @@ router.post('/login', async (req, res) => {
         res.status(500).send('로그인 중 오류가 발생했습니다.');
     }
 });
-
 
 module.exports = router;

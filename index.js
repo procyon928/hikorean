@@ -38,7 +38,9 @@ app.get('/login', (req, res) => {
 });
 
 app.get('/admin', (req, res) => {
-    const userRole = req.user.role; // 예시: 사용자 역할을 가져오는 방법
+    // 세션에서 사용자 역할을 가져옴
+    const userRole = req.session.user ? req.session.user.role : undefined;
+
     if (userRole !== 'admin' && userRole !== 'superadmin') {
         return res.status(403).json({ message: '접근 권한이 없습니다.' });
     }
