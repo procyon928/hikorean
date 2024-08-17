@@ -46,6 +46,10 @@ app.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
+app.get('/posts/edit/:id', ensureAuthenticated, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'edit-post.html'));
+});
+
 app.get('/admin', (req, res) => {
     // 세션 로그 추가
     console.log('세션:', req.session);

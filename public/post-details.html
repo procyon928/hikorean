@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>게시글 상세보기</title>
+</head>
+<body>
+    <h1 id="post-title"></h1>
+    <p id="post-author"></p>
+    <p id="post-createdAt"></p>
+    <div id="post-content"></div>
+    <button id="edit-button">수정하기</button>
+    <button id="delete-button">삭제하기</button>
+
+    <script>
+        const postId = window.location.pathname.split('/').pop();
+
+        fetch(`/posts/${postId}`)
+            .then(response => response.json())
+            .then(post => {
+                document.getElementById('post-title').innerText = post.title;
+                document.getElementById('post-author').innerText = `작성자: ${post.author.name}`;
+                document.getElementById('post-createdAt').innerText = `작성일: ${new Date(post.createdAt).toLocaleDateString()}`;
+                document.getElementById('post-content').innerHTML = post.content;
+            });
+
+        document.getElementById('edit-button').onclick = function() {
+            window.location.href = `/posts/edit/${postId}`;
+        };
+
+        document.getElementById('delete-button').onclick = function() {
+            fetch(`/posts/${postId}`, { method: 'DELETE' })
+                .then(response => {
+                    if (response.ok) {
+                        alert('게시글이 삭제되었습니다.');
+                        window.location.href = '/posts/list';
+                    } else {
+                        alert('게시글 삭제에 실패했습니다.');
+                    }
+                });
+        };
+    </script>
+</body>
+</html>
