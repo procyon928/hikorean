@@ -36,13 +36,21 @@
                 messageDiv.textContent = '로그인 성공! 페이지로 이동합니다...';
                 // 로그인 성공 후 리다이렉션 로직 추가
                 setTimeout(() => {
-                    window.location.href = '/admin'; // 관리자 페이지로 이동
+                    window.location.href = '/'; // 로그인 전 페이지로 이동
                 }, 2000);
             } else {
                 const errorText = await response.text();
                 messageDiv.textContent = errorText; // 오류 메시지 표시
             }
         });
+
+        // flash 메시지 표시
+        const flashMessage = document.getElementById('flashMessage');
+        const urlParams = new URLSearchParams(window.location.search);
+        const errorMessage = urlParams.get('message');
+        if (errorMessage) {
+            flashMessage.textContent = errorMessage; // 메시지 표시
+        }
     </script>
 </body>
 </html>

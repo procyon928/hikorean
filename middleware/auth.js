@@ -14,8 +14,10 @@ function isAdmin(req, res, next) {
 function ensureAuthenticated(req, res, next) {
   if (req.session.user) { // 세션에 사용자 정보가 있는지 확인
       return next();
+  } else {
+      req.flash('error_msg', '로그인이 필요합니다.');
+      res.redirect('/login'); // 로그인 페이지로 리다이렉트
   }
-  res.redirect('/login'); // 로그인 페이지로 리다이렉트
 }
 
 module.exports = { ensureAuthenticated, isAdmin };

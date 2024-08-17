@@ -17,7 +17,7 @@ router.post('/', ensureAuthenticated, async (req, res) => {
         const newPost = new Post({
             title,
             content,
-            author: req.user.id
+            author: req.session.user.id
         });
         await newPost.save();
         res.redirect('/posts/list'); // 게시글 목록으로 리다이렉트
