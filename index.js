@@ -23,7 +23,7 @@ app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: true } // HTTPS 사용 시 true로 설정
+    cookie: { secure: false } // HTTPS 사용 시 true로 설정
 }));
 
 // body-parser 미들웨어 설정
@@ -48,7 +48,7 @@ app.get('/login', (req, res) => {
 app.get('/admin', (req, res) => {
     // 세션 로그 추가
     console.log('세션:', req.session);
-    
+
     // 세션에서 사용자 역할을 가져옴
     if (!req.session.user) {
         return res.status(403).json({ message: '로그인이 필요합니다.' });
