@@ -18,6 +18,14 @@ mongoose.connect(uri, {})
 .then(() => console.log('MongoDB 연결 성공'))
 .catch((err) => console.error('MongoDB 연결 실패:', err));
 
+// 세션 미들웨어 설정
+app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: true } // HTTPS 사용 시 true로 설정
+}));
+
 // body-parser 미들웨어 설정
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -55,14 +63,6 @@ app.get('/admin', (req, res) => {
 app.use(authRoutes);
 app.use('/admin', adminRoutes);
 app.use(emailRoutes);
-
-// 세션 미들웨어 설정
-app.use(session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: true,
-    cookie: { secure: true } // HTTPS 사용 시 true로 설정
-}));
 
 // 서버 시작
 app.listen(PORT, () => {
