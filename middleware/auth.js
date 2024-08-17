@@ -11,4 +11,11 @@ function isAdmin(req, res, next) {
   return res.status(403).json({ message: '접근 권한이 없습니다.' });
 }
 
-module.exports = { isAdmin };
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) {
+      return next();
+  }
+  res.redirect('/login'); // 로그인 페이지로 리다이렉트
+}
+
+module.exports = { ensureAuthenticated, isAdmin };
