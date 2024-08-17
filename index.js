@@ -60,7 +60,7 @@ app.get('/admin', (req, res) => {
     if (userRole !== 'admin' && userRole !== 'superadmin') {
         return res.status(403).json({ message: '접근 권한이 없습니당.' });
     }
-    res.sendFile(path.join(__dirname, 'admin.html'));
+    res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
 // 라우터 설정
