@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const path = require('path');
+const session = require('express-session');
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
 const emailRoutes = require('./routes/email');
@@ -32,6 +33,10 @@ app.get('/signup', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'signup.html'));
 });
 
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
+
 app.get('/admin', (req, res) => {
     const userRole = req.user.role; // 예시: 사용자 역할을 가져오는 방법
     if (userRole !== 'admin' && userRole !== 'superadmin') {
@@ -44,6 +49,14 @@ app.get('/admin', (req, res) => {
 app.use(authRoutes);
 app.use('/admin', adminRoutes);
 app.use(emailRoutes);
+
+// 세션 미들웨어 설정
+app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false } // HTTPS 사용 시 true로 설정
+}));
 
 // 서버 시작
 app.listen(PORT, () => {
