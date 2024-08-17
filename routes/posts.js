@@ -48,7 +48,9 @@ router.get('/:id', async (req, res) => {
     try {
         const post = await Post.findById(req.params.id).populate('author');
         if (!post) return res.status(404).send('게시글을 찾을 수 없습니다.');
-        res.json(post);
+
+        // 게시글 상세보기 페이지를 렌더링
+        res.sendFile(path.join(__dirname, '../public', 'post-details.html'));
     } catch (error) {
         console.error(error);
         res.status(500).send('서버 오류');
