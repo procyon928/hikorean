@@ -46,6 +46,9 @@ app.get('/login', (req, res) => {
 });
 
 app.get('/admin', (req, res) => {
+    // 세션 로그 추가
+    console.log('세션:', req.session);
+    
     // 세션에서 사용자 역할을 가져옴
     if (!req.session.user) {
         return res.status(403).json({ message: '로그인이 필요합니다.' });

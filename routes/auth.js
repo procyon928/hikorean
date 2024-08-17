@@ -35,6 +35,9 @@ router.post('/login', async (req, res) => {
             role: user.role
         };
 
+        // 세션 로그 추가
+        console.log('로그인 후 세션:', req.session);
+
         res.send('로그인 성공!');
     } catch (error) {
         console.error('로그인 오류:', error);
