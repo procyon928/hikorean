@@ -20,7 +20,7 @@ router.post('/', ensureAuthenticated, async (req, res) => {
             author: req.user.id
         });
         await newPost.save();
-        res.redirect('/posts'); // 게시글 목록으로 리다이렉트
+        res.redirect('/posts/list'); // 게시글 목록으로 리다이렉트
     } catch (error) {
         console.error(error);
         res.status(500).send('서버 오류');
