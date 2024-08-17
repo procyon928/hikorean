@@ -43,14 +43,6 @@
                 messageDiv.textContent = errorText; // 오류 메시지 표시
             }
         });
-
-        // flash 메시지 표시
-        const flashMessage = document.getElementById('flashMessage');
-        const urlParams = new URLSearchParams(window.location.search);
-        const errorMessage = urlParams.get('message');
-        if (errorMessage) {
-            flashMessage.textContent = errorMessage; // 메시지 표시
-        }
     </script>
 </body>
 </html>
