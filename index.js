@@ -7,7 +7,7 @@ const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
 const emailRoutes = require('./routes/email');
 const postsRoutes = require('./routes/posts');
-const { isAdmin } = require('./middleware/auth'); // isAdmin 미들웨어 경로에 맞게 수정
+const { ensureAuthenticated, isAdmin } = require('./middleware/auth');
 
 const app = express();
 const PORT = process.env.PORT || 8000;
