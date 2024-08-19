@@ -7,58 +7,62 @@
     <h1><%= allowedCategories[category] %> 게시판 설정</h1>
     <form action="/posts/settings/<%= category %>" method="POST">
         <input type="hidden" name="category" value="<%= category %>" />
+        
         <label>
             작성자 감추기:
             <input type="checkbox" name="hideAuthor" <%= boardSetting && boardSetting.hideAuthor ? 'checked' : '' %> />
         </label>
         <br>
+        
         <label>
             작성일 감추기:
             <input type="checkbox" name="hideDate" <%= boardSetting && boardSetting.hideDate ? 'checked' : '' %> />
         </label>
         <br>
+        
         <label>
             댓글 감추기:
             <input type="checkbox" name="hideComments" <%= boardSetting && boardSetting.hideComments ? 'checked' : '' %> />
         </label>
         <br>
+        
         <label>
             댓글 작성자 감추기:
             <input type="checkbox" name="hideCommentAuthor" <%= boardSetting && boardSetting.hideCommentAuthor ? 'checked' : '' %> />
         </label>
         <br>
+        
         <label>
             작성 권한:
             <select name="writePermission">
-            <option value="user" <%= boardSetting && boardSetting.writePermission.includes('user') ? 'selected' : '' %>>일반 유저</option>
-            <option value="student" <%= boardSetting && boardSetting.writePermission.includes('student') ? 'selected' : '' %>>학생</option>
-            <option value="admin" <%= boardSetting && boardSetting.writePermission.includes('admin') ? 'selected' : '' %>>관리자</option>
-            <option value="superadmin" <%= boardSetting && boardSetting.writePermission.includes('superadmin') ? 'selected' : '' %>>슈퍼 관리자</option>
+                <% roles.forEach(role => { %>
+                    <option value="<%= role %>" <%= boardSetting && boardSetting.writePermission.includes(role) ? 'selected' : '' %>> <%= rolesMap[role] %> </option>
+                <% }) %>
             </select>
-           </label>
-           <br>
-           <label>
+        </label>
+        <br>
+        
+        <label>
             열람 권한:
             <select name="readPermission">
-            <option value="guest" <%= boardSetting && boardSetting.readPermission.includes('guest') ? 'selected' : '' %>>비회원</option>
-            <option value="user" <%= boardSetting && boardSetting.readPermission.includes('user') ? 'selected' : '' %>>일반 유저</option>
-            <option value="student" <%= boardSetting && boardSetting.readPermission.includes('student') ? 'selected' : '' %>>학생</option>
-            <option value="admin" <%= boardSetting && boardSetting.readPermission.includes('admin') ? 'selected' : '' %>>관리자</option>
-            <option value="superadmin" <%= boardSetting && boardSetting.readPermission.includes('superadmin') ? 'selected' : '' %>>슈퍼 관리자</option>
+                <option value="guest" <%= boardSetting && boardSetting.readPermission.includes('guest') ? 'selected' : '' %>>비회원</option>
+                <% roles.forEach(role => { %>
+                    <option value="<%= role %>" <%= boardSetting && boardSetting.readPermission.includes(role) ? 'selected' : '' %>> <%= rolesMap[role] %> </option>
+                <% }) %>
             </select>
-           </label>
-           <br>
-           <label>
+        </label>
+        <br>
+        
+        <label>
             댓글 작성 권한:
             <select name="commentPermission">
-            <option value="user" <%= boardSetting && boardSetting.commentPermission.includes('user') ? 'selected' : '' %>>일반 유저</option>
-            <option value="student" <%= boardSetting && boardSetting.commentPermission.includes('student') ? 'selected' : '' %>>학생</option>
-            <option value="admin" <%= boardSetting && boardSetting.commentPermission.includes('admin') ? 'selected' : '' %>>관리자</option>
-            <option value="superadmin" <%= boardSetting && boardSetting.commentPermission.includes('superadmin') ? 'selected' : '' %>>슈퍼 관리자</option>
+                <% roles.forEach(role => { %>
+                    <option value="<%= role %>" <%= boardSetting && boardSetting.commentPermission.includes(role) ? 'selected' : '' %>> <%= rolesMap[role] %> </option>
+                <% }) %>
             </select>
-           </label>
-           
-        <br> 
+        </label>
+        <br>
+        
         <button type="submit">저장</button>
     </form>    
     <a href="/posts?category=<%= category %>">목록으로 돌아가기</a>

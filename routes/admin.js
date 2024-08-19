@@ -1,5 +1,5 @@
 const express = require('express');
-const User = require('../models/User');
+const { User, rolesMap } = require('../models/User');
 const { isAdmin } = require('../middleware/auth');
 
 const router = express.Router();
@@ -21,8 +21,8 @@ router.put('/users/:id/role', isAdmin, async (req, res) => {
     const { id } = req.params;
 
     try {
-        if (!role) {
-            return res.status(400).send('변경할 역할이 필요합니다.');
+        if (!role || !rolesMap[role]) { // 역할 유효성 검사
+            return res.status(400).send('유효한 역할이 필요합니다.');
         }
         const user = await User.findByIdAndUpdate(id, { role }, { new: true });
         if (!user) {
@@ -30,9 +30,14 @@ router.put('/users/:id/role', isAdmin, async (req, res) => {
         }
         res.json(user);
     } catch (error) {
-        console.error('역할 변경 오류:', error.message); // 더 많은 정보 로그
+        console.error('역할 변경 오류:', error.message);
         res.status(500).send('역할 변경 중 오류가 발생했습니다.');
     }
+});
+
+// 역할 목록을 반환하는 API 추가
+router.get('/roles', isAdmin, (req, res) => {
+    res.json(rolesMap);
 });
 
 module.exports = router;
