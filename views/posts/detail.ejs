@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title><%= post.title %></title>
+    <script>
+        function confirmPostDelete() {
+            return confirm("게시글을 삭제하시겠습니까?");
+        }
+
+        function confirmCommentDelete() {
+            return confirm("댓글을 삭제하시겠습니까?");
+        }
+    </script>
+</head>
+<body>
+    <h1><%= post.title %></h1>
+    <p>
+        <% if (!(boardSetting && boardSetting.hideAuthor)) { %>
+            작성자: <%= post.author.username %>
+        <% } %>
+    </p>
+    <p>
+        <% if (!(boardSetting && boardSetting.hideDate)) { %> <!-- 작성일 감추기 -->
+            작성일: <%= post.createdAt.toDateString() %>
+        <% } %>
+    </p>
+    <p><%= post.content %></p>
+    <% if (user && (user.role === 'admin' || user.role === 'superadmin' || user.id === post.author._id.toString())) { %>
+        <form action="/posts/delete/<%= post._id %>?category=<%= category %>" method="POST" style="display:inline;" onsubmit="return confirmPostDelete();">
+            <button type="submit">삭제</button>
+        </form>
+        <a href="/posts/edit/<%= post._id %>?category=<%= category %>">수정</a>
+    <% } %>
+    <a href="/posts?category=<%= category %>">목록으로 돌아가기</a>
+
+    <hr>
+
+    <% if (!(boardSetting && boardSetting.hideComments)) { %> <!-- 댓글 목록과 입력창 숨기기 조건 -->
+        <ul>
+            <% comments.forEach(comment => { %>
+                <li>
+                    <% if (comment.author && !(boardSetting && boardSetting.hideCommentAuthor)) { %> <!-- 댓글 작성자 감추기 -->
+                        <strong><%= comment.author.username %></strong>:
+                    <% } %>
+                    <span class="comment-content"><%= comment.content %></span>
+                    <% if (!(boardSetting && boardSetting.hideCommentDate)) { %> <!-- 댓글 작성일 감추기 -->
+                        (작성일: <%= comment.createdAt.toDateString() %>)
+                    <% } %>
+                    <% if (comment.author && (user && (user.role === 'admin' || user.role === 'superadmin' || user.id === comment.author._id.toString()))) { %>
+                        <form action="/posts/<%= post._id %>/comments/<%= comment._id %>/delete?category=<%= category %>" method="POST" style="display:inline;" onsubmit="return confirmCommentDelete();">
+                            <button type="submit">삭제</button>
+                        </form>
+                        <button onclick="toggleEditForm('<%= comment._id %>')">수정</button>
+                        
+                        <!-- 수정 입력 폼 -->
+                        <form id="edit-form-<%= comment._id %>" action="/posts/<%= post._id %>/comments/<%= comment._id %>/edit?category=<%= category %>" method="POST" style="display:none;">
+                            <input type="text" name="content" value="<%= comment.content %>" required>
+                            <button type="submit">완료</button>
+                            <button type="button" onclick="toggleEditForm('<%= comment._id %>')">취소</button>
+                        </form>
+                    <% } %>
+                </li>
+            <% }); %>
+        </ul>
+
+        <% if (user && boardSetting && commentPermission) { %>
+            <form action="/posts/<%= post._id %>/comments?category=<%= category %>" method="POST">
+                <textarea name="content" required></textarea>
+                <button type="submit">댓글 달기</button>
+            </form>
+        <% } else { %>
+            <p>댓글을 달 수 있는 권한이 없습니다.</p>
+        <% } %>
+    <% } %>
+
+    <script>
+        function toggleEditForm(commentId) {
+            const form = document.getElementById('edit-form-' + commentId);
+            const contentSpan = form.previousElementSibling; // 해당 댓글의 내용을 포함한 span
+            if (form.style.display === 'none') {
+                form.style.display = 'inline'; // 폼 보이기
+                contentSpan.style.display = 'none'; // 원래 내용 숨기기
+            } else {
+                form.style.display = 'none'; // 폼 숨기기
+                contentSpan.style.display = 'inline'; // 원래 내용 보이기
+            }
+        }
+    </script> 
+</body>
+</html>

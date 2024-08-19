@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>새 글쓰기</title>
+</head>
+<body>
+    <h1>새 글쓰기</h1>
+    <form action="/posts" method="POST">
+        제목: <input type="text" name="title" required><br>
+        내용: <textarea name="content" required></textarea><br>
+        <input type="hidden" name="category" value="<%= category %>"> <!-- 카테고리를 숨긴 필드로 전달 -->
+        <button type="submit">작성하기</button>
+    </form>
+</body>
+</html>

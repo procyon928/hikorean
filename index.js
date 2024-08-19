@@ -1,12 +1,17 @@
+// npm run dev
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const path = require('path');
 const session = require('express-session');
+const ejs = require('ejs');
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
 const emailRoutes = require('./routes/email');
-const postsRoutes = require('./routes/posts');
+const postRoutes = require('./routes/post');
+const commentRoutes = require('./routes/comment');
+const boardSettingRoutes = require('./routes/boardSetting');
 const { ensureAuthenticated, isAdmin } = require('./middleware/auth');
 
 const app = express();
@@ -31,6 +36,10 @@ app.use(session({
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
+// EJS 설정
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views')); // views 폴더 설정
+
 // 정적 파일 제공
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -44,10 +53,6 @@ app.get('/signup', (req, res) => {
 
 app.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'login.html'));
-});
-
-app.get('/posts/edit/:id', ensureAuthenticated, (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'edit-post.html'));
 });
 
 app.get('/admin', (req, res) => {
@@ -72,7 +77,9 @@ app.get('/admin', (req, res) => {
 app.use(authRoutes); // 제일 상위에 두기
 app.use('/admin', adminRoutes);
 app.use(emailRoutes);
-app.use('/posts', postsRoutes);
+app.use(postRoutes);
+app.use(commentRoutes);
+app.use('/', boardSettingRoutes.router);
 
 // 서버 시작
 app.listen(PORT, () => {
