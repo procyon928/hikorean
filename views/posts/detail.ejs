@@ -20,10 +20,14 @@
         <% } %>
     </p>
     <p>
-        <% if (!(boardSetting && boardSetting.hideDate)) { %> <!-- 작성일 감추기 -->
+        <% if (!(boardSetting && boardSetting.hideDate)) { %>
             작성일: <%= post.createdAt.toDateString() %>
         <% } %>
     </p>
+    
+    <!-- 조회수 표시 -->
+    <p>조회수: <%= post.views %></p> <!-- 조회수 코드 추가 -->
+
     <p><%= post.content %></p>
     <% if (user && (user.role === 'admin' || user.role === 'superadmin' || user.id === post.author._id.toString())) { %>
         <form action="/posts/delete/<%= post._id %>?category=<%= category %>" method="POST" style="display:inline;" onsubmit="return confirmPostDelete();">
@@ -35,33 +39,66 @@
 
     <hr>
 
-    <% if (!(boardSetting && boardSetting.hideComments)) { %> <!-- 댓글 목록과 입력창 숨기기 조건 -->
+    <% if (!(boardSetting && boardSetting.hideComments)) { %>
         <ul>
             <% comments.forEach(comment => { %>
-                <li>
-                    <% if (comment.author && !(boardSetting && boardSetting.hideCommentAuthor)) { %> <!-- 댓글 작성자 감추기 -->
-                        <strong><%= comment.author.username %></strong>:
-                    <% } %>
-                    <span class="comment-content"><%= comment.content %></span>
-                    <% if (!(boardSetting && boardSetting.hideCommentDate)) { %> <!-- 댓글 작성일 감추기 -->
-                        (작성일: <%= comment.createdAt.toDateString() %>)
-                    <% } %>
-                    <% if (comment.author && (user && (user.role === 'admin' || user.role === 'superadmin' || user.id === comment.author._id.toString()))) { %>
-                        <form action="/posts/<%= post._id %>/comments/<%= comment._id %>/delete?category=<%= category %>" method="POST" style="display:inline;" onsubmit="return confirmCommentDelete();">
-                            <button type="submit">삭제</button>
-                        </form>
-                        <button onclick="toggleEditForm('<%= comment._id %>')">수정</button>
+                <% if (!comment.parentId) { %>
+                    <li>
+                        <% if (comment.author && !(boardSetting && boardSetting.hideCommentAuthor)) { %>
+                            <strong><%= comment.author.username %></strong>:
+                        <% } %>
+                        <span class="comment-content"><%= comment.content %></span>
+                        <% if (!(boardSetting && boardSetting.hideCommentDate)) { %> 
+                            (작성일: <%= comment.createdAt.toDateString() %>)
+                        <% } %>
+                        <% if (comment.author && (user && (user.role === 'admin' || user.role === 'superadmin' || user.id === comment.author._id.toString()))) { %>
+                            <form action="/posts/<%= post._id %>/comments/<%= comment._id %>/delete?category=<%= category %>" method="POST" style="display:inline;" onsubmit="return confirmCommentDelete();">
+                                <button type="submit">삭제</button>
+                            </form>
+                            <button onclick="toggleEditForm('<%= comment._id %>')">수정</button>
+                            <form id="edit-form-<%= comment._id %>" action="/posts/<%= post._id %>/comments/<%= comment._id %>/edit?category=<%= category %>" method="POST" style="display:none;">
+                                <input type="text" name="content" value="<%= comment.content %>" required>
+                                <button type="submit">완료</button>
+                                <button type="button" onclick="toggleEditForm('<%= comment._id %>')">취소</button>
+                            </form>
+                        <% } %>
+                        <button onclick="toggleReplyForm('<%= comment._id %>')">답글 달기</button>
                         
-                        <!-- 수정 입력 폼 -->
-                        <form id="edit-form-<%= comment._id %>" action="/posts/<%= post._id %>/comments/<%= comment._id %>/edit?category=<%= category %>" method="POST" style="display:none;">
-                            <input type="text" name="content" value="<%= comment.content %>" required>
-                            <button type="submit">완료</button>
-                            <button type="button" onclick="toggleEditForm('<%= comment._id %>')">취소</button>
+                        <!-- 답글 목록 -->
+                        <ul style="margin-left: 0px;">
+                            <% comments.forEach(reply => { %>
+                                <% if (reply.parentId && reply.parentId.equals(comment._id)) { %>
+                                    <li>
+                                        <strong><%= reply.author.username %></strong>: <span class="comment-content"><%= reply.content %></span>
+                                        <% if (user && (user.role === 'admin' || user.role === 'superadmin' || user.id === reply.author._id.toString())) { %>
+                                            <form action="/posts/<%= post._id %>/comments/<%= reply._id %>/delete?category=<%= category %>" method="POST" style="display:inline;" onsubmit="return confirmCommentDelete();">
+                                                <button type="submit">삭제</button>
+                                            </form>
+                                            <button onclick="toggleReplyEditForm('<%= reply._id %>')">수정</button>
+                                            <form id="reply-edit-form-<%= reply._id %>" action="/posts/<%= post._id %>/comments/<%= reply._id %>/edit?category=<%= category %>" method="POST" style="display:none;">
+                                                <input type="text" name="content" value="<%= reply.content %>" required>
+                                                <button type="submit">완료</button>
+                                                <button type="button" onclick="toggleReplyEditForm('<%= reply._id %>')">취소</button>
+                                            </form>
+                                        <% } %>
+                                        <% if (!(boardSetting && boardSetting.hideCommentDate)) { %> 
+                                            (작성일: <%= reply.createdAt.toDateString() %>)
+                                        <% } %>
+                                    </li>
+                                <% } %>
+                            <% }); %>
+                        </ul>
+
+                        <!-- 답글 입력 폼 -->
+                        <form id="reply-form-<%= comment._id %>" action="/posts/<%= post._id %>/comments?category=<%= category %>" method="POST" style="display:none; margin-left: 20px;">
+                            <input type="text" name="content" required placeholder="답글을 입력하세요">
+                            <input type="hidden" name="parentId" value="<%= comment._id %>">
+                            <button type="submit">답글 달기</button>
                         </form>
-                    <% } %>
-                </li>
+                    </li>
+                <% } %>
             <% }); %>
-        </ul>
+        </ul>                
 
         <% if (user && boardSetting && commentPermission) { %>
             <form action="/posts/<%= post._id %>/comments?category=<%= category %>" method="POST">
@@ -76,13 +113,34 @@
     <script>
         function toggleEditForm(commentId) {
             const form = document.getElementById('edit-form-' + commentId);
-            const contentSpan = form.previousElementSibling; // 해당 댓글의 내용을 포함한 span
+            const contentSpan = form.previousElementSibling;
             if (form.style.display === 'none') {
-                form.style.display = 'inline'; // 폼 보이기
-                contentSpan.style.display = 'none'; // 원래 내용 숨기기
+                form.style.display = 'inline';
+                contentSpan.style.display = 'none';
             } else {
-                form.style.display = 'none'; // 폼 숨기기
-                contentSpan.style.display = 'inline'; // 원래 내용 보이기
+                form.style.display = 'none';
+                contentSpan.style.display = 'inline';
+            }
+        }
+
+        function toggleReplyForm(commentId) {
+            const form = document.getElementById('reply-form-' + commentId);
+            if (form.style.display === 'none') {
+                form.style.display = 'block';
+            } else {
+                form.style.display = 'none';
+            }
+        }
+
+        function toggleReplyEditForm(replyId) {
+            const form = document.getElementById('reply-edit-form-' + replyId);
+            const contentSpan = form.previousElementSibling;
+            if (form.style.display === 'none') {
+                form.style.display = 'inline';
+                contentSpan.style.display = 'none';
+            } else {
+                form.style.display = 'none';
+                contentSpan.style.display = 'inline';
             }
         }
     </script> 

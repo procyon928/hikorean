@@ -12,17 +12,18 @@ router.post('/posts/:id/comments', ensureAuthenticated, async (req, res) => {
     
     // 해당 게시판의 설정 가져오기
     const boardSetting = await BoardSetting.findOne({ category: req.query.category });
-    const userRole = req.session.user.role;
+    const user = req.session.user; // user 변수 정의
 
     // 댓글 작성 권한 확인
-    if (!boardSetting || !boardSetting.commentPermission.includes(userRole)) {
+    if (!checkCommentWritePermission(boardSetting, user)) {
         return res.status(403).send("<script>alert('댓글 작성 권한이 없습니다.'); window.location.href='/';</script>");
     }
 
     const comment = new Comment({
         post: postId,
         author: req.session.user.id,
-        content: req.body.content
+        content: req.body.content,
+        parentId: req.body.parentId || null
     });
 
     try {

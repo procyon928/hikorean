@@ -5,7 +5,8 @@ const postSchema = new mongoose.Schema({
     content: { type: String, required: true },
     author: { type: mongoose.Schema.Types.ObjectId,ref: 'User', required: true }, // 사용자 모델과 연결
     createdAt: { type: Date, default: Date.now },
-    category: { type: String, required: true }
+    category: { type: String, required: true },
+    views: { type: Number, default: 0 }
 });
 
 const Post = mongoose.model('Post', postSchema);

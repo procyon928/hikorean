@@ -8,21 +8,30 @@
  }
 
  async function checkPermission(postId, category) {
-   const response = await fetch(`/posts/${postId}?category=${category}`);
-   if (response.status === 403) {
-     alert('게시글 확인 권한이 없습니다.');
-   } else if (response.ok) {
-     window.location.href = `/posts/${postId}?category=${category}`; // 권한이 있을 경우 게시글 상세 페이지로 이동
-   } else {
-     alert('게시글을 불러오는 중 오류가 발생했습니다.');
-   }
- }
+  const response = await fetch(`/posts/${postId}?category=${category}`);
+  if (response.status === 403) {
+    alert('게시글 확인 권한이 없습니다.');
+  } else if (response.ok) {
+    // 조회수 증가 요청
+    await fetch(`/posts/${postId}/incrementViews`, { method: 'POST' });
+    
+    // 조회수 업데이트
+    const postElement = document.querySelector(`[data-post-id="${postId}"]`);
+    const viewsElement = postElement.querySelector('.views');
+    const currentViews = parseInt(viewsElement.textContent.match(/\d+/)[0], 10);
+    viewsElement.textContent = `(조회수: ${currentViews + 1})`;
+    
+    window.location.href = `/posts/${postId}?category=${category}`; // 권한이 있을 경우 게시글 상세 페이지로 이동
+  } else {
+    alert('게시글을 불러오는 중 오류가 발생했습니다.');
+  }
+}
  </script>
 </head>
 <body>
  <h1><%= category ? `${allowedCategories[category]} 게시글 목록` : '전체 게시글 목록' %></h1>
  
- <% if (user && canWrite) { %> <!-- canWrite 변수를 사용하여 권한 확인 -->
+ <% if (user && canWrite) { %>
  <a href="/posts/new?category=<%= category %>">새로 글쓰기</a>
  <% } %>
  
@@ -31,30 +40,33 @@
  <% } %>
  
  <ul>
- <% posts.forEach(post => { %>
- <li>
- <a href="javascript:void(0);" onclick="checkPermission('<%= post._id %>', '<%= post.category %>')">
- <% if (user && user.role === 'superadmin' && !category) { %>
- [<%= allowedCategories[post.category] %>] 
- <% } %>
- <%= post.title %>
- </a> 
- <% if (!(boardSetting && boardSetting.hideAuthor)) { %>
- - <%= post.author.username %>
- <% } %>
- <% if (!(boardSetting && boardSetting.hideDate)) { %>
- - <%= post.createdAt.toDateString() %>
- <% } %>
- <% if (user && (user.role === 'superadmin' || (user.role === 'admin' && boardSetting.writePermission.includes('admin')))) { %>
- <form action="/posts/delete/<%= post._id %>?category=<%= post.category %>" method="POST" style="display:inline;" onsubmit="return confirmDelete();">
- <button type="submit">삭제</button>
- </form>
- <a href="/posts/edit/<%= post._id %>?category=<%= post.category %>">수정</a>
- <% } else if (user && user.id === post.author._id.toString()) { %>
- <!-- 작성자일 경우 아무것도 표시하지 않음 -->
- <% } %>
- </li>
- <% }) %>
- </ul> 
+  <% posts.forEach(post => { %>
+    <li data-post-id="<%= post._id %>">
+      <a href="javascript:void(0);" onclick="checkPermission('<%= post._id %>', '<%= post.category %>')">
+        <% if (user && user.role === 'superadmin' && !category) { %>
+          [<%= allowedCategories[post.category] %>] 
+        <% } %>
+        <%= post.title %> <span class="views">(조회수: <%= post.views %>)</span> 
+        <span class="comments">(댓글 수: <%= post.commentCount %>)</span> <!-- 댓글 수 추가 -->
+      </a> 
+      <% if (!(boardSetting && boardSetting.hideAuthor)) { %>
+        - <%= post.author.username %>
+      <% } %>
+      <% if (!(boardSetting && boardSetting.hideDate)) { %>
+        - <%= post.createdAt.toDateString() %>
+      <% } %>
+      <% if (user && (user.role === 'superadmin' || (user.role === 'admin' && boardSetting.writePermission.includes('admin')))) { %>
+        <form action="/posts/delete/<%= post._id %>?category=<%= post.category %>" method="POST" style="display:inline;" onsubmit="return confirmDelete();">
+          <button type="submit">삭제</button>
+        </form>
+        <a href="/posts/edit/<%= post._id %>?category=<%= post.category %>">수정</a>
+      <% } else if (user && user.id === post.author._id.toString()) { %>
+        <!-- 작성자일 경우 아무것도 표시하지 않음 -->
+      <% } %>
+    </li>
+  <% }) %>
+</ul>
+
+  
 </body>
 </html>

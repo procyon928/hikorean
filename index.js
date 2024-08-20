@@ -43,35 +43,39 @@ app.set('views', path.join(__dirname, 'views')); // views 폴더 설정
 // 정적 파일 제공
 app.use(express.static(path.join(__dirname, 'public')));
 
+// 홈 페이지
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// 회원가입 페이지
 app.get('/signup', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'signup.html'));
 });
 
+// 로그인 페이지
 app.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
+// 관리자 페이지
 app.get('/admin', (req, res) => {
     // 세션 로그 추가
     console.log('세션:', req.session);
-
+   
     // 세션에서 사용자 역할을 가져옴
     if (!req.session.user) {
-        return res.status(403).json({ message: '로그인이 필요합니다.' });
+    return res.status(403).json({ message: '로그인이 필요합니다.' });
     }
-
+   
     const userRole = req.session.user.role;
     console.log('사용자 역할:', userRole);
-
+   
     if (userRole !== 'admin' && userRole !== 'superadmin') {
-        return res.status(403).json({ message: '접근 권한이 없습니다.' });
+    return res.status(403).json({ message: '접근 권한이 없습니다.' });
     }
-    res.sendFile(path.join(__dirname, 'public', 'admin.html'));
-});
+    res.render('admin'); // admin.ejs를 렌더링
+   });   
 
 // 라우터 설정
 app.use(authRoutes); // 제일 상위에 두기

@@ -30,6 +30,11 @@ router.get('/posts', async (req, res) => {
     posts = await Post.find().populate('author', 'username');
   }
 
+  // 각 게시글에 대해 댓글 수를 계산
+  for (const post of posts) {
+    post.commentCount = await Comment.countDocuments({ post: post._id });
+  }
+
   return res.render('posts/list', { posts, user, category, allowedCategories, boardSetting, canWrite });
 });
 
@@ -95,6 +100,25 @@ router.get('/posts/:id', async (req, res) => {
     }));
 
     res.render('posts/detail', { post, user, category, boardSetting, commentPermission, comments: filteredComments });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+// 조회수 증가 API
+router.post('/posts/:id/incrementViews', async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) {
+      return res.status(404).send('Post not found');
+    }
+
+    // 조회수 증가
+    post.views += 1;
+    await post.save();
+
+    res.status(200).send('Views incremented');
   } catch (error) {
     console.error(error);
     res.status(500).send('Internal Server Error');
