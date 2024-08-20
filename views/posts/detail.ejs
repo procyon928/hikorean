@@ -24,9 +24,10 @@
             작성일: <%= post.createdAt.toDateString() %>
         <% } %>
     </p>
-    
-    <!-- 조회수 표시 -->
-    <p>조회수: <%= post.views %></p> <!-- 조회수 코드 추가 -->
+
+    <p <% if (boardSetting && boardSetting.hideViews) { %>style="display:none;"<% } %>> 
+        조회수: <%= post.views %>
+    </p>    
 
     <p><%= post.content %></p>
     <% if (user && (user.role === 'admin' || user.role === 'superadmin' || user.id === post.author._id.toString())) { %>

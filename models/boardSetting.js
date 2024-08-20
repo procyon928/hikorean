@@ -6,6 +6,8 @@ const boardSettingSchema = new mongoose.Schema({
   hideDate: { type: Boolean, default: false },
   hideComments: { type: Boolean, default: false },
   hideCommentAuthor: { type: Boolean, default: false },
+  hideViews: { type: Boolean, default: false }, // 조회수 숨기기
+  hideCommentCount: { type: Boolean, default: false }, // 댓글 수 숨기기
   writePermission: { type: [String], default: [] },
   readPermission: { type: [String], default: [] },
   commentPermission: { type: [String], default: [] },

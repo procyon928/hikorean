@@ -80,13 +80,15 @@ router.get('/posts/settings/:category', ensureAuthenticated, async (req, res) =>
 
 // 설정 수정 (모든 카테고리)
 router.post('/settings/update', ensureAuthenticated, isAdmin, async (req, res) => {
-    const { category, hideAuthor, hideDate, hideComments, hideCommentAuthor, writePermission, readPermission, commentPermission } = req.body;
+    const { category, hideAuthor, hideDate, hideComments, hideCommentAuthor, hideViews, hideCommentCount, writePermission, readPermission, commentPermission } = req.body;
 
     const settingsToUpdate = {
         hideAuthor: hideAuthor === 'on',
         hideDate: hideDate === 'on',
         hideComments: hideComments === 'on',
         hideCommentAuthor: hideCommentAuthor === 'on',
+        hideViews: hideViews === 'on', // 추가
+        hideCommentCount: hideCommentCount === 'on', // 추가
         writePermission: writePermission || [],
         readPermission: readPermission || [],
         commentPermission: commentPermission || []
@@ -108,6 +110,8 @@ router.post('/posts/settings/:category', ensureAuthenticated, async (req, res) =
     const hideDate = req.body.hideDate === 'on'; 
     const hideComments = req.body.hideComments === 'on'; 
     const hideCommentAuthor = req.body.hideCommentAuthor === 'on'; 
+    const hideViews = req.body.hideViews === 'on';
+    const hideCommentCount = req.body.hideCommentCount === 'on';
 
     const writePermission = req.body.writePermission || [];
     const readPermission = req.body.readPermission || [];
@@ -115,7 +119,7 @@ router.post('/posts/settings/:category', ensureAuthenticated, async (req, res) =
 
     await BoardSetting.findOneAndUpdate(
         { category },
-        { hideAuthor, hideDate, hideComments, hideCommentAuthor, writePermission, readPermission, commentPermission },
+        { hideAuthor, hideDate, hideComments, hideCommentAuthor, hideViews, hideCommentCount, writePermission, readPermission, commentPermission },
         { upsert: true }
     );
 

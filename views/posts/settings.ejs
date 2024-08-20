@@ -32,6 +32,20 @@
         </label>
         <br>
         
+        <!-- 조회수 감추기 옵션 추가 -->
+        <label>
+            조회수 감추기:
+            <input type="checkbox" name="hideViews" <%= boardSetting && boardSetting.hideViews ? 'checked' : '' %> />
+        </label>
+        <br>
+
+        <!-- 댓글 수 감추기 옵션 추가 -->
+        <label>
+            댓글 수 감추기:
+            <input type="checkbox" name="hideCommentCount" <%= boardSetting && boardSetting.hideCommentCount ? 'checked' : '' %> />
+        </label>
+        <br>
+        
         <label>
             작성 권한:
             <select name="writePermission">

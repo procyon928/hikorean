@@ -46,8 +46,13 @@
         <% if (user && user.role === 'superadmin' && !category) { %>
           [<%= allowedCategories[post.category] %>] 
         <% } %>
-        <%= post.title %> <span class="views">(조회수: <%= post.views %>)</span> 
-        <span class="comments">(댓글 수: <%= post.commentCount %>)</span> <!-- 댓글 수 추가 -->
+        <%= post.title %> 
+        <span class="views" <% if (boardSetting && boardSetting.hideViews) { %>style="display:none;"<% } %>> 
+          (조회수: <%= post.views %>)
+        </span>
+        <span class="comments" <% if (boardSetting && boardSetting.hideCommentCount) { %>style="display:none;"<% } %>> 
+            (댓글 수: <%= post.commentCount %>)
+        </span>
       </a> 
       <% if (!(boardSetting && boardSetting.hideAuthor)) { %>
         - <%= post.author.username %>
