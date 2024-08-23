@@ -4,24 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>관리자 페이지</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/css/adminlte.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
 </head>
-<body>
-    <h1>회원 목록</h1>
-    <table id="userTable">
-        <thead>
-            <tr>
-                <th>아이디</th>
-                <th>이메일</th>
-                <th>등급</th>
-                <th>가입일</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- 사용자 목록이 여기에 추가됩니다 -->
-        </tbody>
-    </table>
-    <button id="saveButton">저장</button>
+<body class="hold-transition sidebar-mini">
+    <div class="wrapper">
+        <!-- 헤더 포함 -->
+        <%- include('partials/header') %>
 
+        <!-- 사이드바 포함 -->
+        <%- include('partials/sidebar') %>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <h1>회원 목록</h1>
+            <table id="userTable" class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>아이디</th>
+                        <th>이메일</th>
+                        <th>등급</th>
+                        <th>가입일</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 사용자 목록이 여기에 추가됩니다 -->
+                </tbody>
+            </table>
+            <button class="btn btn-primary" id="saveButton">저장</button>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
     <script>
         let rolesMap = {};
         let userRoles = {}; // 변경된 역할을 저장할 객체

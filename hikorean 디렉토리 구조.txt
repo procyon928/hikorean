@@ -11,8 +11,7 @@
 │   └── boardSetting.js                // 카테고리별 게시판 레이아웃 세팅 관련 라우트
 │
 ├── /middleware                 // 미들웨어 정의 폴더
-│   ├── auth.js                // 인증 및 권한 확인 미들웨어
-│   └── ...                    // 기타 미들웨어 파일들
+│   └── auth.js                // 인증 및 권한 확인 미들웨어
 │
 ├── /models                     // 데이터베이스 모델 정의 폴더
 │   ├── User.js                // 사용자 모델 정의
@@ -21,12 +20,19 @@
 │   └── boardSetting.js                // 카테고리별 게시판 레이아웃 세팅 모델 정의
 │
 ├── /public                     // 정적 파일 저장 폴더 (HTML, CSS, JS 등)
-│   ├── admin.html             // 관리자 페이지 HTML 파일
-│   ├── index.html             // 이메일 발송 페이지 HTML 파일
+│   ├── index.html             // 
 │   ├── login.html             // 로그인 페이지 HTML 파일
 │   └── signup.html            // 회원가입 페이지 HTML 파일
 │
 ├── /views                      // 서버 사이드 렌더링을 위한 뷰 템플릿 폴더
+│   ├── admin.ejs             // 회원 등급 관리 관리자 페이지
+│   ├── admin_email.ejs       // 관리자 이메일 발송 페이지
+│   ├── /admin
+│   │   └── logs.ejs        // 로그 기록 페이지
+│   ├── /partials
+│   │   ├── header.ejs        // adminLTE의 header inclue 코드
+│   │   ├── sidebar.ejs       // adminLTE의 sidebar inclue 코드
+│   │   └── footer.ejs        // adminLTE의 footer inclue 코드
 │   └── /posts                  // 게시글 관련 뷰 템플릿
 │       ├── detail.ejs         // 게시글 세부 확인 페이지
 │       ├── edit.ejs           // 게시글 수정 페이지
