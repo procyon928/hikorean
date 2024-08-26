@@ -45,7 +45,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // 홈 페이지
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.render('index');
 });
 
 // 회원가입 페이지

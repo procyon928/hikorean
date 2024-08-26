@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Post = require('../models/post');
+const Log = require('../models/Log');
 const Comment = require('../models/Comment');
 const { ensureAuthenticated } = require('../middleware/auth');
 const BoardSetting = require('../models/boardSetting');
@@ -64,12 +65,22 @@ router.post('/posts', ensureAuthenticated, async (req, res) => {
   });
 
   try {
-      await newPost.save();
-      res.redirect(`/posts?category=${category}`);
-  } catch (error) {
-      console.error(error);
-      res.status(500).send('Error saving post');
-  }
+    await newPost.save();
+
+    // 게시글 작성 로그 추가
+    const logEntry = new Log({
+        action: 'post_created',
+        user: user.username,
+        details: `게시글이 작성되었습니다: ${newPost.title}`,
+        timestamp: new Date()
+    });
+    await logEntry.save();
+
+    res.redirect(`/posts?category=${category}`);
+} catch (error) {
+    console.error(error);
+    res.status(500).send('Error saving post');
+}
 });
 
 // 게시글 상세 페이지
