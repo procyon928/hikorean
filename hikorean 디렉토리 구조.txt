@@ -7,8 +7,9 @@
 │   ├── admin.js               // 관리자 페이지 관련 라우트
 │   ├── email.js               // 이메일 발송 관련 라우트
 │   ├── post.js                // 게시글 CRUD 관련 라우트
-│   ├── comment.js                // 댓글 CRUD 관련 라우트
-│   └── boardSetting.js                // 카테고리별 게시판 레이아웃 세팅 관련 라우트
+│   ├── comment.js             // 댓글 CRUD 관련 라우트
+│   ├── boardSetting.js        // 카테고리별 게시판 레이아웃 세팅 관련 라우트
+│   └── notice.js              // 안내문 CRUD 관련 라우트 (추가됨)
 │
 ├── /middleware                 // 미들웨어 정의 폴더
 │   └── auth.js                // 인증 및 권한 확인 미들웨어
@@ -16,29 +17,35 @@
 ├── /models                     // 데이터베이스 모델 정의 폴더
 │   ├── User.js                // 사용자 모델 정의
 │   ├── post.js                // 게시글 모델 정의
-│   ├── Comment.js                // 게시글 모델 정의
-│   └── boardSetting.js                // 카테고리별 게시판 레이아웃 세팅 모델 정의
+│   ├── Comment.js             // 댓글 모델 정의
+│   ├── boardSetting.js        // 카테고리별 게시판 레이아웃 세팅 모델 정의
+│   └── Notice.js              // 안내문 모델 정의 (추가됨)
 │
 ├── /public                     // 정적 파일 저장 폴더 (HTML, CSS, JS 등)
 │   ├── index.html             // 
 │   ├── login.html             // 로그인 페이지 HTML 파일
-│   └── signup.html            // 회원가입 페이지 HTML 파일
+│   ├── signup.html            // 회원가입 페이지 HTML 파일
+│   └── ...                    // 기타 정적 파일
 │
 ├── /views                      // 서버 사이드 렌더링을 위한 뷰 템플릿 폴더
-│   ├── admin.ejs             // 회원 등급 관리 관리자 페이지
-│   ├── admin_email.ejs       // 관리자 이메일 발송 페이지
+│   ├── admin.ejs              // 회원 등급 관리 관리자 페이지
+│   ├── admin_email.ejs        // 관리자 이메일 발송 페이지
 │   ├── /admin
-│   │   └── logs.ejs        // 로그 기록 페이지
+│   │   └── logs.ejs           // 로그 기록 페이지
 │   ├── /partials
-│   │   ├── header.ejs        // adminLTE의 header inclue 코드
-│   │   ├── sidebar.ejs       // adminLTE의 sidebar inclue 코드
-│   │   └── footer.ejs        // adminLTE의 footer inclue 코드
-│   └── /posts                  // 게시글 관련 뷰 템플릿
-│       ├── detail.ejs         // 게시글 세부 확인 페이지
-│       ├── edit.ejs           // 게시글 수정 페이지
-│       ├── list.ejs           // 게시글 목록 페이지
-│       ├── new.ejs            // 게시글 작성 페이지
-│       └── settings.ejs            // 카테고리별 게시판 레이아웃 세팅 페이지
+│   │   ├── header.ejs         // adminLTE의 header include 코드
+│   │   ├── sidebar.ejs        // adminLTE의 sidebar include 코드
+│   │   └── footer.ejs         // adminLTE의 footer include 코드
+│   ├── /posts                  // 게시글 관련 뷰 템플릿
+│   │   ├── detail.ejs         // 게시글 세부 확인 페이지
+│   │   ├── edit.ejs           // 게시글 수정 페이지
+│   │   ├── list.ejs           // 게시글 목록 페이지
+│   │   ├── new.ejs            // 게시글 작성 페이지
+│   │   └── settings.ejs       // 카테고리별 게시판 레이아웃 세팅 페이지
+│   └── /notices                // 안내문 관련 뷰 템플릿 (추가됨)
+│       ├── edit.ejs           // 안내문 수정 페이지
+│       ├── list.ejs           // 안내문 목록 페이지
+│       └── new.ejs            // 안내문 작성 페이지
 │
 ├── index.js                    // 애플리케이션의 진입점
 └── package.json                // 프로젝트 패키지 설정 파일

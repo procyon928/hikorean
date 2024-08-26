@@ -12,6 +12,7 @@ const emailRoutes = require('./routes/email');
 const postRoutes = require('./routes/post');
 const commentRoutes = require('./routes/comment');
 const boardSettingRoutes = require('./routes/boardSetting');
+const noticeRoutes = require('./routes/notice');
 const { ensureAuthenticated, isAdmin } = require('./middleware/auth');
 
 const app = express();
@@ -83,6 +84,7 @@ app.use('/admin', adminRoutes);
 app.use(emailRoutes);
 app.use(postRoutes);
 app.use(commentRoutes);
+app.use(noticeRoutes);
 app.use('/', boardSettingRoutes.router);
 
 // 서버 시작
