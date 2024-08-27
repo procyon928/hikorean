@@ -10,9 +10,7 @@
     <ul>
         <% notices.forEach(notice => { %>
             <li>
-                <h2><a href="/notices/translate/<%= notice._id %>"><%= notice.title %></a></h2> <!-- 링크 추가 -->
-                <p><%- notice.content.length > 100 ? notice.content.substring(0, 100) + '...' : notice.content %></p>
-                <p>작성일: <%= notice.createdAt.toLocaleDateString() %></p>
+                <a href="/notices/translate/<%= notice._id %>"><%= notice.title %></a> (<%= notice.createdAt.toLocaleDateString() %>)
                 <a href="/notices/edit/<%= notice._id %>">수정</a>
                 <form action="/notices/delete/<%= notice._id %>" method="POST" style="display:inline;">
                     <button type="submit">삭제</button>

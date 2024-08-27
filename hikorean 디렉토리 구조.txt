@@ -9,7 +9,7 @@
 │   ├── post.js                // 게시글 CRUD 관련 라우트
 │   ├── comment.js             // 댓글 CRUD 관련 라우트
 │   ├── boardSetting.js        // 카테고리별 게시판 레이아웃 세팅 관련 라우트
-│   └── notice.js              // 안내문 CRUD 관련 라우트 (추가됨)
+│   └── notice.js              // 안내문 관련 라우트
 │
 ├── /middleware                 // 미들웨어 정의 폴더
 │   └── auth.js                // 인증 및 권한 확인 미들웨어
@@ -18,11 +18,11 @@
 │   ├── User.js                // 사용자 모델 정의
 │   ├── post.js                // 게시글 모델 정의
 │   ├── Comment.js             // 댓글 모델 정의
+│   ├── Log.js                 // 로그 저장 모델 정의
 │   ├── boardSetting.js        // 카테고리별 게시판 레이아웃 세팅 모델 정의
-│   └── Notice.js              // 안내문 모델 정의 (추가됨)
+│   └── Notice.js              // 안내문 모델 정의
 │
 ├── /public                     // 정적 파일 저장 폴더 (HTML, CSS, JS 등)
-│   ├── index.html             // 
 │   ├── login.html             // 로그인 페이지 HTML 파일
 │   ├── signup.html            // 회원가입 페이지 HTML 파일
 │   └── ...                    // 기타 정적 파일
@@ -43,9 +43,11 @@
 │   │   ├── new.ejs            // 게시글 작성 페이지
 │   │   └── settings.ejs       // 카테고리별 게시판 레이아웃 세팅 페이지
 │   └── /notices                // 안내문 관련 뷰 템플릿 (추가됨)
-│       ├── edit.ejs           // 안내문 수정 페이지
 │       ├── list.ejs           // 안내문 목록 페이지
-│       └── new.ejs            // 안내문 작성 페이지
+│       ├── new.ejs            // 안내문 한국어 원문 작성 페이지
+│       ├── edit.ejs           // 안내문 한국어 원문 수정 페이지
+│       ├── translator.ejs     // 안내문 다른 언어 번역 및 최종 번역 결과 저장 페이지
+│       └── content.ejs        // 최종 번역 결과를 쿼리에 따라 언어를 구분하여 보여주는 페이지 
 │
 ├── index.js                    // 애플리케이션의 진입점
 └── package.json                // 프로젝트 패키지 설정 파일

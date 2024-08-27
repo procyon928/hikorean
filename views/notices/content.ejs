@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>공지사항 내용</title>
+</head>
+<body>
+    <h1>공지사항 상세</h1>
+    
+    <% if (notice) { %>
+        <h2><%= notice.title %></h2>
+        <p>작성일: <%= notice.createdAt.toLocaleDateString() %></p>
+
+        <% const translations = notice.translations[lang] || { final: notice.content }; %>
+
+        <h3>최종 내용:</h3>
+        <p><%= translations.final %></p>
+    <% } else { %>
+        <p>공지사항이 없습니다.</p>
+    <% } %>
+    
+    <a href="/notices">목록으로 돌아가기</a>
+</body>
+</html>
