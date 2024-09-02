@@ -10,7 +10,8 @@
 │   ├── comment.js             // 댓글 CRUD 관련 라우트
 │   ├── boardSetting.js        // 카테고리별 게시판 레이아웃 세팅 관련 라우트
 │   ├── notice.js              // 안내문 관련 라우트
-│   └── servey.js              // 설문조사 관련 라우트
+│   ├── servey.js              // 설문조사 관련 라우트
+│   └── shortUrl.js              // url 단축 및 qr코드 생성 관련 라우트
 │
 ├── /middleware                 // 미들웨어 정의 폴더
 │   └── auth.js                // 인증 및 권한 확인 미들웨어
@@ -22,7 +23,8 @@
 │   ├── Log.js                 // 로그 저장 모델 정의
 │   ├── boardSetting.js        // 카테고리별 게시판 레이아웃 세팅 모델 정의
 │   ├── Notice.js              // 안내문 모델 정의
-│   └── Survey.js              // 설문조사 모델 정의
+│   ├── Survey.js              // 설문조사 모델 정의
+│   └── ShortUrl.js            // url 단축 및 qr코드 생성 모델 정의
 │
 ├── /public                     // 정적 파일 저장 폴더 (HTML, CSS, JS 등)
 │   ├── login.html             // 로그인 페이지 HTML 파일
@@ -34,7 +36,7 @@
 │   ├── admin_email.ejs        // 관리자 이메일 발송 페이지
 │   ├── /admin
 │   │   ├── logs.ejs           // 로그 기록 페이지
-│   │   └── url_shortener.ejs  // url 단축 및 qr코드 생성 페이지
+│   │   └── short-url.ejs      // url 단축 및 qr코드 생성 페이지
 │   ├── /partials
 │   │   ├── header.ejs         // adminLTE의 header include 코드
 │   │   ├── sidebar.ejs        // adminLTE의 sidebar include 코드
