@@ -1,7 +1,6 @@
 /* public/styles.css */
-.ql-editor h1 {
-  font-size: 5em; /* 헤더 1 크기 */
-  color: #c75151;
-}
-
-/* 필요한 다른 헤더 스타일도 여기에 추가 */
+.header1 { font-size: 24px; font-weight: bold; color:brown; }
+.header2 { font-size: 20px; font-weight: bold; }
+.header3 { font-size: 18px; font-weight: bold; }
+.header4 { font-size: 16px; font-weight: bold; }
+.header5 { font-size: 14px; font-weight: bold; }

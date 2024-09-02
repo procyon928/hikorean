@@ -1,0 +1,88 @@
+<%- include('../partials/header') %>
+<div class="container">
+    <h1>짧은 URL 생성</h1>
+    <form action="/admin/short-url" method="POST">
+      <div class="form-group">
+          <label for="title">제목</label>
+          <input type="text" name="title" id="title" class="form-control" required>
+      </div>
+      <div class="form-group">
+          <label for="originalUrl">원본 URL</label>
+          <input type="url" name="originalUrl" id="originalUrl" class="form-control" required>
+      </div>
+      <button type="submit" class="btn btn-primary">생성</button>
+    </form>
+  
+    
+    <h2>생성된 URL 목록</h2>
+    <table class="table">
+      <thead>
+          <tr>
+              <th>제목</th> <!-- 제목 추가 -->
+              <th style="max-width: 200px;">원본 URL</th> <!-- width 제한 -->
+              <th>짧은 URL</th>
+              <th>QR 코드</th>
+              <th>작업</th>
+          </tr>
+      </thead>
+      <tbody>
+        <% shortUrls.forEach(url => { %>
+            <tr data-id="<%= url._id %>"> <!-- 여기에서 data-id 추가 -->
+                <td class="title-cell"><%= url.title %></td> <!-- 제목 표시 -->
+                <td class="original-url-cell" title="<%= url.originalUrl %>">
+                    <%= url.originalUrl.length > 30 ? url.originalUrl.substring(0, 30) + '...' : url.originalUrl %>
+                </td> <!-- 길이 제한 -->
+                <td><%= 'http://localhost:8000/' + url.shortUrl %></td>
+                <td><img src="<%= url.qrCode %>" alt="QR Code" width="100"></td>
+                <td class="edit-buttons">
+                  <button type="button" class="btn btn-warning" onclick="editUrl('<%= url._id %>', '<%= url.title %>', '<%= url.originalUrl %>')">수정</button>
+                  <form action="/admin/short-url/<%= url._id %>/delete" method="POST" style="display:inline;">
+                      <button type="submit" class="btn btn-danger">삭제</button>
+                  </form>
+                </td>              
+            </tr>
+        <% }) %>
+      </tbody>    
+    </table>
+</div>
+<%- include('../partials/footer') %>
+<script>
+function editUrl(id, title, originalUrl) {
+    const row = document.querySelector(`tr[data-id="${id}"]`);
+    const titleCell = row.querySelector('.title-cell');
+    const originalUrlCell = row.querySelector('.original-url-cell');
+    const editButtonsCell = row.querySelector('.edit-buttons');
+
+    titleCell.innerHTML = `<input type="text" value="${title}" class="form-control" id="edit-title-${id}" required>`;
+    originalUrlCell.innerHTML = `<input type="url" value="${originalUrl}" class="form-control" id="edit-original-url-${id}" required>`;
+
+    editButtonsCell.innerHTML = `
+        <button type="button" class="btn btn-success" onclick="saveUrl('${id}')">저장</button>
+        <button type="button" class="btn btn-secondary" onclick="cancelEdit('${id}')">취소</button>
+    `;
+  }
+
+  function saveUrl(id) {
+    const title = document.getElementById(`edit-title-${id}`).value;
+    const originalUrl = document.getElementById(`edit-original-url-${id}`).value;
+
+    fetch(`/admin/short-url/${id}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ title, originalUrl })
+    })
+    .then(response => {
+        if (response.ok) {
+            location.reload(); // 페이지 새로 고침
+        } else {
+            alert('수정 중 오류가 발생했습니다.');
+        }
+    });
+  }
+
+  function cancelEdit(id) {
+      location.reload(); // 페이지 새로 고침
+  }
+</script>

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>설문 생성</title>
+    <style>
+        .question {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f0f0f0; /* 음영 색 */
+            border-radius: 5px;
+        }
+        .text-area {
+            display: none;
+        }
+        .short-answer {
+            display: none;
+        }
+        .date-input {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>설문 생성</h1>
+    <form action="/surveys/create" method="POST">
+      <label for="title">설문 제목:</label>
+      <input type="text" id="title" name="title" required><br><br>
+  
+      <h2>문항 추가하기</h2>
+      <div id="questions" style="display: none;"></div>
+  
+      <button type="button" onclick="addQuestion()">문항 추가</button><br><br>
+  
+      <button type="submit">설문 생성</button>
+  </form>  
+
+    <script>
+        let questionCount = 0; // 전역 변수로 선언
+
+        function addQuestion() {
+            questionCount++; // 문항 추가 시마다 증가
+            const questionsDiv = document.getElementById('questions');
+            questionsDiv.style.display = 'block';
+
+            const newQuestion = document.createElement('div');
+            newQuestion.className = 'question';
+            newQuestion.innerHTML = `
+                <label for="questionType${questionCount}">문항 유형:</label>
+                <select id="questionType${questionCount}" name="questionType[]" onchange="toggleOptions(this)">
+                    <option value="short-answer">단답형</option>
+                    <option value="long-answer">장문형</option>
+                    <option value="single-choice" selected>단일 선택</option>
+                    <option value="multiple-choice">다중 선택</option>
+                    <option value="date">날짜 선택</option> <!-- 날짜 선택 추가 -->
+                </select><br>
+
+                <label for="question${questionCount}">문항 ${questionCount} 제목:</label>
+                <input type="text" id="question${questionCount}" name="questions[]" required>
+                
+                <label>필수:</label>
+                <input type="checkbox" name="required[]"><br>
+
+                <label for="questionDesc${questionCount}">문항 설명:</label>
+                <input type="text" id="questionDesc${questionCount}" name="questionDescs[]"><br>
+
+                <div class="options" id="options${questionCount}" style="display:none;">
+                    <h4>선택지 추가하기</h4>
+                    <div class="option">
+                        <input type="text" name="options[${questionCount - 1}][]" placeholder="선택지 입력" required>
+                        <button type="button" onclick="removeOption(this)">삭제</button>
+                    </div>
+                    <button type="button" onclick="addOption(this)">선택지 추가</button>
+                </div>
+
+                <textarea class="text-area" name="longAnswers[]" rows="4" placeholder="장문형 답변을 입력하세요."></textarea>
+                <input type="text" class="short-answer" name="shortAnswers[]" placeholder="단답형 답변을 입력하세요." />
+                <input type="date" class="date-input" name="dateAnswers[]" /> <!-- 날짜 입력 추가 --><br>
+
+                <button type="button" onclick="removeQuestion(this)">문항 삭제</button>
+            `;
+            questionsDiv.appendChild(newQuestion);
+            
+            // 추가된 문항의 유형에 따른 초기 상태 설정
+            const questionTypeSelect = newQuestion.querySelector('select');
+            toggleOptions(questionTypeSelect); // 여기에서 새로 추가된 문항의 상태를 초기화합니다.
+        }
+
+        function removeQuestion(button) {
+            const questionDiv = button.parentElement;
+            questionDiv.remove();
+        }
+
+        function toggleOptions(select) {
+            const questionDiv = select.closest('.question');
+            const optionsDiv = questionDiv.querySelector('.options');
+            const textArea = questionDiv.querySelector('.text-area');
+            const shortAnswer = questionDiv.querySelector('.short-answer');
+            const dateInput = questionDiv.querySelector('.date-input');
+            const questionType = select.value;
+
+            optionsDiv.style.display = (questionType === 'single-choice' || questionType === 'multiple-choice') ? 'block' : 'none';
+            textArea.style.display = (questionType === 'long-answer') ? 'block' : 'none';
+            shortAnswer.style.display = (questionType === 'short-answer') ? 'block' : 'none';
+            dateInput.style.display = (questionType === 'date') ? 'block' : 'none'; // 날짜 입력 표시
+        }
+
+        function addOption(button) {
+    const optionsDiv = button.parentElement.parentElement;
+    const questionIndex = Array.from(optionsDiv.parentElement.children).indexOf(optionsDiv);
+    const optionCount = optionsDiv.querySelectorAll('.option').length;
+
+    const newOption = document.createElement('div');
+    newOption.className = 'option';
+    newOption.innerHTML = `
+        <input type="text" name="options[${questionIndex}][]" placeholder="선택지 입력" required>
+        <button type="button" onclick="removeOption(this)">삭제</button>
+    `;
+    optionsDiv.appendChild(newOption);
+}
+
+
+        function removeOption(button) {
+            const optionDiv = button.parentElement;
+            optionDiv.remove();
+        }
+    </script>
+</body>
+</html>

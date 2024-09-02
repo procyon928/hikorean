@@ -13,6 +13,8 @@ const postRoutes = require('./routes/post');
 const commentRoutes = require('./routes/comment');
 const boardSettingRoutes = require('./routes/boardSetting');
 const noticeRoutes = require('./routes/notice');
+const surveyRoutes = require('./routes/survey');
+const shortUrlRoutes = require('./routes/shortUrl');
 const { ensureAuthenticated, isAdmin } = require('./middleware/auth');
 
 const app = express();
@@ -76,15 +78,17 @@ app.get('/admin', (req, res) => {
     return res.status(403).json({ message: '접근 권한이 없습니다.' });
     }
     res.render('admin'); // admin.ejs를 렌더링
-   });   
+   });
 
 // 라우터 설정
 app.use(authRoutes); // 제일 상위에 두기
 app.use('/admin', adminRoutes);
+app.use(shortUrlRoutes);
 app.use(emailRoutes);
 app.use(postRoutes);
 app.use(commentRoutes);
 app.use(noticeRoutes);
+app.use('/surveys', surveyRoutes);
 app.use('/', boardSettingRoutes.router);
 
 // 서버 시작

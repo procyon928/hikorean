@@ -35,15 +35,15 @@
     <div class="row">
         <div class="column">
             <h2>원문</h2>
-            <p><%= notice.content %></p>
+            <p><%- notice.content %></p>
         </div>
         <div class="column">
             <h2>구글 번역</h2>
-            <p><%= notice.translations[targetLang]?.google || '번역 결과 없음' %></p>
+            <p><%- notice.translations[targetLang]?.google || '번역 결과 없음' %></p>
         </div>
         <div class="column">
             <h2>마이크로소프트 번역</h2>
-            <p><%= notice.translations[targetLang]?.microsoft || '번역 결과 없음' %></p>
+            <p><%- notice.translations[targetLang]?.microsoft || '번역 결과 없음' %></p>
         </div>
         <div class="column">
             <h2>최종 번역 입력</h2>
