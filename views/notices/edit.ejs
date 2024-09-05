@@ -98,7 +98,7 @@
         callbacks: {
             onInit: function() {
                 // 초기화 시 notice.content를 에디터에 로드, '%-'로 쓰면 html 렌더링, '%='로 쓰면 태그 그대로 나타남
-                $('#editor').summernote('code', `<%= notice.content %>`);
+                $('#editor').summernote('code', `<%- notice.content %>`);
             },
             onPaste: function(e) {
                 e.preventDefault(); // 기본 붙여넣기 동작 방지

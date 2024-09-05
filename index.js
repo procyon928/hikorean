@@ -83,13 +83,13 @@ app.get('/admin', (req, res) => {
 // 라우터 설정
 app.use(authRoutes); // 제일 상위에 두기
 app.use('/admin', adminRoutes);
-app.use(shortUrlRoutes);
 app.use(emailRoutes);
 app.use(postRoutes);
 app.use(commentRoutes);
 app.use(noticeRoutes);
 app.use('/surveys', surveyRoutes);
 app.use('/', boardSettingRoutes.router);
+app.use(shortUrlRoutes); // 제일 하위에 두기
 
 // 서버 시작
 app.listen(PORT, () => {

@@ -1,60 +1,54 @@
-<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>안내문 보기</title>
-    <style>
-        .container {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-        }
-        .row {
-            display: flex;
-            flex: 1;
-        }
-        .column {
-            flex: 1;
-            padding: 10px;
-        }
-    </style>
+    <title>번역기</title>
+    <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-  <div class="container">
+    <h1><%= notice.title %> 번역</h1>
     <form action="/notices/translate/<%= notice._id %>" method="POST">
-        <label for="targetLang">번역 목표어 선택:</label>
-        <select name="targetLang" id="targetLang">
-            <option value="en">영어</option>
-            <option value="jp">일본어</option>
-            <option value="tc">중국어 번체</option>
-            <option value="sc">중국어 간체</option>
-            <option value="vi">베트남어</option>
+        <label for="targetLang">목표 언어 선택:</label>
+        <select id="targetLang" name="targetLang" required>
+          <option value="" disabled selected>언어 선택</option>
+          <% const lang = typeof targetLang !== 'undefined' ? targetLang : ''; %>
+          <option value="en" <%= targetLang === 'en' ? 'selected' : '' %>>영어</option>
+          <option value="jp" <%= targetLang === 'jp' ? 'selected' : '' %>>일본어</option>
+          <option value="tc" <%= targetLang === 'tc' ? 'selected' : '' %>>중국어(번체)</option>
+          <option value="sc" <%= targetLang === 'sc' ? 'selected' : '' %>>중국어(간체)</option>
+          <option value="vi" <%= targetLang === 'vi' ? 'selected' : '' %>>베트남어</option>
         </select>
         <button type="submit">번역</button>
     </form>
-    <div class="row">
-        <div class="column">
-            <h2>원문</h2>
-            <p><%- notice.content %></p>
-        </div>
-        <div class="column">
-            <h2>구글 번역</h2>
-            <p><%- notice.translations[targetLang]?.google || '번역 결과 없음' %></p>
-        </div>
-        <div class="column">
-            <h2>마이크로소프트 번역</h2>
-            <p><%- notice.translations[targetLang]?.microsoft || '번역 결과 없음' %></p>
-        </div>
-        <div class="column">
-            <h2>최종 번역 입력</h2>
-            <form id="finalTranslationForm" action="/notices/translate/save/<%= notice._id %>" method="POST">
-              <textarea name="finalTranslation" rows="5" cols="30"><%= notice.translations[targetLang]?.final || '' %></textarea>
-              <input type="hidden" name="lang" value="<%= targetLang %>">
-              <button type="submit">저장</button>
-            </form>
-        </div>            
-    </div>
-</div>
+    
+    <% if (lines && lines.length > 0) { %>
+      <form action="/notices/translate/save/<%= notice._id %>" method="POST">
+          <input type="hidden" name="title" value="<%= notice.title %>">
+          <input type="hidden" name="content" value="<%= notice.content %>">
+          <input type="hidden" name="lang" value="<%= targetLang %>">
+          <% for (let i = 0; i < lines.length; i++) { %>
+              <div class="translation-pair">
+                  <div class="original">
+                      <strong>한국어 원문:</strong> <%= lines[i] %>
+                  </div>
+                  <div class="google-translation">
+                      <img src="/google.png" alt="구글 번역" style="width: 16px; height: 16px;"> <%= googleTranslations[i] %>
+                  </div>
+                  <div class="microsoft-translation">
+                      <img src="/microsoft.png" alt="마이크로소프트 번역" style="width: 16px; height: 16px;"> <%= microsoftTranslations[i] %>
+                  </div>
+                  <div class="final-translation">
+                      <label for="finalTranslation<%= i %>">최종 번역:</label>
+                      <input type="text" id="finalTranslation<%= i %>" name="finalTranslations[<%= i %>]" value="<%= finalTranslations[i] || '' %>" required>
+                  </div>
+              </div>
+              <hr>
+          <% } %>
+          <button type="submit">저장</button>
+      </form>
+    <% } else { %>
+      <p>번역할 내용이 없습니다.</p>
+    <% } %>
 
+    
 </body>
 </html>

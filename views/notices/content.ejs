@@ -15,9 +15,9 @@
         <% const translations = notice.translations[lang] || { final: notice.content }; %>
 
         <h3>최종 내용:</h3>
-        <p><%= translations.final %></p>
+        <p><%- styledContent %></p>
     <% } else { %>
-        <p>공지사항이 없습니다.</p>
+        <p>공지사항이 없습니다.</p>■
     <% } %>
     
     <a href="/notices">목록으로 돌아가기</a>
