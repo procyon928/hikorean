@@ -28,18 +28,19 @@
           <% for (let i = 0; i < lines.length; i++) { %>
               <div class="translation-pair">
                   <div class="original">
-                      <strong>한국어 원문:</strong> <%= lines[i] %>
+                    <img src="/korean.png" alt="한국어 원문" style="width: 20px; height: 20px;"> <%= lines[i] %>
                   </div>
-                  <div class="google-translation">
-                      <img src="/google.png" alt="구글 번역" style="width: 16px; height: 16px;"> <%= googleTranslations[i] %>
-                  </div>
-                  <div class="microsoft-translation">
-                      <img src="/microsoft.png" alt="마이크로소프트 번역" style="width: 16px; height: 16px;"> <%= microsoftTranslations[i] %>
-                  </div>
+                  <div class="google-translation" onclick="setFinalTranslation(<%= i %>, '<%= googleTranslations[i] %>', event)">
+                    <img src="/google.png" alt="구글 번역" style="width: 20px; height: 20px;"> <%= googleTranslations[i] %>
+                </div>
+                <div class="microsoft-translation" onclick="setFinalTranslation(<%= i %>, '<%= microsoftTranslations[i] %>', event)">
+                    <img src="/microsoft.png" alt="마이크로소프트 번역" style="width: 20px; height: 20px;"> <%= microsoftTranslations[i] %>
+                </div>
                   <div class="final-translation">
-                      <label for="finalTranslation<%= i %>">최종 번역:</label>
-                      <input type="text" id="finalTranslation<%= i %>" name="finalTranslations[<%= i %>]" value="<%= finalTranslations[i] || '' %>" required>
-                  </div>
+                    <label for="finalTranslation<%= i %>">최종 번역:</label>
+                    <textarea id="finalTranslation<%= i %>" name="finalTranslations[<%= i %>]" required style="width: 100%; box-sizing: border-box;"><%= finalTranslations[i] || '' %></textarea>
+
+                  </div>                
               </div>
               <hr>
           <% } %>
@@ -49,6 +50,39 @@
       <p>번역할 내용이 없습니다.</p>
     <% } %>
 
-    
+    <script>
+function setFinalTranslation(index, translation, event) {
+    const textarea = document.getElementById(`finalTranslation${index}`);
+    textarea.value = translation; // 번역 내용을 textarea에 설정
+
+    // 모든 이미지에서 선택된 클래스 제거
+    document.querySelectorAll('.google-translation, .microsoft-translation').forEach(img => {
+        img.classList.remove('selected');
+    });
+
+    // 클릭한 이미지에 선택된 클래스 추가
+    const selectedImg = event.currentTarget; // 클릭한 요소
+    selectedImg.classList.add('selected');
+}
+
+
+      document.addEventListener("DOMContentLoaded", function() {
+          const translationPairs = document.querySelectorAll('.translation-pair');
+  
+          translationPairs.forEach(pair => {
+              const originalHeight = pair.querySelector('.original').offsetHeight;
+              const googleHeight = pair.querySelector('.google-translation').offsetHeight;
+              const microsoftHeight = pair.querySelector('.microsoft-translation').offsetHeight;
+  
+              // 가장 높은 height 값 찾기
+              const maxHeight = Math.max(originalHeight, googleHeight, microsoftHeight);
+  
+              // textarea의 높이를 설정
+              const textarea = pair.querySelector('.final-translation textarea');
+              textarea.style.height = maxHeight + 'px';
+          });
+      });
+  </script>
+  
 </body>
 </html>
