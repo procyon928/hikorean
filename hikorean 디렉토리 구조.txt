@@ -9,7 +9,8 @@
 │   ├── post.js                // 게시글 CRUD 관련 라우트
 │   ├── comment.js             // 댓글 CRUD 관련 라우트
 │   ├── boardSetting.js        // 카테고리별 게시판 레이아웃 세팅 관련 라우트
-│   ├── notice.js              // 안내문 관련 라우트
+│   ├── notice.js              // 안내문 CRUD 관련 라우트
+│   ├── translation.js         // 안내문 번역 처리 관련 라우트
 │   ├── translate.js           // 구글 마이크로소프트 번역 api 사용 관련 라우트
 │   ├── servey.js              // 설문조사 관련 라우트
 │   └── shortUrl.js              // url 단축 및 qr코드 생성 관련 라우트

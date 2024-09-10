@@ -3,20 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <title>안내문 목록</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            text-align: center;
+            width: 11%; /* 각 열의 폭을 동일하게 설정 */
+        }
+    </style>
+    <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
     <h1>안내문 목록</h1>
     <a href="/notices/new">새 안내문 작성</a>
-    <ul>
-        <% notices.forEach(notice => { %>
-            <li>
-                <a href="/notices/translate/<%= notice._id %>"><%= notice.title %></a> (<%= notice.createdAt.toLocaleDateString() %>)
-                <a href="/notices/edit/<%= notice._id %>">수정</a>
-                <form action="/notices/delete/<%= notice._id %>" method="POST" style="display:inline;">
-                    <button type="submit">삭제</button>
-                </form>
-            </li>
-        <% }) %>
-    </ul>
+    <table>
+        <thead>
+            <tr>
+                <th>제목</th>
+                <th>작성일</th>
+                <th>수정일</th>
+                <th>중국어 간체</th>
+                <th>중국어 번체</th>
+                <th>일본어</th>
+                <th>영어</th>
+                <th>베트남어</th>
+                <th>수정 및 삭제</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% 
+            const getStatus = (finalSavedAt, updatedAt) => {
+                if (!finalSavedAt) return '🔴'; // 조건 1: finalSavedAt이 빈값
+                if (updatedAt && finalSavedAt < updatedAt) return '🟡'; // 조건 2: finalSavedAt < updatedAt
+                return '🟢'; // 조건 3: finalSavedAt > updatedAt 또는 updatedAt이 빈값
+            };
+            %>
+            <% notices.forEach(notice => { %>
+                <tr>
+                    <td>
+                      <a href="/notices/translate/<%= notice._id %>"><%= notice.title %></a>
+                      <a href="/notices/<%= notice.shortId %>?lang=ko">🔗</a>
+                    </td>
+                    <td><%= notice.createdAt.toLocaleDateString() %></td>
+                    <td><%= notice.updatedAt ? notice.updatedAt.toLocaleDateString() : '' %></td>
+                    <td><a href="/notices/<%= notice.shortId %>?lang=sc"><%= getStatus(notice.translations.sc?.finalSavedAt, notice.updatedAt) %></a></td>
+                    <td><a href="/notices/<%= notice.shortId %>?lang=tc"><%= getStatus(notice.translations.tc?.finalSavedAt, notice.updatedAt) %></a></td>
+                    <td><a href="/notices/<%= notice.shortId %>?lang=jp"><%= getStatus(notice.translations.jp?.finalSavedAt, notice.updatedAt) %></a></td>
+                    <td><a href="/notices/<%= notice.shortId %>?lang=en"><%= getStatus(notice.translations.en?.finalSavedAt, notice.updatedAt) %></a></td>
+                    <td><a href="/notices/<%= notice.shortId %>?lang=vi"><%= getStatus(notice.translations.vi?.finalSavedAt, notice.updatedAt) %></a></td>
+                    <td>
+                        <a href="/notices/edit/<%= notice._id %>">수정</a>
+                        <form action="/notices/delete/<%= notice._id %>" method="POST" style="display:inline;">
+                            <button type="submit">삭제</button>
+                        </form>
+                    </td>
+                </tr>
+            <% }) %>
+        </tbody>
+    </table>
 </body>
 </html>

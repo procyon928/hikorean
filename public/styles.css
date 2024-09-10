@@ -39,9 +39,28 @@
 opacity: 1;
 }
 
-
 @media (max-width: 768px) {
   .original, .google-translation, .microsoft-translation, .final-translation {
       flex: 1 1 100%; /* 4행 레이아웃 */
   }
+}
+
+blockquote {
+  text-align: center; /* 가운데 정렬 */
+  border-radius: 10px; /* 둥근 사각형 */
+  background-color: #007bff; /* 배경색 (예: 파란색) */
+  color: white; /* 글자색 */
+  font-weight: bold; /* 글자 굵게 */
+  padding: 10px;
+  margin: 20px 0; /* 상하 여백 */
+}
+
+blockquote a {
+  color: white; /* 하이퍼링크 색상 */
+  text-decoration: underline; /* 밑줄 제거 */
+}
+
+blockquote a:hover {
+  color: white; /* 하이퍼링크 색상 */
+  text-decoration: underline; /* 마우스 오버 시 밑줄 추가 */
 }

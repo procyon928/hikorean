@@ -27,7 +27,7 @@
           <input type="hidden" name="lang" value="<%= targetLang %>">
           <% for (let i = 0; i < lines.length; i++) { %>
               <div class="translation-pair">
-                  <div class="original">
+                  <div class="original" style="<%= finalTranslations[i] === '' ? 'background-color: #FFCCCC;' : '' %>">
                     <img src="/korean.png" alt="한국어 원문" style="width: 20px; height: 20px;"> <%= lines[i] %>
                   </div>
                   <div class="google-translation" onclick="setFinalTranslation(<%= i %>, '<%= googleTranslations[i] %>', event)">

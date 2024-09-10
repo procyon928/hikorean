@@ -9,7 +9,7 @@ app.use(express.json());
 
 // 안내문 목록 조회
 router.get('/notices', async (req, res) => {
-    const notices = await Notice.find();
+    const notices = await Notice.find().sort({ createdAt: -1 });
     res.render('notices/list', { notices });
 });
 
@@ -20,8 +20,8 @@ router.get('/notices/new', isAdmin, (req, res) => {
 
 // 안내문 작성
 router.post('/notices', isAdmin, async (req, res) => {
-    const { title, content } = req.body;
-    const notice = new Notice({ title, content });
+    const { title, content, shortId } = req.body;
+    const notice = new Notice({ title, content, shortId });
     await notice.save();
     res.redirect('/notices');
 });
@@ -90,6 +90,11 @@ router.post('/notices/edit/:id', isAdmin, async (req, res) => {
       Object.keys(notice.translations).forEach(lang => {
         const translations = notice.translations[lang];
         if (translations && translations.final) {
+            // final 배열이 비어있다면 건너뛰기
+            if (translations.final.length === 0) {
+                return; // 빈 배열일 경우 업데이트 건너뛰기
+            }
+
             const finalArray = new Array(newLines.length).fill(''); // newLines와 같은 길이의 배열 초기화
             newLines.forEach((newLine, i) => {
                 const originalIndex = originalLines.indexOf(newLine);
@@ -98,17 +103,14 @@ router.post('/notices/edit/:id', isAdmin, async (req, res) => {
                 }
             });
 
-            console.log(`언어: ${lang}, finalArray: ${JSON.stringify(finalArray)}`); // finalArray 상태 로그
-            
             translations.final = finalArray; // 빈 문자열 제거
-            
-            console.log(`언어: ${lang}, 업데이트된 translations.final: ${JSON.stringify(translations.final)}`); // 업데이트된 final 상태 로그
         }
       });
 
       // 업데이트
       notice.title = title;
       notice.content = content;
+      notice.shortId = shortId;
       notice.updatedAt = new Date();
 
       const updatedNotice = await notice.save();
@@ -134,30 +136,26 @@ router.post('/notices/delete/:id', isAdmin, async (req, res) => {
 
 // 스타일 적용 함수 (서버 측)
 function applyStyles(text) {
-  // Bold 처리
-  text = text.replace(/\*(.*?)\*/g, '<strong>$1</strong>');
-  // Underline 처리
-  text = text.replace(/_(.*?)_/g, '<u>$1</u>');
-  // Color 처리
-  text = text.replace(/\`(.*?)\`/g, '<span style="color: #FF1744;">$1</span>');
-  // Background 처리
-  text = text.replace(/\[(.*?)\]/g, '<span style="background-color: #FBF595;">&nbsp;$1&nbsp;</span>'); // FFB300
-  return text;
+    text = text.replace(/\*(.*?)\*/g, '<strong>$1</strong>');
+    text = text.replace(/_(.*?)_/g, '<u>$1</u>');
+    text = text.replace(/\`(.*?)\`/g, '<span style="color: #FF1744;">$1</span>');
+    text = text.replace(/\[(.*?)\]/g, '<span style="background-color: #FBF595;">&nbsp;$1&nbsp;</span>');
+    return text;
 }
 
 // 안내문 개별 내용
-router.get('/notices/:id', async (req, res) => {
-  const { id } = req.params;
+router.get('/notices/:shortId', async (req, res) => {
+  const { shortId } = req.params;
   const { lang } = req.query;
 
-  const notice = await Notice.findById(id);
+  const notice = await Notice.findOne({ shortId });
 
   if (!notice) {
       return res.status(404).send('안내문을 찾을 수 없습니다.');
   }
 
   const translations = notice.translations[lang] || notice.content; // 기본값은 원문
-  const styledContent = applyStyles(translations.final || translations); // 스타일 적용
+  const styledContent = applyStyles(translations.translatedContent || translations); // 스타일 적용
   
   res.render('notices/content', { notice, styledContent, lang });
 });
