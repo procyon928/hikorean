@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const noticeSchema = new mongoose.Schema({
   title: { type: String, required: true },
   content: { type: String, required: true },
+  originalContent: { type: String },
   translations: {
     en: { google: [String], microsoft: [String], final: [String], translatedContent: String, translatedAt: Date, finalSavedAt: Date },
     jp: { google: [String], microsoft: [String], final: [String], translatedContent: String, translatedAt: Date, finalSavedAt: Date },

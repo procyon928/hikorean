@@ -4,3 +4,44 @@
 .header3 { font-size: 18px; font-weight: bold; }
 .header4 { font-size: 16px; font-weight: bold; }
 .header5 { font-size: 14px; font-weight: bold; }
+
+
+.translation-pair {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.original, .google-translation, .microsoft-translation, .final-translation {
+  flex: 1 1 24%; /* 4열 레이아웃 */
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column; /* 세로 방향으로 정렬 */
+  align-items: flex-start; /* 왼쪽 정렬 */
+  margin-right: 5px;
+}
+
+.original img, .google-translation img, .microsoft-translation img {
+  margin-bottom: 5px; /* 이미지와 텍스트 사이의 간격 */
+  opacity: 0.5; /* 기본 상태에서 불투명도 0.5 */
+  transition: opacity 0.3s; /* 부드러운 전환 효과 */
+}
+
+.final-translation textarea {
+  resize: vertical; /* 사용자가 세로로만 크기 조절 가능 */
+  overflow: auto; /* 내용이 넘칠 경우 스크롤바 추가 */
+  width: 100%;
+  height: auto; /* 자동 높이 조정 */
+}
+
+.selected img {
+opacity: 1;
+}
+
+
+@media (max-width: 768px) {
+  .original, .google-translation, .microsoft-translation, .final-translation {
+      flex: 1 1 100%; /* 4행 레이아웃 */
+  }
+}

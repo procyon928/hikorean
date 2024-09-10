@@ -83,6 +83,51 @@ function setFinalTranslation(index, translation, event) {
           });
       });
   </script>
+<script>
+  // 페이지 로드 시 임시 저장된 번역 내용 가져오기
+  document.addEventListener("DOMContentLoaded", async function() {
+      const noticeId = "<%= notice._id %>";
+      const targetLang = "<%= targetLang %>";
+      
+      try {
+          const response = await fetch(`/notices/temporary/${noticeId}/${targetLang}`);
+          const data = await response.json();
+          
+          if (data.translations.length > 0) {
+              data.translations.forEach((translation, index) => {
+                  const textarea = document.getElementById(`finalTranslation${index}`);
+                  if (textarea) {
+                      textarea.value = translation; // 임시 저장된 값을 textarea에 설정
+                  }
+              });
+          }
+      } catch (error) {
+          console.error('임시 저장된 내용 로드 오류:', error);
+      }
+  
+      // textarea 값 변경 시 임시 저장
+      const textareas = document.querySelectorAll('.final-translation textarea');
+      textareas.forEach((textarea, index) => {
+          textarea.addEventListener('input', async function() {
+              const translations = Array.from(textareas).map(t => t.value); // 모든 textarea 값 가져오기
+              const noticeId = "<%= notice._id %>";
+              const language = targetLang;
+              
+              try {
+                  await fetch('/notices/temporary-save', {
+                      method: 'POST',
+                      headers: {
+                          'Content-Type': 'application/json'
+                      },
+                      body: JSON.stringify({ noticeId, language, translations })
+                  });
+              } catch (error) {
+                  console.error('임시 저장 오류:', error);
+              }
+          });
+      });
+  });
+  </script>
   
 </body>
 </html>

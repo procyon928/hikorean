@@ -10,6 +10,7 @@
 │   ├── comment.js             // 댓글 CRUD 관련 라우트
 │   ├── boardSetting.js        // 카테고리별 게시판 레이아웃 세팅 관련 라우트
 │   ├── notice.js              // 안내문 관련 라우트
+│   ├── translate.js           // 구글 마이크로소프트 번역 api 사용 관련 라우트
 │   ├── servey.js              // 설문조사 관련 라우트
 │   └── shortUrl.js              // url 단축 및 qr코드 생성 관련 라우트
 │
@@ -23,6 +24,7 @@
 │   ├── Log.js                 // 로그 저장 모델 정의
 │   ├── boardSetting.js        // 카테고리별 게시판 레이아웃 세팅 모델 정의
 │   ├── Notice.js              // 안내문 모델 정의
+│   ├── TemporaryTranslation.js    // 안내문 번역 내용 임시 저장 모델 정의
 │   ├── Survey.js              // 설문조사 모델 정의
 │   └── ShortUrl.js            // url 단축 및 qr코드 생성 모델 정의
 │
