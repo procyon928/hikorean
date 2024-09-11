@@ -5,15 +5,18 @@ const noticeSchema = new mongoose.Schema({
   content: { type: String, required: true },
   originalContent: { type: String },
   translations: {
-    sc: { google: [String], microsoft: [String], final: [String], translatedContent: String, translatedAt: Date, finalSavedAt: Date },
-    tc: { google: [String], microsoft: [String], final: [String], translatedContent: String, translatedAt: Date, finalSavedAt: Date },
-    jp: { google: [String], microsoft: [String], final: [String], translatedContent: String, translatedAt: Date, finalSavedAt: Date },
-    en: { google: [String], microsoft: [String], final: [String], translatedContent: String, translatedAt: Date, finalSavedAt: Date },
-    vi: { google: [String], microsoft: [String], final: [String], translatedContent: String, translatedAt: Date, finalSavedAt: Date }
+    sc: { google: [String], microsoft: [String], deepl: [String], final: [String], translatedContent: String, translatedAt: Date, finalSavedAt: Date, finalSavedBy: String },
+    tc: { google: [String], microsoft: [String], deepl: [String], final: [String], translatedContent: String, translatedAt: Date, finalSavedAt: Date, finalSavedBy: String },
+    jp: { google: [String], microsoft: [String], deepl: [String], final: [String], translatedContent: String, translatedAt: Date, finalSavedAt: Date, finalSavedBy: String },
+    en: { google: [String], microsoft: [String], deepl: [String], final: [String], translatedContent: String, translatedAt: Date, finalSavedAt: Date, finalSavedBy: String },
+    vi: { google: [String], microsoft: [String], deepl: [String], final: [String], translatedContent: String, translatedAt: Date, finalSavedAt: Date, finalSavedBy: String }
   },
   createdAt: { type: Date, default: Date.now },
+  createdBy: { type: String, required: true },
   updatedAt: { type: Date },
-  shortId: { type: String, required: true, unique: true }
+  updatedBy: { type: String },
+  shortId: { type: String, required: true, unique: true },
+  readStudents: { type: [String], default: [] }
 });
 
 const Notice = mongoose.model('Notice', noticeSchema);

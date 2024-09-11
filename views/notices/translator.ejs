@@ -3,9 +3,62 @@
     <meta charset="UTF-8">
     <title>번역기</title>
     <link rel="stylesheet" href="/styles.css">
+    <style>
+      /* 팝업 기본 스타일 */
+      .popup {
+          display: none;
+          position: fixed;
+          left: 100px;
+          bottom: 0px;
+          transform: translate(0, 0); /* 변환 제거 */
+          background: white;
+          border: 1px solid #ccc;
+          padding: 20px;
+          z-index: 1000;
+          width: 20%; /* PC 화면에서 20% */
+          max-height: 80%;
+          overflow-y: auto;
+      }
+      .popup-overlay {
+          display: none;
+          position: fixed;
+          left: 0;
+          top: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.5);
+          z-index: 999;
+      }
+      .close-btn {
+          cursor: pointer;
+          color: red;
+      }
+      /* 브라우저 이미지 스타일 */
+      .browser-icon {
+          position: fixed;
+          left: 30px;
+          bottom: 30px;
+          cursor: pointer;
+          z-index: 998; /* 팝업보다 위에 표시 */
+      }
+    </style>
 </head>
 <body>
     <h1><%= notice.title %> 번역</h1>
+    
+    <a href="/notices">리스트로 돌아가기</a>
+
+    <div class="browser-icon" id="browserIcon">
+        <img src="/browser.png" alt="브라우저 아이콘" style="width: 50px; height: 50px;">
+    </div>
+
+    <div class="popup-overlay" id="popupOverlay"></div>
+    <div class="popup" id="popup">
+        <span class="close-btn" id="closePopup">닫기</span>
+        <h2><%= notice.title %></h2>
+        <div><%- styledContent %></div>
+    </div>
+
     <form action="/notices/translate/<%= notice._id %>" method="POST">
         <label for="targetLang">목표 언어 선택:</label>
         <select id="targetLang" name="targetLang" required>
@@ -25,38 +78,60 @@
           <input type="hidden" name="title" value="<%= notice.title %>">
           <input type="hidden" name="content" value="<%= notice.content %>">
           <input type="hidden" name="lang" value="<%= targetLang %>">
+          
+          <div class="button-container">
+              <button type="submit">저장</button>
+              <button type="button" onclick="resetInputs()">입력 초기화</button>
+              <button type="button" onclick="loadFinalTranslations()">최종 번역 불러오기</button>
+          </div>
+
           <% for (let i = 0; i < lines.length; i++) { %>
               <div class="translation-pair">
                   <div class="original" style="<%= finalTranslations[i] === '' ? 'background-color: #FFCCCC;' : '' %>">
-                    <img src="/korean.png" alt="한국어 원문" style="width: 20px; height: 20px;"> <%= lines[i] %>
+                      <img src="/korean.png" alt="한국어 원문" style="width: 20px; height: 20px;"> <%= lines[i] %>
                   </div>
                   <div class="google-translation" onclick="setFinalTranslation(<%= i %>, '<%= googleTranslations[i] %>', event)">
-                    <img src="/google.png" alt="구글 번역" style="width: 20px; height: 20px;"> <%= googleTranslations[i] %>
-                </div>
-                <div class="microsoft-translation" onclick="setFinalTranslation(<%= i %>, '<%= microsoftTranslations[i] %>', event)">
-                    <img src="/microsoft.png" alt="마이크로소프트 번역" style="width: 20px; height: 20px;"> <%= microsoftTranslations[i] %>
-                </div>
+                      <img src="/google.png" alt="구글 번역" style="width: 20px; height: 20px;">
+                      <span onclick="event.stopPropagation();"><%= googleTranslations[i] %></span>
+                  </div>
+                  <div class="microsoft-translation" onclick="setFinalTranslation(<%= i %>, '<%= microsoftTranslations[i] %>', event)">
+                      <img src="/microsoft.png" alt="마이크로소프트 번역" style="width: 20px; height: 20px;">
+                      <span onclick="event.stopPropagation();"><%= microsoftTranslations[i] %></span>
+                  </div>
+                  <div class="deepl-translation" onclick="setFinalTranslation(<%= i %>, '<%= deeplTranslations[i] %>', event)">
+                      <img src="/deepl.png" alt="DeepL 번역" style="width: 20px; height: 20px;">
+                      <span onclick="event.stopPropagation();"><%= deeplTranslations[i] || ' ' %></span>
+                  </div>                 
                   <div class="final-translation">
                     <label for="finalTranslation<%= i %>">최종 번역:</label>
                     <textarea id="finalTranslation<%= i %>" name="finalTranslations[<%= i %>]" required style="width: 100%; box-sizing: border-box;"><%= finalTranslations[i] || '' %></textarea>
-
                   </div>                
               </div>
               <hr>
           <% } %>
-          <button type="submit">저장</button>
       </form>
     <% } else { %>
       <p>번역할 내용이 없습니다.</p>
     <% } %>
 
-    <script>
-function setFinalTranslation(index, translation, event) {
-    const textarea = document.getElementById(`finalTranslation${index}`);
-    textarea.value = translation; // 번역 내용을 textarea에 설정
+<script>
+    function togglePopup(show) {
+        const displayValue = show ? 'block' : 'none';
+        document.getElementById('popup').style.display = displayValue;
+        document.getElementById('popupOverlay').style.display = displayValue;
+    }
+
+    document.getElementById('browserIcon').addEventListener('click', () => togglePopup(true));
+    document.getElementById('closePopup').addEventListener('click', () => togglePopup(false));
+    document.getElementById('popupOverlay').addEventListener('click', () => togglePopup(false));
+
+    function setFinalTranslation(index, translation, event) {
+      event.stopPropagation();
+      const textarea = document.getElementById(`finalTranslation${index}`);
+      textarea.value = translation; // 번역 내용을 textarea에 설정
 
     // 모든 이미지에서 선택된 클래스 제거
-    document.querySelectorAll('.google-translation, .microsoft-translation').forEach(img => {
+    document.querySelectorAll('.google-translation, .microsoft-translation, .deepl-translation').forEach(img => {
         img.classList.remove('selected');
     });
 
@@ -65,7 +140,6 @@ function setFinalTranslation(index, translation, event) {
     selectedImg.classList.add('selected');
 }
 
-
       document.addEventListener("DOMContentLoaded", function() {
           const translationPairs = document.querySelectorAll('.translation-pair');
   
@@ -73,9 +147,10 @@ function setFinalTranslation(index, translation, event) {
               const originalHeight = pair.querySelector('.original').offsetHeight;
               const googleHeight = pair.querySelector('.google-translation').offsetHeight;
               const microsoftHeight = pair.querySelector('.microsoft-translation').offsetHeight;
+              const deeplHeight = pair.querySelector('.deepl-translation').offsetHeight;
   
               // 가장 높은 height 값 찾기
-              const maxHeight = Math.max(originalHeight, googleHeight, microsoftHeight);
+              const maxHeight = Math.max(originalHeight, googleHeight, microsoftHeight, deeplHeight);
   
               // textarea의 높이를 설정
               const textarea = pair.querySelector('.final-translation textarea');
@@ -127,6 +202,26 @@ function setFinalTranslation(index, translation, event) {
           });
       });
   });
+
+  function resetInputs() {
+        const textareas = document.querySelectorAll('.final-translation textarea');
+        textareas.forEach(textarea => {
+            textarea.value = ''; // 모든 textarea 값 초기화
+        });
+    }
+
+    async function loadFinalTranslations() {
+        const finalTranslations = <%- JSON.stringify(finalTranslations) %>;
+        if (finalTranslations.length === 0 || finalTranslations.every(t => t === '')) {
+            alert('최종 저장된 번역이 없습니다.');
+            return;
+        }
+
+        const textareas = document.querySelectorAll('.final-translation textarea');
+        textareas.forEach((textarea, index) => {
+            textarea.value = finalTranslations[index] || ''; // 최종 번역 값 설정
+        });
+    }
   </script>
   
 </body>

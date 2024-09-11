@@ -47,13 +47,28 @@
                       <a href="/notices/translate/<%= notice._id %>"><%= notice.title %></a>
                       <a href="/notices/<%= notice.shortId %>?lang=ko">🔗</a>
                     </td>
-                    <td><%= notice.createdAt.toLocaleDateString() %></td>
-                    <td><%= notice.updatedAt ? notice.updatedAt.toLocaleDateString() : '' %></td>
-                    <td><a href="/notices/<%= notice.shortId %>?lang=sc"><%= getStatus(notice.translations.sc?.finalSavedAt, notice.updatedAt) %></a></td>
-                    <td><a href="/notices/<%= notice.shortId %>?lang=tc"><%= getStatus(notice.translations.tc?.finalSavedAt, notice.updatedAt) %></a></td>
-                    <td><a href="/notices/<%= notice.shortId %>?lang=jp"><%= getStatus(notice.translations.jp?.finalSavedAt, notice.updatedAt) %></a></td>
-                    <td><a href="/notices/<%= notice.shortId %>?lang=en"><%= getStatus(notice.translations.en?.finalSavedAt, notice.updatedAt) %></a></td>
-                    <td><a href="/notices/<%= notice.shortId %>?lang=vi"><%= getStatus(notice.translations.vi?.finalSavedAt, notice.updatedAt) %></a></td>
+                    <td><%= notice.createdAt.toLocaleDateString() %><br><%= notice.createdBy ? notice.createdBy : '' %></td>
+                    <td><%= notice.updatedAt ? notice.updatedAt.toLocaleDateString() : '' %><br><%= notice.updatedBy ? notice.updatedBy : '' %></td>
+                    <td>
+                        <a href="/notices/<%= notice.shortId %>?lang=sc"><%= getStatus(notice.translations.sc?.finalSavedAt, notice.updatedAt) %></a>
+                        <a href="#" onclick="copyToClipboard('<%= notice.translations.sc?.final.join(' ') %>')">📋</a><br>
+                        <%= notice.translations.sc?.finalSavedBy ? notice.translations.sc.finalSavedBy : '' %></td>
+                    <td>
+                        <a href="/notices/<%= notice.shortId %>?lang=tc"><%= getStatus(notice.translations.tc?.finalSavedAt, notice.updatedAt) %></a>
+                        <a href="#" onclick="copyToClipboard('<%= notice.translations.tc?.final.join(' ') %>')">📋</a><br>
+                        <%= notice.translations.tc?.finalSavedBy ? notice.translations.tc.finalSavedBy : '' %></td>
+                    <td>
+                        <a href="/notices/<%= notice.shortId %>?lang=jp"><%= getStatus(notice.translations.jp?.finalSavedAt, notice.updatedAt) %></a>
+                        <a href="#" onclick="copyToClipboard('<%= notice.translations.jp?.final.join(' ') %>')">📋</a><br>
+                        <%= notice.translations.jp?.finalSavedBy ? notice.translations.jp.finalSavedBy : '' %></td>
+                    <td>
+                        <a href="/notices/<%= notice.shortId %>?lang=en"><%= getStatus(notice.translations.en?.finalSavedAt, notice.updatedAt) %></a>
+                        <a href="#" onclick="copyToClipboard('<%= notice.translations.en?.final.join(' ') %>')">📋</a><br>
+                        <%= notice.translations.en?.finalSavedBy ? notice.translations.en.finalSavedBy : '' %></td>
+                    <td>
+                        <a href="/notices/<%= notice.shortId %>?lang=vi"><%= getStatus(notice.translations.vi?.finalSavedAt, notice.updatedAt) %></a>
+                        <a href="#" onclick="copyToClipboard('<%= notice.translations.vi?.final.join(' ') %>')">📋</a><br>
+                        <%= notice.translations.vi?.finalSavedBy ? notice.translations.vi.finalSavedBy : '' %></td>
                     <td>
                         <a href="/notices/edit/<%= notice._id %>">수정</a>
                         <form action="/notices/delete/<%= notice._id %>" method="POST" style="display:inline;">
@@ -64,5 +79,19 @@
             <% }) %>
         </tbody>
     </table>
+
+    <script>
+      function copyToClipboard(text) {
+          if (text.trim().length > 0) {
+              const textarea = document.createElement('textarea');
+              textarea.value = text;
+              document.body.appendChild(textarea);
+              textarea.select();
+              document.execCommand('copy');
+              document.body.removeChild(textarea);
+              alert('클립보드에 복사되었습니다!');
+          }
+      }
+      </script>
 </body>
 </html>

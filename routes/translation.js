@@ -3,24 +3,17 @@ const router = express.Router();
 const Notice = require('../models/Notice');
 const TemporaryTranslation = require('../models/TemporaryTranslation');
 const { isAdmin } = require('../middleware/auth');
-const { translateWithGoogle, translateWithMicrosoft } = require('./translate');
+const { translateWithGoogle, translateWithMicrosoft, translateWithDeepl, languageCodes } = require('./translate');
 const { Parser, DomHandler } = require('htmlparser2');
+const { applyStyles } = require('./notice');
 
 const app = express();
 app.use(express.json());
 
-const languageCodes = {
-  en: { google: 'en', microsoft: 'en' },
-  jp: { google: 'ja', microsoft: 'ja' },
-  tc: { google: 'zh-TW', microsoft: 'zh-Hant' },
-  sc: { google: 'zh-CN', microsoft: 'zh-Hans' },
-  vi: { google: 'vi', microsoft: 'vi' }
-};
-
 let lines = []; // 외부 변수로 초기화
 
 // 안내문 번역 페이지 이동
-router.get('/notices/translate/:id', async (req, res) => {
+router.get('/notices/translate/:id', isAdmin, async (req, res) => {
   const { id } = req.params;
 
   const notice = await Notice.findById(id);
@@ -51,18 +44,22 @@ router.get('/notices/translate/:id', async (req, res) => {
   // 변환된 줄들을 사용
   console.log('추출된 줄들:', lines);
   
-  // googleTranslations와 microsoftTranslations 초기화
+  // googleTranslations와 microsoftTranslations, deeplTranslations 초기화
   const googleTranslations = [];
   const microsoftTranslations = [];
+  const deeplTranslations = [];
   const targetLang = req.query.lang || ''; // 선택된 언어를 쿼리에서 가져오기
   const finalTranslations = notice.translations[targetLang]?.final || [];
 
-  res.render('notices/translator', { notice, lines, googleTranslations, microsoftTranslations, finalTranslations, targetLang: '' });
+  // styledContent 생성
+  const styledContent = applyStyles(notice.translations[targetLang]?.translatedContent || notice.content);
+
+  res.render('notices/translator', { notice, lines, googleTranslations, microsoftTranslations, deeplTranslations, finalTranslations, targetLang: '', styledContent });
 });
 
 
 // 안내문 번역 처리 페이지
-router.post('/notices/translate/:id', async (req, res) => {
+router.post('/notices/translate/:id', isAdmin, async (req, res) => {
   const { id } = req.params;
   const { targetLang } = req.body;
   // const lines = req.body.lines || [];
@@ -79,29 +76,56 @@ router.post('/notices/translate/:id', async (req, res) => {
 
   let googleTranslations = [];
   let microsoftTranslations = [];
+  let deeplTranslations = [];
   let finalTranslations = notice.translations[targetLang]?.final || [];
   let finalTranslationString = '';
 
+  // styledContent 생성
+  const styledContent = applyStyles(notice.translations[targetLang]?.translatedContent || notice.content);
 
   if (!needTranslation) {
       // 번역이 필요하지 않으면 DB 값 사용
       googleTranslations = notice.translations[targetLang].google || [];
       microsoftTranslations = notice.translations[targetLang].microsoft || [];
-      return res.render('notices/translator', { notice, targetLang, lines, googleTranslations, microsoftTranslations, finalTranslations, finalTranslationString });
+      deeplTranslations = notice.translations[targetLang].deepl || [];
+      return res.render('notices/translator', { notice, targetLang, lines, googleTranslations, microsoftTranslations, deeplTranslations, finalTranslations, finalTranslationString, styledContent });
   }
 
   const googleLang = languageCodes[targetLang].google;
   const microsoftLang = languageCodes[targetLang].microsoft;
+  const deeplLang = languageCodes[targetLang].deepl;
 
   try {
-      // 각 줄에 대한 번역 수행
-      googleTranslations = await Promise.all(lines.map(line => translateWithGoogle(line, googleLang)));
-      microsoftTranslations = await Promise.all(lines.map(line => translateWithMicrosoft(line, microsoftLang)));
+      // 모든 문장을 하나의 문자열로 결합
+      const combinedText = lines.join('\n'); // 줄바꿈으로 연결
+
+      // 결합된 문장 번역 수행
+      combined_googleTranslations = await translateWithGoogle(combinedText, googleLang);
+      combined_microsoftTranslations = await translateWithMicrosoft(combinedText, microsoftLang);
+      console.log('결합된 구글 문장: ', combined_googleTranslations);
+
+      // googleTranslations = await Promise.all(lines.map(line => translateWithGoogle(line, googleLang)));
+      // microsoftTranslations = await Promise.all(lines.map(line => translateWithMicrosoft(line, microsoftLang)));
+
+      // DeepL 번역 수행 (베트남어 제외)
+      if (targetLang !== 'vi') {
+          combined_deeplTranslations = await translateWithDeepl(combinedText, deeplLang);
+      } else {
+          combined_deeplTranslations = new Array(lines.length).fill('');  // 베트남어는 빈 문자열로 설정
+      }
+
+      // 각 번역 결과를 원래의 lines 배열에 맞게 다시 분리
+      const googleTranslations = combined_googleTranslations.split('\n');
+      const microsoftTranslations = combined_microsoftTranslations.split('\n');
+      
+      // deeplTranslations가 빈 문자열 배열일 경우 처리
+      const deeplTranslations = targetLang === 'vi' ? new Array(lines.length).fill('') : combined_deeplTranslations.split('\n');
 
       // 해당 언어에 대한 번역 저장
       notice.translations[targetLang] = {
           google: googleTranslations,
           microsoft: microsoftTranslations,
+          deepl: deeplTranslations,
           final: finalTranslations,
           translatedContent: finalTranslationString,
           translatedAt: new Date()
@@ -110,18 +134,59 @@ router.post('/notices/translate/:id', async (req, res) => {
       await notice.save();
 
       // 번역된 내용을 EJS로 전달
-      res.render('notices/translator', { notice, targetLang, lines, googleTranslations, microsoftTranslations, finalTranslations, finalTranslationString });
+      res.render('notices/translator', { notice, targetLang, lines, googleTranslations, microsoftTranslations, deeplTranslations, finalTranslations, finalTranslationString, styledContent });
   } catch (error) {
       console.error('번역 오류:', error.message);
       res.status(500).send('번역 중 오류가 발생했습니다.');
   }
 });
 
+// HTML 파싱 및 텍스트 교체 함수
+const parseAndReplaceText = (htmlContent, translations) => {
+  const handler = new DomHandler();
+  const parser = new Parser(handler);
+  parser.write(htmlContent);
+  parser.end();
+
+  let translationIndex = 0;
+  const replaceTextInNode = (node) => {
+      if (node.type === 'text') {
+          if (translationIndex < translations.length) {
+              node.data = translations[translationIndex++];
+          }
+      } else if (node.children) {
+          node.children.forEach(replaceTextInNode);
+      }
+  };
+
+  handler.dom.forEach(replaceTextInNode);
+
+  // 수정된 DOM을 다시 HTML 문자열로 변환
+  return handler.dom.map(node => {
+      if (node.type === 'text') {
+          return node.data;
+      } else if (node.type === 'tag') {
+          const openingTag = `<${node.name}${Object.entries(node.attribs).map(([key, value]) => ` ${key}="${value}"`).join('')}>`;
+          const closingTag = `</${node.name}>`;
+          const innerHTML = node.children.map(child => {
+              if (child.type === 'text') {
+                  return child.data;
+              } else if (child.type === 'tag') {
+                  return `<${child.name}${Object.entries(child.attribs).map(([key, value]) => ` ${key}="${value}"`).join('')}>${child.children.map(grandChild => grandChild.data).join('')}</${child.name}>`;
+              }
+              return '';
+          }).join('');
+          return `${openingTag}${innerHTML}${closingTag}`;
+      }
+      return '';
+  }).join('');
+};
+
 // 안내문 최종 번역 저장
 router.post('/notices/translate/save/:id', isAdmin, async (req, res) => {
   const { id } = req.params;
   const { title, content, finalTranslations, lang } = req.body;
-  
+  const username = req.session.user.username;
 
   try {
       console.log('요청된 ID:', id);
@@ -134,49 +199,27 @@ router.post('/notices/translate/save/:id', isAdmin, async (req, res) => {
           return res.status(404).send('안내문을 찾을 수 없습니다.');
       }
 
-      // HTML 파싱
-      const handler = new DomHandler();
-      const parser = new Parser(handler);
-      parser.write(notice.content);
-      parser.end();
-      console.log('파싱된 DOM:', handler.dom);
+      const finalSavedAt = notice.translations[lang]?.translatedAt;
+      const noticeUpdatedAt = notice.updatedAt;
 
-      // 각 노드의 텍스트를 최종 번역으로 교체
-      let translationIndex = 0;
-      const replaceTextInNode = (node) => {
-          if (node.type === 'text') {
-              if (translationIndex < finalTranslations.length) {
-                  node.data = finalTranslations[translationIndex++];
-              }
-          } else if (node.children) {
-              node.children.forEach(replaceTextInNode);
-          }
-      };
+      if (finalSavedAt && noticeUpdatedAt > finalSavedAt) {
+          return res.status(400).json({
+              message: '번역 진행 중, 한국어 원문이 수정되었습니다. 수정된 한국어 원문을 확인하시기 바랍니다. 작성한 번역은 임시저장되었습니다.'
+          });
+      }
 
-      handler.dom.forEach(replaceTextInNode);
-
-      // 수정된 DOM을 다시 HTML 문자열로 변환
-      const finalTranslationString = handler.dom.map(node => {
-        if (node.type === 'text') {
-            return node.data;
-        } else if (node.type === 'tag') {
-            const openingTag = `<${node.name}${Object.entries(node.attribs).map(([key, value]) => ` ${key}="${value}"`).join('')}>`;
-            const closingTag = `</${node.name}>`;
-            const innerHTML = node.children.map(child => {
-                if (child.type === 'text') {
-                    return child.data;
-                } else if (child.type === 'tag') {
-                    return `<${child.name}${Object.entries(child.attribs).map(([key, value]) => ` ${key}="${value}"`).join('')}>${child.children.map(grandChild => grandChild.data).join('')}</${child.name}>`;
-                }
-                return '';
-            }).join('');
-            return `${openingTag}${innerHTML}${closingTag}`;
-        }
-        return '';
-    }).join('');
-    
-
+      // 최종 번역 문자열 생성
+      const finalTranslationString = parseAndReplaceText(notice.content, finalTranslations);
       console.log('최종 번역 문자열:', finalTranslationString);
+
+      // 조건 확인: 'sc' 언어와 'tc'의 translatedContent가 비어있을 때
+      if (lang === 'sc' && !notice.translations.tc.translatedContent) {
+          const tcTranslations = await Promise.all(finalTranslations.map(line => translateWithGoogle(line, 'zh-TW'))); // 번체로 변환
+          const tcFinalTranslationString = parseAndReplaceText(notice.content, tcTranslations);
+
+          // 'tc' 번체 DB 업데이트
+          notice.translations.tc.translatedContent = tcFinalTranslationString;
+      }
 
       // Notice 업데이트
       notice.title = title;
@@ -184,10 +227,12 @@ router.post('/notices/translate/save/:id', isAdmin, async (req, res) => {
       notice.translations[lang] = {
           google: notice.translations[lang].google,
           microsoft: notice.translations[lang].microsoft,
+          deepl: notice.translations[lang].deepl,
           final: finalTranslations,
-          translatedContent : finalTranslationString,
+          translatedContent: finalTranslationString,
           translatedAt: notice.translations[lang]?.translatedAt,
-          finalSavedAt: new Date()
+          finalSavedAt: new Date(),
+          finalSavedBy: username
       };
 
       const updatedNotice = await notice.save(); // save() 메소드 사용
@@ -200,10 +245,6 @@ router.post('/notices/translate/save/:id', isAdmin, async (req, res) => {
       // 임시 저장된 번역 내용 삭제
       await TemporaryTranslation.deleteMany({ noticeId: id, language: lang });
 
-      if (!updatedNotice) {
-          return res.status(500).send('안내문 업데이트에 실패했습니다.');
-      }
-
       console.log('업데이트된 안내문:', updatedNotice);
       res.json({ message: '저장이 완료되었습니다.' });
   } catch (error) {
@@ -213,7 +254,7 @@ router.post('/notices/translate/save/:id', isAdmin, async (req, res) => {
 });
 
 // 임시 저장 API
-router.post('/notices/temporary-save', async (req, res) => {
+router.post('/notices/temporary-save', isAdmin, async (req, res) => {
   const { noticeId, language, translations } = req.body;
   const userId = req.session.user ? req.session.user.id : null; // 현재 로그인한 사용자 ID
 
@@ -258,7 +299,7 @@ router.post('/notices/temporary-save', async (req, res) => {
 
 
 // 임시 저장된 번역 내용 로드 API
-router.get('/notices/temporary/:noticeId/:language', async (req, res) => {
+router.get('/notices/temporary/:noticeId/:language', isAdmin, async (req, res) => {
   const { noticeId, language } = req.params;
   const userId = req.session.user.id; // 현재 로그인한 사용자 ID
 

@@ -8,7 +8,7 @@ const app = express();
 app.use(express.json());
 
 // 안내문 목록 조회
-router.get('/notices', async (req, res) => {
+router.get('/notices', isAdmin, async (req, res) => {
     const notices = await Notice.find().sort({ createdAt: -1 });
     res.render('notices/list', { notices });
 });
@@ -21,7 +21,9 @@ router.get('/notices/new', isAdmin, (req, res) => {
 // 안내문 작성
 router.post('/notices', isAdmin, async (req, res) => {
     const { title, content, shortId } = req.body;
-    const notice = new Notice({ title, content, shortId });
+    const username = req.session.user.username;
+
+    const notice = new Notice({ title, content, shortId, createdBy: username });
     await notice.save();
     res.redirect('/notices');
 });
@@ -55,7 +57,8 @@ function parseContentToLines(content) {
 // 안내문 수정 처리
 router.post('/notices/edit/:id', isAdmin, async (req, res) => {
   const { id } = req.params;
-  const { title, content } = req.body;
+  const { title, content, shortId } = req.body;
+  const username = req.session.user.username;
 
   try {
       const notice = await Notice.findById(id);
@@ -112,6 +115,7 @@ router.post('/notices/edit/:id', isAdmin, async (req, res) => {
       notice.content = content;
       notice.shortId = shortId;
       notice.updatedAt = new Date();
+      notice.updatedBy = username;
 
       const updatedNotice = await notice.save();
 
@@ -143,15 +147,23 @@ function applyStyles(text) {
     return text;
 }
 
-// 안내문 개별 내용
+// 각 언어별 배부 안내문(모든 사용자 접근 가능)
 router.get('/notices/:shortId', async (req, res) => {
   const { shortId } = req.params;
-  const { lang } = req.query;
+  const { lang, idNum } = req.query;
 
   const notice = await Notice.findOne({ shortId });
 
   if (!notice) {
       return res.status(404).send('안내문을 찾을 수 없습니다.');
+  }
+
+  // idNum이 존재할 경우 해당 학번을 readIds 배열에 추가
+    if (idNum) {
+      if (!notice.readStudents.includes(idNum)) { // 중복 체크
+          notice.readStudents.push(idNum);
+          await notice.save(); // 변경 사항 저장
+      }
   }
 
   const translations = notice.translations[lang] || notice.content; // 기본값은 원문
@@ -161,3 +173,4 @@ router.get('/notices/:shortId', async (req, res) => {
 });
 
 module.exports = router;
+module.exports.applyStyles = applyStyles;
