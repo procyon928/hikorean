@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>결과 보기</title>
+</head>
+<body>
+    <h1>설문조사 결과</h1>
+    <ul>
+        <% responses.forEach(function(response) { %>
+            <li>
+                사용자: <%= response.userId.username %>
+                <ul>
+                    <% response.answers.forEach(function(answer) { %>
+                        <li>답변: <%= answer.answer %></li>
+                    <% }); %>
+                </ul>
+            </li>
+        <% }); %>
+    </ul>
+</body>
+</html>

@@ -11,8 +11,8 @@
 │   ├── boardSetting.js        // 카테고리별 게시판 레이아웃 세팅 관련 라우트
 │   ├── notice.js              // 안내문 CRUD 관련 라우트
 │   ├── translation.js         // 안내문 번역 처리 관련 라우트
-│   ├── translate.js           // 구글 마이크로소프트 번역 api 사용 관련 라우트
-│   ├── servey.js              // 설문조사 관련 라우트
+│   ├── translate.js           // 구글, 마이크로소프트, DeepL 번역 api 사용 관련 라우트
+│   ├── survey.js              // 설문조사 관련 라우트
 │   └── shortUrl.js              // url 단축 및 qr코드 생성 관련 라우트
 │
 ├── /middleware                 // 미들웨어 정의 폴더
@@ -27,6 +27,7 @@
 │   ├── Notice.js              // 안내문 모델 정의
 │   ├── TemporaryTranslation.js    // 안내문 번역 내용 임시 저장 모델 정의
 │   ├── Survey.js              // 설문조사 모델 정의
+│   ├── Response.js              // 설문조사 응답 모델 정의
 │   └── ShortUrl.js            // url 단축 및 qr코드 생성 모델 정의
 │
 ├── /public                     // 정적 파일 저장 폴더 (HTML, CSS, JS 등)

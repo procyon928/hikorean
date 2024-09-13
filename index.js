@@ -89,7 +89,7 @@ app.use(postRoutes);
 app.use(commentRoutes);
 app.use(noticeRoutes);
 app.use(translationRoutes);
-app.use('/surveys', surveyRoutes);
+app.use('/survey', surveyRoutes);
 app.use('/', boardSettingRoutes.router);
 app.use(shortUrlRoutes); // 제일 하위에 두기
 

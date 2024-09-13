@@ -6,32 +6,18 @@
 </head>
 <body>
     <h1>설문조사 목록</h1>
-    <a href="/surveys/new">설문 생성</a> <!-- 설문 생성 링크 추가 -->
-    <table>
-        <thead>
-            <tr>
-                <th>제목</th>
-                <th>생성일</th>
-                <th>작업</th>
-            </tr>
-        </thead>
-        <tbody>
-            <% surveys.forEach(survey => { %>
-                <tr>
-                    <td>
-                        <a href="/surveys/response/<%= survey._id %>"><%= survey.title %></a> <!-- 응답 페이지 링크 추가 -->
-                    </td>
-                    <td><%= survey.createdAt.toLocaleDateString() %></td>
-                    <td>
-                        <a href="/surveys/edit/<%= survey._id %>">수정</a>
-                        <a href="/surveys/result/<%= survey._id %>">결과</a>
-                        <form action="/surveys/delete/<%= survey._id %>" method="POST" style="display:inline;">
-                            <button type="submit">삭제</button>
-                        </form>
-                    </td>
-                </tr>
-            <% }) %>
-        </tbody>
-    </table>
+    <ul>
+        <% surveys.forEach(function(survey) { %>
+            <li>
+                <a href="/survey/<%= survey._id %>/respond"><%= survey.title %></a>
+                <a href="/survey/<%= survey._id %>/results">결과 보기</a>
+                <a href="/survey/<%= survey._id %>/edit">수정</a> <!-- 수정 링크 추가 -->
+                <form action="/survey/<%= survey._id %>/delete" method="POST" style="display:inline;">
+                    <button type="submit">삭제</button>
+                </form> <!-- 삭제 버튼 추가 -->
+            </li>
+        <% }); %>
+    </ul>
+    <a href="/survey/new">새 설문조사 만들기</a>
 </body>
 </html>

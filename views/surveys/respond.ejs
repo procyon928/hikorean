@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title><%= survey.title %> 응답하기</title>
+</head>
+<body>
+    <h1><%= survey.title %> 응답하기</h1>
+    <form action="/survey/<%= survey._id %>/respond" method="POST">
+        <% survey.questions.forEach(function(question, index) { %>
+            <div>
+                <label><%= question.questionText %></label>
+                <% if (question.questionType === 'short_answer') { %>
+                    <input type="text" name="answers[<%= index %>]" required>
+                <% } else if (question.questionType === 'long_answer') { %>
+                    <textarea name="answers[<%= index %>]" required></textarea>
+                <% } else if (question.questionType === 'single_choice' || question.questionType === 'multiple_choice') { %>
+                    <% question.options.forEach(function(option) { %>
+                        <label>
+                            <input type="<%= question.questionType === 'single_choice' ? 'radio' : 'checkbox' %>" name="answers[<%= index %>]" value="<%= option %>"> <%= option %>
+                        </label>
+                    <% }); %>
+                <% } else if (question.questionType === 'date') { %>
+                    <input type="date" name="answers[<%= index %>]" required>
+                <% } %>
+            </div>
+        <% }); %>
+        <button type="submit">응답 제출</button>
+    </form>
+</body>
+</html>
