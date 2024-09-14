@@ -7,7 +7,7 @@ const SurveySchema = new mongoose.Schema({
         questionDescription: { type: String },
         questionType: { 
             type: String,
-            enum: ['short_answer', 'long_answer', 'single_choice', 'multiple_choice', 'date', 'dropdown', 'preference'],
+            enum: ['short_answer', 'long_answer', 'single_choice', 'multiple_choice', 'date', 'dropdown', 'preference', 'reservation'],
             required: true 
         },
         inputType: { 
@@ -15,6 +15,12 @@ const SurveySchema = new mongoose.Schema({
             enum: ['all', 'integer', 'letters'],
             default: 'all',
             required: function () { return this.questionType === 'short_answer'; }
+        },
+        reservation: {
+            startDate: { type: Date },
+            endDate: { type: Date },
+            maxParticipants: { type: Number },
+            exceptionDates: [{ type: String }]
         },
         options: [{ type: String }], // 객관식 선택지
         minValue: { type: Number },

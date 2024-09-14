@@ -47,6 +47,7 @@
                       <option value="date">날짜 입력</option>
                       <option value="dropdown">드롭다운 선택</option>
                       <option value="preference">선호도</option>
+                      <option value="reservation">날짜 예약</option>
                   </select>
                   <div class="options" style="display: none;">
                       <div class="option">
@@ -86,6 +87,16 @@
                   <div class="rank-limit" style="display: none;">
                       <label>최대 순위:</label>
                       <input type="number" name="questions[${index}][rankLimit]" min="1" placeholder="최대 순위 입력">
+                  </div>
+                  <div class="reservation" style="display: none;">
+                      <label>시작 날짜:</label>
+                      <input type="date" name="questions[${index}][reservation][startDate]" required>
+                      <label>마감 날짜:</label>
+                      <input type="date" name="questions[${index}][reservation][endDate]" required>
+                      <label>최대 예약 인원:</label>
+                      <input type="number" name="questions[${index}][reservation][maxParticipants]" required>
+                      <label>예외 날짜 (쉼표로 구분):</label>
+                      <input type="text" name="questions[${index}][reservation][exceptionDates]">
                   </div>
                   <button type="button" onclick="removeQuestion(this)">문항 삭제</button>
               </div>
@@ -128,6 +139,8 @@
           } else if (selectedValue === 'preference') {
               questionDiv.querySelector('.options').style.display = 'block';
               questionDiv.querySelector('.rank-limit').style.display = 'block'; // 순위 제한 필드 보이기
+          } else if (selectedValue === 'reservation') {
+              questionDiv.querySelector('.reservation').style.display = 'block'; // 예약 필드 보이기
           }
       }
 

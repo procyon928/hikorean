@@ -40,7 +40,8 @@ router.post('/', isAdmin, async (req, res) => {
       allowOther: question.allowOther === 'true',
       rankLimit: question.rankLimit,
       prefixText: question.prefixText,
-      suffixText: question.suffixText
+      suffixText: question.suffixText,
+      reservation: question.reservation
   }));
 
   const survey = new Survey({ title, questions: formattedQuestions, createdBy: req.session.user._id });
@@ -131,6 +132,18 @@ router.post('/:id/respond', async (req, res) => {
   
   // 설문조사 목록 페이지로 리디렉션
   res.redirect('/survey');
+});
+
+// 응답 수 카운트 API
+router.get('/:id/countResponses', async (req, res) => {
+  const { date } = req.query;
+
+  const count = await Response.countDocuments({
+      surveyId: req.params.id,
+      'answers.answer': date // 선택된 날짜에 대한 응답 수
+  });
+
+  res.json({ count });
 });
 
 // 설문조사 수정 페이지
