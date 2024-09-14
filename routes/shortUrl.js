@@ -123,8 +123,14 @@ router.put('/short-url/:id', isAdmin, async (req, res) => {
 });
 
 // 짧은 URL에 대한 GET 요청 처리
-router.get('/:shortUrl', async (req, res) => {
+router.get('/short-url/:shortUrl', async (req, res) => {
   const { shortUrl } = req.params;
+
+  // 짧은 URL이 3자리인지 확인
+  if (shortUrl.length !== 3) {
+      return res.status(404).send('짧은 URL을 찾을 수 없습니다.');
+  }
+
   console.log('짧은 URL 요청:', shortUrl); // 요청된 짧은 URL을 로그에 출력
 
   try {

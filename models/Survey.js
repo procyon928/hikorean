@@ -1,34 +1,30 @@
-// const mongoose = require('mongoose');
-
-// const surveySchema = new mongoose.Schema({
-//   title: { type: String, required: true },
-//   description: { type: String },
-//   questions: [{ 
-//       question: { type: String, required: true },
-//       options: [{ type: String, required: true }],
-//       type: { type: String, enum: ['short-answer', 'long-answer', 'single-choice', 'multiple-choice', 'date'], required: true }
-//   }],
-//   createdAt: { type: Date, default: Date.now },
-//   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
-// });
-
-
-// module.exports = mongoose.model('Survey', surveySchema);
-
-
 const mongoose = require('mongoose');
 
 const SurveySchema = new mongoose.Schema({
     title: { type: String, required: true },
     questions: [{
         questionText: { type: String, required: true },
+        questionDescription: { type: String },
         questionType: { 
             type: String,
-            enum: ['short_answer', 'long_answer', 'single_choice', 'multiple_choice', 'date'],
+            enum: ['short_answer', 'long_answer', 'single_choice', 'multiple_choice', 'date', 'dropdown', 'preference'],
             required: true 
         },
-        options: [{ type: String }] // 객관식의 경우 선택지
-    }],
+        inputType: { 
+            type: String,
+            enum: ['all', 'integer', 'letters'],
+            default: 'all',
+            required: function () { return this.questionType === 'short_answer'; }
+        },
+        options: [{ type: String }], // 객관식 선택지
+        minValue: { type: Number },
+        maxValue: { type: Number },
+        rankLimit: { type: Number },
+        isRequired: { type: Boolean, default: false },
+        allowOther: { type: Boolean, default: false },
+        prefixText: { type: String }, // 입력 필드 앞에 붙일 텍스트
+        suffixText: { type: String }  // 입력 필드 뒤에 붙일 텍스트
+    }],  
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     createdAt: { type: Date, default: Date.now }
 });

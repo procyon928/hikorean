@@ -3,25 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <title><%= survey.title %> 응답하기</title>
+    <script>
+      function validateForm() {
+          const questions = document.querySelectorAll('div'); // 각 질문 div 선택
+          questions.forEach((questionDiv, index) => {
+              const otherInput = document.getElementById(`otherAnswer${index}`);
+              const otherOption = document.getElementById(`otherOption${index}`);
+              
+              // 기타 응답이 선택되지 않았으면 입력값 제거
+              if (!otherOption.checked) {
+                  otherInput.value = ''; // 입력값을 비움
+              }
+          });
+          return true; // 기본 제출 동작 허용
+      }
+
+      function updateRank(select) {
+          const selectedValue = select.value;
+          const allSelects = document.querySelectorAll(`select[name^="answers[${select.name.split('[')[1].split(']')[0]}][answer]"]`);
+
+          allSelects.forEach(s => {
+              if (s !== select && s.value === selectedValue) {
+                  s.value = ""; // 중복된 순위는 해제
+              }
+          });
+      }
+  </script>
 </head>
 <body>
     <h1><%= survey.title %> 응답하기</h1>
-    <form action="/survey/<%= survey._id %>/respond" method="POST">
+    <form action="/survey/<%= survey._id %>/respond" method="POST" onsubmit="return validateForm()">
         <% survey.questions.forEach(function(question, index) { %>
             <div>
                 <label><%= question.questionText %></label>
+                
+                <!-- 문항 설명 표시 -->
+                <p><%= question.questionDescription %></p>
+
+                <% if (question.isRequired) { %>
+                    <span style="color: red;">(필수)</span>
+                <% } %>
+
                 <% if (question.questionType === 'short_answer') { %>
-                    <input type="text" name="answers[<%= index %>]" required>
+                    <span><%= question.prefixText || '' %></span>
+                    <input type="text" name="answers[<%= index %>][answer]" 
+                           <% if (question.isRequired) { %> required <% } %>
+                           <% if (question.inputType === 'letters') { %> 
+                               pattern="[a-zA-Z\s]+" title="영문자만 입력 가능합니다."
+                               oninput="this.value = this.value.toUpperCase();" 
+                           <% } %>
+                           <% if (question.inputType === 'integer') { %> 
+                               pattern="\d+" title="정수만 입력 가능합니다." 
+                               onblur="validateIntegerInput(<%= index %>)"
+                           <% } %>
+                    >
+                    <span><%= question.suffixText || '' %></span>
+                    <input type="hidden" name="answers[<%= index %>][questionId]" value="<%= question._id %>">
+                    <% if (question.inputType === 'integer') { %>
+                        <input type="hidden" name="answers[<%= index %>][minValue]" value="<%= question.minValue %>">
+                        <input type="hidden" name="answers[<%= index %>][maxValue]" value="<%= question.maxValue %>">
+                    <% } %>
                 <% } else if (question.questionType === 'long_answer') { %>
-                    <textarea name="answers[<%= index %>]" required></textarea>
+                    <textarea name="answers[<%= index %>][answer]" 
+                              <% if (question.isRequired) { %> required <% } %>
+                    ></textarea>
+                    <input type="hidden" name="answers[<%= index %>][questionId]" value="<%= question._id %>">
                 <% } else if (question.questionType === 'single_choice' || question.questionType === 'multiple_choice') { %>
                     <% question.options.forEach(function(option) { %>
                         <label>
-                            <input type="<%= question.questionType === 'single_choice' ? 'radio' : 'checkbox' %>" name="answers[<%= index %>]" value="<%= option %>"> <%= option %>
+                            <input type="<%= question.questionType === 'single_choice' ? 'radio' : 'checkbox' %>" 
+                                   name="answers[<%= index %>][answer]" value="<%= option %>"
+                                   <% if (question.isRequired) { %> required <% } %>
+                            > <%= option %>
                         </label>
                     <% }); %>
+                    
+                    <% if (question.allowOther) { %>
+                        <label>
+                            <input type="<%= question.questionType === 'single_choice' ? 'radio' : 'checkbox' %>" 
+                                   name="answers[<%= index %>][answer]" value="기타 응답" 
+                                   id="otherOption<%= index %>" 
+                                   <% if (question.isRequired) { %> required <% } %>
+                            > 기타 응답
+                        </label>
+                        <input type="text" id="otherAnswer<%= index %>" name="answers[<%= index %>][otherAnswer]" placeholder="기타 응답 입력"
+                               oninput="document.getElementById('otherOption<%= index %>').checked = true;">
+                    <% } %>
+                    
+                    <input type="hidden" name="answers[<%= index %>][questionId]" value="<%= question._id %>">
+                <% } else if (question.questionType === 'dropdown') { %>
+                    <select name="answers[<%= index %>][answer]" 
+                            <% if (question.isRequired) { %> required <% } %>
+                    >
+                        <% question.options.forEach(function(option) { %>
+                            <option value="<%= option %>"><%= option %></option>
+                        <% }); %>
+                    </select>
+                    <input type="hidden" name="answers[<%= index %>][questionId]" value="<%= question._id %>">
                 <% } else if (question.questionType === 'date') { %>
-                    <input type="date" name="answers[<%= index %>]" required>
+                    <input type="date" name="answers[<%= index %>][answer]" 
+                           <% if (question.isRequired) { %> required <% } %>
+                    >
+                    <input type="hidden" name="answers[<%= index %>][questionId]" value="<%= question._id %>">
+                <% } else if (question.questionType === 'preference') { %>
+                    <% question.options.forEach((option, optionIndex) => { %>
+                        <label><%= option %></label>
+                        <select name="answers[<%= index %>][answer][<%= optionIndex %>]" onchange="updateRank(this)">
+                            <option value="">순위 선택</option>
+                            <% for (let i = 1; i <= question.rankLimit; i++) { %>
+                                <option value="<%= i %>"><%= i %></option>
+                            <% } %>
+                        </select>
+                    <% }); %>
                 <% } %>
             </div>
         <% }); %>
