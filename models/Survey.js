@@ -7,7 +7,7 @@ const SurveySchema = new mongoose.Schema({
         questionDescription: { type: String },
         questionType: { 
             type: String,
-            enum: ['short_answer', 'long_answer', 'single_choice', 'multiple_choice', 'date', 'dropdown', 'preference', 'reservation'],
+            enum: ['short_answer', 'long_answer', 'single_choice', 'multiple_choice', 'date', 'dropdown', 'preference', 'reservation', 'time_reservation'],
             required: true 
         },
         inputType: { 
@@ -17,10 +17,17 @@ const SurveySchema = new mongoose.Schema({
             required: function () { return this.questionType === 'short_answer'; }
         },
         reservation: {
-            startDate: { type: Date },
-            endDate: { type: Date },
+            startDate: { type: String },
+            endDate: { type: String },
             maxParticipants: { type: Number },
             exceptionDates: [{ type: String }]
+        },
+        time_reservation: {
+            availableDates: [{ type: String }], // 선택된 예약 날짜들
+            startTime: { type: String }, // 첫 번째 예약 가능 시간
+            endTime: { type: String }, // 마지막 예약 가능 시간
+            interval: { type: Number }, // 예약 시간 간격
+            maxParticipants: { type: Number } // 시간당 최대 예약 인원
         },
         options: [{ type: String }], // 객관식 선택지
         minValue: { type: Number },

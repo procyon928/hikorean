@@ -1,84 +1,17 @@
-survey/new.ejs 화살표 아래에 붙여넣기
-<button type="button" onclick="duplicateQuestion(this)">복제</button>
-
-survey/new.ejs 하단에 붙여넣기
-
-function duplicateQuestion(button) {
-    const questionDiv = button.closest('.question'); // 현재 문항 div
-    const index = Array.from(document.getElementById('questions').children).indexOf(questionDiv); // 질문 인덱스 추출
-
-    // 새로운 문항에 기존 문항의 값을 복사
-    const newQuestionHTML = createQuestionHTML(questionCount);
-    const newQuestionDiv = document.createElement('div');
-    newQuestionDiv.innerHTML = newQuestionHTML;
-
-    // 기존 문항의 입력값과 상태를 복사
-    const inputs = questionDiv.querySelectorAll('input, textarea, select');
-    inputs.forEach(input => {
-        const newInputName = input.name.replace(/\[\d+\]/, `[${questionCount}]`); // 새로운 인덱스 설정
-        const newInput = newQuestionDiv.querySelector(`[name='${newInputName}']`); // 새로운 문항에서 해당 입력 찾기
-
-        if (newInput) {
-            if (input.type === 'checkbox') {
-                newInput.checked = input.checked; // 체크박스 상태 복사
-            } else {
-                newInput.value = input.value; // 값 복사
-            }
-        }
-    });
-
-    // 선택지 복사
-    const optionsDiv = questionDiv.querySelector('.options');
-    if (optionsDiv.style.display === 'block') {
-        const optionInputs = optionsDiv.querySelectorAll('input[type="text"]');
-        optionInputs.forEach(optionInput => {
-            const newOptionDiv = document.createElement('div');
-            newOptionDiv.className = 'option';
-            newOptionDiv.innerHTML = `
-                <input type="text" name="questions[${questionCount}][options][]" placeholder="선택지 입력" value="${optionInput.value}">
-                <button type="button" onclick="removeOption(this)">삭제</button>
-            `;
-            newQuestionDiv.querySelector('.options').insertBefore(newOptionDiv, newQuestionDiv.querySelector('.options button'));
-        });
-    }
-
-    // 기타 응답 상태 복사
-    const allowOtherCheckbox = questionDiv.querySelector('input[name^="questions"][name$="[allowOther]"]');
-    if (allowOtherCheckbox) {
-        newQuestionDiv.querySelector('input[name^="questions"][name$="[allowOther]"]').checked = allowOtherCheckbox.checked;
-    }
-
-    // 추가 입력 필드 복사
-    const textarea = questionDiv.querySelector('.textarea textarea');
-    if (textarea) {
-        newQuestionDiv.querySelector('.textarea textarea').value = textarea.value;
-    }
-
-    // 날짜 입력 복사
-    const dateInput = questionDiv.querySelector('.date input[type="date"]');
-    if (dateInput) {
-        newQuestionDiv.querySelector('.date input[type="date"]').value = dateInput.value;
-    }
-
-    // 단답형 입력 복사
-    const shortAnswerInput = questionDiv.querySelector('.short-answer input[type="text"]');
-    if (shortAnswerInput) {
-        newQuestionDiv.querySelector('.short-answer input[type="text"]').value = shortAnswerInput.value;
-    }
-
-    // 정수 범위 복사
-    const integerRange = questionDiv.querySelector('.integer-range');
-    if (integerRange) {
-        const minValueInput = integerRange.querySelector('input[name$="[minValue]"]');
-        const maxValueInput = integerRange.querySelector('input[name$="[maxValue]"]');
-        if (minValueInput) {
-            newQuestionDiv.querySelector('.integer-range input[name$="[minValue]"]').value = minValueInput.value;
-        }
-        if (maxValueInput) {
-            newQuestionDiv.querySelector('.integer-range input[name$="[maxValue]"]').value = maxValueInput.value;
-        }
-    }
-
-    document.getElementById('questions').insertBefore(newQuestionDiv, questionDiv.nextSibling);
-    questionCount++;
+if (selectedValue === 'single_choice' || selectedValue === 'multiple_choice') {
+    questionDiv.querySelector('.options').style.display = 'block';
+    questionDiv.querySelector('.allow-other').style.display = 'block';
+} else if (selectedValue === 'long_answer') {
+    questionDiv.querySelector('.textarea').style.display = 'block';
+} else if (selectedValue === 'date') {
+    questionDiv.querySelector('.date').style.display = 'block';
+} else if (selectedValue === 'short_answer') {
+    questionDiv.querySelector('.short-answer').style.display = 'block';
+} else if (selectedValue === 'dropdown') {
+    questionDiv.querySelector('.options').style.display = 'block';
+} else if (selectedValue === 'preference') {
+    questionDiv.querySelector('.options').style.display = 'block';
+    questionDiv.querySelector('.rank-limit').style.display = 'block'; // 순위 제한 필드 보이기
+} else if (selectedValue === 'reservation') {
+    questionDiv.querySelector('.reservation').style.display = 'block'; // 예약 필드 보이기
 }

@@ -1,5 +1,8 @@
 /hikorean
 │
+├── /utils                     // 유틸리티 함수 정의 폴더
+│   └── dateUtils.js           // 날짜 관련 유틸리티 함수 파일
+│
 ├── /node_modules              // 프로젝트 의존성 모듈
 │
 ├── /routes                     // 라우트 정의 폴더
@@ -31,6 +34,9 @@
 │   └── ShortUrl.js            // url 단축 및 qr코드 생성 모델 정의
 │
 ├── /public                     // 정적 파일 저장 폴더 (HTML, CSS, JS 등)
+│   ├── js
+│   │   ├── createQuestion.js  // views/surveys/new.ejs의 문항 추가 스크립트 코드
+│   │   └── displayCalendar.js  // views/surveys/respond.ejs의 날짜 예약 테이블 구현 스크립트 코드
 │   ├── login.html             // 로그인 페이지 HTML 파일
 │   ├── signup.html            // 회원가입 페이지 HTML 파일
 │   └── ...                    // 기타 정적 파일

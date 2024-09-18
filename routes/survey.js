@@ -1,6 +1,7 @@
 const express = require('express');
 const Survey = require('../models/Survey');
 const Response = require('../models/Response');
+const { convertToKST } = require('../utils/dateUtils');
 const { ensureAuthenticated, isAdmin } = require('../middleware/auth');
 
 const router = express.Router();
@@ -41,7 +42,23 @@ router.post('/', isAdmin, async (req, res) => {
       rankLimit: question.rankLimit,
       prefixText: question.prefixText,
       suffixText: question.suffixText,
-      reservation: question.reservation
+      reservation: {
+          startDate: question.reservation ? question.reservation.startDate.split('T')[0] : null,
+          endDate: question.reservation ? question.reservation.endDate.split('T')[0] : null,
+          maxParticipants: question.reservation ? question.reservation.maxParticipants : null,
+          exceptionDates: question.reservation && question.reservation.exceptionDates 
+              ? question.reservation.exceptionDates.split(',').map(date => date.trim())
+              : []  // 기본값은 빈 배열
+      },
+      time_reservation: {
+          availableDates: question.time_reservation && question.time_reservation.availableDates 
+          ? question.time_reservation.availableDates.split(',').map(date => date.trim())
+              : [], // 기본값은 빈 배열
+          startTime: question.time_reservation ? question.time_reservation.startTime : null,
+          endTime: question.time_reservation ? question.time_reservation.endTime : null,
+          interval: question.time_reservation ? question.time_reservation.interval : null,
+          maxParticipants: question.time_reservation ? question.time_reservation.maxParticipants : null
+      }
   }));
 
   const survey = new Survey({ title, questions: formattedQuestions, createdBy: req.session.user._id });
@@ -138,9 +155,12 @@ router.post('/:id/respond', async (req, res) => {
 router.get('/:id/countResponses', async (req, res) => {
   const { date } = req.query;
 
+  // KST로 변환
+  const kstDate = convertToKST(date);
+
   const count = await Response.countDocuments({
       surveyId: req.params.id,
-      'answers.answer': date // 선택된 날짜에 대한 응답 수
+      'answers.answer': kstDate // 선택된 날짜에 대한 응답 수
   });
 
   res.json({ count });

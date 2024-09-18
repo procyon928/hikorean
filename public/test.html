@@ -1,0 +1,61 @@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<div>
+    <label for="dateRange">날짜 범위 선택:</label>
+    <input type="text" id="dateRange" placeholder="시작 날짜와 마감 날짜 선택" readonly>
+</div>
+<div>
+    <label for="excludeDates">제외할 날짜 선택:</label>
+    <input type="text" id="excludeDates" placeholder="제외할 날짜 선택" readonly>
+</div>
+
+<script>
+    const dateRangeInput = document.getElementById('dateRange');
+    const excludeDatesInput = document.getElementById('excludeDates');
+    let excludeDates = [];
+
+    // 날짜 범위 선택
+    flatpickr(dateRangeInput, {
+        mode: "range",
+        dateFormat: "Y-m-d",
+        onChange: function(selectedDates) {
+            if (selectedDates.length === 2) {
+                // 시작 날짜와 마감 날짜가 선택되면 제외 날짜의 최대/최소 설정
+                const [startDate, endDate] = selectedDates;
+                excludeDatesInput._flatpickr.set('minDate', startDate);
+                excludeDatesInput._flatpickr.set('maxDate', endDate);
+            }
+        }
+    });
+
+    // 제외 날짜 선택
+    flatpickr(excludeDatesInput, {
+        mode: "multiple",
+        dateFormat: "Y-m-d",
+        onChange: function(selectedDates) {
+            excludeDates.length = 0; // 기존 배열 초기화
+            selectedDates.forEach(date => {
+                excludeDates.push(date);
+            });
+        }
+    });
+
+    function getExcludedDates() {
+        const selectedDates = dateRangeInput._flatpickr.selectedDates;
+        if (selectedDates.length < 2) {
+            return []; // 날짜 범위가 올바르지 않음
+        }
+
+        const [startDate, endDate] = selectedDates;
+        const dateRange = [];
+
+        for (let dt = new Date(startDate); dt <= endDate; dt.setDate(dt.getDate() + 1)) {
+            if (!excludeDates.some(excludedDate => excludedDate.toDateString() === dt.toDateString())) {
+                dateRange.push(new Date(dt));
+            }
+        }
+
+        return dateRange;
+    }
+</script>
