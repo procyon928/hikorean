@@ -3,7 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <title><%= survey.title %> 응답하기</title>
-    <script src="/js/displayCalendar.js"></script>
+    <!-- <script src="/js/displayCalendar.js"></script> -->
+    <script>
+        function displayCalendar(startDate, endDate, maxParticipants, surveyId, exceptionDates, index) {
+            const calendarDiv = document.getElementById('calendar');
+            calendarDiv.innerHTML = ''; // 기존 내용 초기화
+
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            const days = [];
+
+            // 시작일부터 종료일까지의 날짜 배열 생성
+            for (let d = start; d <= end; d.setDate(d.getDate() + 1)) {
+                days.push(new Date(d));
+            }
+
+            // 7열 형식의 테이블 생성
+            const table = document.createElement('table');
+            const headerRow = document.createElement('tr');
+            const daysOfWeek = ['월', '화', '수', '목', '금', '토', '일'];
+
+            daysOfWeek.forEach(day => {
+                const th = document.createElement('th');
+                th.innerText = day;
+                headerRow.appendChild(th);
+            });
+            table.appendChild(headerRow);
+
+            for (let i = 0; i < days.length; i += 7) {
+                const row = document.createElement('tr');
+                for (let j = 0; j < 7; j++) {
+                    if (i + j < days.length) {
+                        const cell = document.createElement('td');
+                        const date = days[i + j];
+                        const dateString = new Date(date).toISOString().split('T')[0];
+
+                        // 날짜에 대한 응답 수 확인
+                        if (exceptionDates.includes(dateString)) {
+                            cell.innerHTML = `${date.getDate()} (${date.getMonth() + 1}/${date.getFullYear()})<br>예약 불가`;
+                            cell.style.backgroundColor = 'gray'; // 예약 불가 날짜 색상
+                            cell.style.color = 'white';
+                        } else {
+                            fetch(`/survey/${surveyId}/countResponses?date=${dateString}`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    cell.innerHTML = `
+                                        <input type="radio" name="answers[${index}][answer]" value="${dateString}" 
+                                              id="date-${dateString}" 
+                                              ${data.count >= maxParticipants ? 'disabled' : ''} 
+                                        >
+                                        ${date.getDate()} (${date.getMonth() + 1}/${date.getFullYear()})<br>
+                                        응답 수: ${data.count}/${maxParticipants}
+                                    `;
+                                    if (data.count >= maxParticipants) {
+                                        cell.style.backgroundColor = 'red'; // 최대 인원 초과 시 배경색 변경
+                                        cell.style.color = 'white'; // 글자색 변경
+                                    } else {
+                                        cell.style.cursor = 'pointer'; // 클릭 가능하다는 표시
+                                    }
+                                });
+                        }
+                        row.appendChild(cell);
+                    }
+                }
+                table.appendChild(row);
+            }
+
+            calendarDiv.appendChild(table);
+        }
+    </script>
 </head>
 <body>
     <h1><%= survey.title %> 응답하기</h1>
@@ -16,7 +84,7 @@
                 <p><%= question.questionDescription %></p>
 
                 <% if (question.isRequired) { %>
-                    <span style="color: red;">(필수)</span>
+                    <span style="color: red;">*</span>
                 <% } %>
 
                 <% if (question.questionType === 'short_answer') { %>
@@ -90,49 +158,9 @@
                           '<%= question.reservation.endDate %>',
                           <%= question.reservation.maxParticipants %>,
                           '<%= survey._id %>',
-                          exceptionDates // 예외 날짜 배열 전달
+                          exceptionDates, // 예외 날짜 배열 전달
+                          <%= index %>
                       );
-                  </script>
-                <% } else if (question.questionType === 'time_reservation') { %>
-                  <label>예약 날짜 선택:</label>
-                  <div id="date-tabs">
-                      <% question.time_reservation.availableDates.forEach((date, dateIndex) => { %>
-                          <% const formattedDate = new Date(date); %>
-                          <button type="button" onclick="selectDate('<%= formattedDate.toISOString() %>')"><%= formattedDate.toISOString().split('T')[0] %></button>
-                      <% }); %>
-                  </div>                
-                  <div id="time-selection" style="display:none;">
-                      <label>예약 가능 시간:</label>
-                      <div id="time-slots"></div>
-                      <label>예약 간격:</label>
-                      <select id="time-interval">
-                          <option value="10">10분</option>
-                          <option value="15">15분</option>
-                          <option value="20">20분</option>
-                          <option value="30">30분</option>
-                          <option value="60">60분</option>
-                      </select>
-                      <label>최대 예약 가능 인원:</label>
-                      <input type="number" name="answers[<%= index %>][maxParticipants]" value="<%= question.time_reservation.maxParticipants %>" required>
-                  </div>
-                  <script>
-                      function selectDate(selectedDate) {
-                          const startTime = '<%= question.time_reservation.startTime %>';
-                          const endTime = '<%= question.time_reservation.endTime %>';
-                          const interval = document.getElementById('time-interval').value;
-              
-                          generateTimeSlots(selectedDate, startTime, endTime, interval);
-                          document.getElementById('time-selection').style.display = 'block';
-                      }
-              
-                      function updateTimeSlots() {
-                          const selectedDate = document.querySelector('button.active').innerText; // 선택된 날짜 가져오기
-                          const startTime = '<%= question.time_reservation.startTime %>';
-                          const endTime = '<%= question.time_reservation.endTime %>';
-                          const interval = document.getElementById('time-interval').value;
-              
-                          generateTimeSlots(selectedDate, startTime, endTime, interval);
-                      }
                   </script>
                 <% } else if (question.questionType === 'preference') { %>
                     <% question.options.forEach((option, optionIndex) => { %>
@@ -175,36 +203,6 @@
               }
           });
       }
-
-      function generateTimeSlots(selectedDate, startTime, endTime, interval) {
-          const timeSlotsDiv = document.getElementById('time-slots');
-          timeSlotsDiv.innerHTML = ''; // 기존 내용 초기화
-
-          const startDateTime = new Date(`${selectedDate}T${startTime}`);
-          const endDateTime = new Date(`${selectedDate}T${endTime}`);
-
-          // 시간 슬롯 배열 생성
-          let currentTime = startDateTime;
-
-          while (currentTime <= endDateTime) {
-              const timeSlotString = currentTime.toTimeString().split(' ')[0]; // HH:MM:SS 포맷
-              const timeSlotInput = document.createElement('input');
-              timeSlotInput.type = 'radio';
-              timeSlotInput.name = 'answers[0][timeSlot]'; // 응답 배열에 추가
-              timeSlotInput.value = timeSlotString;
-              timeSlotInput.id = `time-${timeSlotString}`;
-
-              const timeSlotLabel = document.createElement('label');
-              timeSlotLabel.htmlFor = `time-${timeSlotString}`;
-              timeSlotLabel.innerText = timeSlotString;
-
-              timeSlotsDiv.appendChild(timeSlotInput);
-              timeSlotsDiv.appendChild(timeSlotLabel);
-
-              // 시간 간격 추가
-              currentTime.setMinutes(currentTime.getMinutes() + parseInt(interval));
-          }
-      }
-    </script>
+    </script> 
 </body>
 </html>
