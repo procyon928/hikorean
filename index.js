@@ -14,6 +14,7 @@ const commentRoutes = require('./routes/comment');
 const boardSettingRoutes = require('./routes/boardSetting');
 const noticeRoutes = require('./routes/notice');
 const translationRoutes = require('./routes/translation');
+const { router: translateRouter } = require('./routes/translate');
 const surveyRoutes = require('./routes/survey');
 const shortUrlRoutes = require('./routes/shortUrl');
 const { ensureAuthenticated, isAdmin } = require('./middleware/auth');
@@ -89,6 +90,7 @@ app.use(postRoutes);
 app.use(commentRoutes);
 app.use(noticeRoutes);
 app.use(translationRoutes);
+app.use(translateRouter);
 app.use('/survey', surveyRoutes);
 app.use('/', boardSettingRoutes.router);
 app.use(shortUrlRoutes); // 제일 하위에 두기

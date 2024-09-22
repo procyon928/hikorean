@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>간단한 번역기</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        /* 제목 아래 마진 추가 */
+        h1 {
+            margin-bottom: 20px; /* 원하는 마진 값으로 조정 */
+        }
+        /* 라디오 버튼 위에 마진 추가 */
+        .result-box {
+            margin-bottom: 10px; /* 원하는 마진 값으로 조정 */
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">간단한 번역기</h1>
+        <form id="translateForm">
+            <div class="form-group">
+                <label for="textToTranslate"><h5>한국어 원문 입력:</h5></label>
+                <textarea id="textToTranslate" class="form-control" rows="4" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="targetLang">번역할 언어 선택:</label>
+                <select id="targetLang" class="form-control" required>
+                    <option value="en">영어</option>
+                    <option value="sc">중국어 간체</option>
+                    <option value="tc">중국어 번체</option>
+                    <option value="jp">일본어</option>
+                    <option value="vi">베트남어</option>
+                </select>
+            </div>
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary">번역</button>
+            </div>
+        </form>
+
+        <div id="results" class="mt-4">
+            <h5>번역 결과:</h5>
+            <div>
+                <label>
+                    <input type="radio" name="translation" value="google" id="googleRadio"><b> Google 번역</b>
+                </label>
+                <div id="googleResult" class="result-box"></div>
+            </div>
+            <div>
+                <label>
+                    <input type="radio" name="translation" value="microsoft" id="microsoftRadio"><b> Microsoft 번역</b>
+                </label>
+                <div id="microsoftResult" class="result-box"></div>
+            </div>
+            <div>
+                <label>
+                    <input type="radio" name="translation" value="deepl" id="deeplRadio"><b> DeepL 번역</b>
+                </label>
+                <div id="deeplResult" class="result-box"></div>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <h5>최종 번역 결과:</h5>
+            <textarea id="finalText" class="form-control" rows="4"></textarea>
+            <div class="text-center">
+                <button id="copyButton" class="btn btn-secondary mt-2">복사</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('translateForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const textToTranslate = document.getElementById('textToTranslate').value;
+            const targetLang = document.getElementById('targetLang').value; // 선택된 언어 가져오기
+
+            // AJAX 요청으로 번역 API 호출
+            const response = await fetch('/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ text: textToTranslate, targetLang }) // 선택된 언어로 번역
+            });
+
+            const results = await response.json();
+            document.getElementById('googleResult').innerText = results.google;
+            document.getElementById('microsoftResult').innerText = results.microsoft;
+            document.getElementById('deeplResult').innerText = results.deepl;
+
+            // 라디오 버튼 클릭 이벤트 추가
+            document.querySelectorAll('input[name="translation"]').forEach(function(radio) {
+                radio.addEventListener('change', function() {
+                    const selectedValue = this.value;
+                    let selectedText = '';
+
+                    if (selectedValue === 'google') {
+                        selectedText = results.google;
+                    } else if (selectedValue === 'microsoft') {
+                        selectedText = results.microsoft;
+                    } else if (selectedValue === 'deepl') {
+                        selectedText = results.deepl;
+                    }
+
+                    // 선택된 텍스트를 textarea에 입력
+                    document.getElementById('finalText').value = selectedText;
+                });
+            });
+        });
+
+        // 복사 버튼 클릭 이벤트
+        document.getElementById('copyButton').addEventListener('click', function() {
+            const textArea = document.getElementById('finalText');
+            textArea.select();
+            document.execCommand('copy'); // 클립보드에 복사
+            alert('복사되었습니다.');
+        });
+    </script>
+</body>
+</html>

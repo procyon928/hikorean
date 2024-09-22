@@ -1,4 +1,5 @@
-// routes/translate.js
+const express = require('express');
+const router = express.Router();
 const axios = require('axios');
 require('dotenv').config();
 const deepl = require('deepl-node');
@@ -73,7 +74,33 @@ const translateWithDeepl = async (text, targetLang) => {
   }
 };
 
+// 번역 요청 처리
+router.post('/', async (req, res) => {
+  const { text, targetLang } = req.body;
+
+  try {
+      const googleTranslation = await translateWithGoogle(text, languageCodes[targetLang].google);
+      const microsoftTranslation = await translateWithMicrosoft(text, languageCodes[targetLang].microsoft);
+      const deeplTranslation = await translateWithDeepl(text, languageCodes[targetLang].deepl);
+
+      res.json({
+          google: googleTranslation,
+          microsoft: microsoftTranslation,
+          deepl: deeplTranslation
+      });
+  } catch (error) {
+      console.error('번역 오류:', error);
+      res.status(500).json({ error: '번역 중 오류가 발생했습니다.' });
+  }
+});
+
+// 번역기 페이지 라우터
+router.get('/translator', (req, res) => {
+  res.render('admin/translator'); // admin 폴더의 translator.ejs 파일 렌더링
+});
+
 module.exports = {
+  router,
   translateWithGoogle,
   translateWithMicrosoft,
   translateWithDeepl,

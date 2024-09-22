@@ -45,7 +45,8 @@
 │   ├── admin_email.ejs        // 관리자 이메일 발송 페이지
 │   ├── /admin
 │   │   ├── logs.ejs           // 로그 기록 페이지
-│   │   └── short-url.ejs      // url 단축 및 qr코드 생성 페이지
+│   │   ├── short-url.ejs      // url 단축 및 qr코드 생성 페이지
+│   │   └── translator.ejs      // 다중 언어 번역 페이지
 │   ├── /partials
 │   │   ├── header.ejs         // adminLTE의 header include 코드
 │   │   ├── sidebar.ejs        // adminLTE의 sidebar include 코드

@@ -234,10 +234,51 @@ router.get('/:id/edit', isAdmin, async (req, res) => {
 
 // 설문조사 수정 처리
 router.post('/:id', isAdmin, async (req, res) => {
-  const { title, questions } = req.body;
-  await Survey.findByIdAndUpdate(req.params.id, { title, questions });
+  const { title, questions, startDate, endDate } = req.body;
+
+  // 비어있는 필드 확인
+  if (!questions || !Array.isArray(questions)) {
+      console.error('Questions are missing or not an array');
+      return res.status(400).send('Invalid questions format');
+  }
+
+  // 기존 설문조사 업데이트
+  await Survey.findByIdAndUpdate(req.params.id, {
+      title,
+      questions: questions.map((question) => ({
+          questionText: question.questionText,
+          questionDescription: question.questionDescription,
+          questionType: question.questionType,
+          options: question.options || [],
+          isRequired: question.isRequired === 'true',
+          allowOther: question.allowOther === 'true',
+          prefixText: question.prefixText || '',
+          suffixText: question.suffixText || '',
+          inputType: question.inputType || 'all',
+          minValue: question.minValue || null,
+          maxValue: question.maxValue || null,
+          rankLimit: question.rankLimit || null,
+          reservation: {
+              startDate: question.reservation ? question.reservation.startDate : null,
+              endDate: question.reservation ? question.reservation.endDate : null,
+              maxParticipants: question.reservation ? question.reservation.maxParticipants : null,
+              exceptionDates: question.reservation ? question.reservation.exceptionDates : [] // 기본값은 빈 배열
+          },
+          time_reservation: {
+              availableDates: question.time_reservation ? question.time_reservation.availableDates : [],
+              startTime: question.time_reservation ? question.time_reservation.startTime : null,
+              endTime: question.time_reservation ? question.time_reservation.endTime : null,
+              interval: question.time_reservation ? question.time_reservation.interval : null,
+              maxParticipants: question.time_reservation ? question.time_reservation.maxParticipants : null
+          }
+      })),
+      startDate: startDate ? new Date(startDate) : null,
+      endDate: endDate ? new Date(endDate) : null
+  });
+
   res.redirect('/survey/list');
 });
+
 
 // 설문조사 삭제 처리
 router.post('/:id/delete', isAdmin, async (req, res) => {
@@ -251,6 +292,40 @@ router.get('/', async (req, res) => {
   res.render('surveys/survey', { surveys }); // 사용자 목록을 렌더링
 });
 
+// 설문조사 복제 처리
+router.post('/:id/clone', isAdmin, async (req, res) => {
+  const originalSurvey = await Survey.findById(req.params.id);
+
+  if (!originalSurvey) {
+      return res.status(404).send('설문조사를 찾을 수 없습니다.');
+  }
+
+  const clonedSurvey = new Survey({
+      title: originalSurvey.title + ' (복제)', // 제목에 '(복제)' 추가
+      questions: originalSurvey.questions.map(question => ({
+          questionText: question.questionText,
+          questionDescription: question.questionDescription,
+          questionType: question.questionType,
+          options: question.options,
+          isRequired: question.isRequired,
+          allowOther: question.allowOther,
+          prefixText: question.prefixText,
+          suffixText: question.suffixText,
+          inputType: question.inputType,
+          minValue: question.minValue,
+          maxValue: question.maxValue,
+          rankLimit: question.rankLimit,
+          reservation: question.reservation,
+          time_reservation: question.time_reservation
+      })),
+      startDate: originalSurvey.startDate,
+      endDate: originalSurvey.endDate,
+      createdBy: req.session.user._id
+  });
+
+  await clonedSurvey.save();
+  res.redirect('/survey/list');
+});
 
 // 설문조사 결과 보기 페이지 (관리자용)
 router.get('/:id/results', isAdmin, async (req, res) => {

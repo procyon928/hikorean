@@ -96,7 +96,7 @@ function createQuestionHTML(index) {
                 </select>
 
                 <label>시간당 최대 예약 가능 인원:</label>
-                <input type="number" name="questions[${index}][time_reservation][maxParticipants]" min="1">
+                <input type="number" id="maxParticipants${index}" name="questions[${index}][time_reservation][maxParticipants]" min="1">
 
                 <input type="hidden" name="questions[${index}][time_reservation][availableDates]" id="availableDates${index}">
                 <input type="hidden" name="questions[${index}][time_reservation][startTime]" id="startTimeHidden${index}">
