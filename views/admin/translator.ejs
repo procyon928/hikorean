@@ -14,10 +14,14 @@
         .result-box {
             margin-bottom: 10px; /* 원하는 마진 값으로 조정 */
         }
+        /* 차이점 표시 스타일 */
+        .diff {
+            color: red;
+        }
     </style>
 </head>
 <body>
-    <div class="container mt-5">
+    <div class="container mt-5 mb-3">
         <h1 class="text-center">간단한 번역기</h1>
         <form id="translateForm">
             <div class="form-group">
@@ -68,8 +72,14 @@
                 <button id="copyButton" class="btn btn-secondary mt-2">복사</button>
             </div>
         </div>
+
+        <div class="mt-4">
+            <h5>번역 결과 비교:</h5>
+            <div id="diffResult"></div>
+        </div>
     </div>
 
+    <script src="https://unpkg.com/diff"></script>
     <script>
         document.getElementById('translateForm').addEventListener('submit', async function(event) {
             event.preventDefault();
@@ -108,7 +118,37 @@
                     document.getElementById('finalText').value = selectedText;
                 });
             });
+
+            // 번역 결과 비교
+            compareTranslations(results.google, results.microsoft, results.deepl);
         });
+
+        function compareTranslations(googleText, microsoftText, deeplText) {
+            // 비교할 텍스트를 배열로 변환
+            const diff1 = Diff.diffWords(googleText, microsoftText);
+            const diff2 = Diff.diffWords(microsoftText, deeplText);
+            const diff3 = Diff.diffWords(googleText, deeplText);
+
+            let diffHtml = '<h6>Google vs Microsoft:</h6>';
+            diff1.forEach(part => {
+                const color = part.added ? 'green' : part.removed ? 'red' : 'black';
+                diffHtml += `<span style="color:${color}">${part.value}</span>`;
+            });
+
+            diffHtml += '<h6>Microsoft vs DeepL:</h6>';
+            diff2.forEach(part => {
+                const color = part.added ? 'green' : part.removed ? 'red' : 'black';
+                diffHtml += `<span style="color:${color}">${part.value}</span>`;
+            });
+
+            diffHtml += '<h6>Google vs DeepL:</h6>';
+            diff3.forEach(part => {
+                const color = part.added ? 'green' : part.removed ? 'red' : 'black';
+                diffHtml += `<span style="color:${color}">${part.value}</span>`;
+            });
+
+            document.getElementById('diffResult').innerHTML = diffHtml;
+        }
 
         // 복사 버튼 클릭 이벤트
         document.getElementById('copyButton').addEventListener('click', function() {
