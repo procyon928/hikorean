@@ -84,7 +84,7 @@ app.get('/admin', (req, res) => {
 // 라우터 설정
 app.use(authRoutes); // 제일 상위에 두기
 app.use('/admin', adminRoutes);
-app.use(emailRoutes);
+app.use('/email', emailRoutes);
 app.use(postRoutes);
 app.use(commentRoutes);
 app.use(noticeRoutes);

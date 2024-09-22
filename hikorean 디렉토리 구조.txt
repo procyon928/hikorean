@@ -35,8 +35,7 @@
 │
 ├── /public                     // 정적 파일 저장 폴더 (HTML, CSS, JS 등)
 │   ├── js
-│   │   ├── createQuestion.js  // views/surveys/new.ejs의 문항 추가 스크립트 코드
-│   │   └── displayCalendar.js  // views/surveys/respond.ejs의 날짜 예약 테이블 구현 스크립트 코드
+│   │   └── createQuestion.js  // views/surveys/new.ejs의 문항 추가 스크립트 코드
 │   ├── login.html             // 로그인 페이지 HTML 파일
 │   ├── signup.html            // 회원가입 페이지 HTML 파일
 │   └── ...                    // 기타 정적 파일

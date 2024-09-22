@@ -21,6 +21,8 @@ function createQuestionHTML(index) {
                 <option value="preference">선호도</option>
                 <option value="reservation">날짜 예약</option>
                 <option value="time_reservation">시간 예약</option>
+                <option value="info">안내문</option>
+                <option value="email">이메일 검증</option>
             </select>
             <div class="options" style="display: none;">
                 <div class="option">
@@ -100,6 +102,14 @@ function createQuestionHTML(index) {
                 <input type="hidden" name="questions[${index}][time_reservation][startTime]" id="startTimeHidden${index}">
                 <input type="hidden" name="questions[${index}][time_reservation][endTime]" id="endTimeHidden${index}">
             </div>
+            <div class="info" style="display: none;">
+                <label>안내문:</label>
+                <textarea name="questions[${index}][infoText]" rows="4" placeholder="안내문 입력"></textarea>
+            </div>
+            <div class="email-verification" style="display: none;">
+                <label>이메일 주소:</label>
+                <input type="email" name="questions[${index}][email]" placeholder="이메일 입력">
+            </div>
             <button type="button" onclick="removeQuestion(this)">문항 삭제</button>
         </div>
     `;
@@ -116,91 +126,6 @@ function addQuestion() {
     questionCount++;
 }
 
-// 날짜 및 시간 처리 함수
-function initializeFlatpickr(index) {
-    const dateRangeInput = document.getElementById(`dateRange${index}`);
-    const excludeDatesInput = document.getElementById(`excludeDates${index}`);
-    const startDateInput = document.getElementById(`startDate${index}`);
-    const endDateInput = document.getElementById(`endDate${index}`);
-    const exceptionDatesInput = document.getElementById(`exceptionDates${index}`);
-    const timeRangeInput = document.getElementById(`timeRange${index}`);
-    let excludeDates = [];
-
-    // 선택한 날짜에 하루 추가 처리
-    function addOneDay(date) {
-        const newDate = new Date(date);
-        newDate.setDate(newDate.getDate() + 1);
-        return newDate;
-    }
-
-    // 시간값 버리고 날짜값만 처리
-    function formatDate(date) {
-      return date.toISOString().split('T')[0];
-    }
-
-    // [날짜 예약] 예약 가능 날짜 범위 선택 초기화 처리
-    flatpickr(dateRangeInput, {
-      mode: "range",
-      dateFormat: "Y-m-d",
-      onChange: function(selectedDates) {
-          if (selectedDates.length === 2) {
-              const [startDate, endDate] = selectedDates;
-
-              startDateInput.value = formatDate(addOneDay(startDate));
-              endDateInput.value = formatDate(addOneDay(endDate));
-
-              excludeDatesInput._flatpickr.set('minDate', startDate);
-              excludeDatesInput._flatpickr.set('maxDate', endDate);
-          }
-      }
-    });
-
-    // [날짜 예약] 예약 제외 날짜 선택 초기화 처리
-    flatpickr(excludeDatesInput, {
-        mode: "multiple",
-        dateFormat: "Y-m-d",
-        onChange: function(selectedDates) {
-            excludeDates.length = 0; // 기존 배열 초기화
-            selectedDates.forEach(date => {
-                excludeDates.push(addOneDay(date));
-            });
-            exceptionDatesInput.value = excludeDates.map(formatDate).join(',');
-        }
-    });
-
-    // [시간 예약] 예약 가능 날짜 선택 초기화 처리
-    flatpickr(timeRangeInput, {
-        mode: "multiple",
-        dateFormat: "Y-m-d",
-        onChange: function(selectedDates) {
-            const availableDatesPlusOne = selectedDates.map(addOneDay);
-            document.getElementById(`availableDates${index}`).value = availableDatesPlusOne.map(formatDate).join(',');
-        }
-    });
-
-    // [시간 예약] 첫 시간, 마지막 시간 선택 초기화 처리
-    function setupTimePicker(timeInputId, hiddenInputId) {
-        flatpickr(document.getElementById(timeInputId), {
-            enableTime: true,
-            noCalendar: true,
-            dateFormat: "H:i",
-            time_24hr: true,
-            onChange: function(selectedDates) {
-                const timeValue = selectedDates[0].toISOString().split('T')[1].substring(0, 5); // 선택된 시간 가져오기
-                const utcDate = new Date(`1970-01-01T${timeValue}:00Z`); // UTC로 변환
-                const kstDate = new Date(utcDate.getTime() + 9 * 60 * 60 * 1000); // KST로 변환
-                const kstTimeValue = kstDate.toISOString().split('T')[1].substring(0, 5); // KST 시간 형식으로 변환
-                
-                document.getElementById(timeInputId).value = kstTimeValue; // 시작/종료 시간 필드에 설정
-                document.getElementById(hiddenInputId).value = kstTimeValue; // hidden input에 설정
-            }
-        });
-    }
-
-    setupTimePicker(`startTime${index}`, `startTimeHidden${index}`);
-    setupTimePicker(`endTime${index}`, `endTimeHidden${index}`);
-}
-
 function updateQuestionFields(select) {
   const questionDiv = select.closest('.question');
     const selectedValue = select.value;
@@ -212,6 +137,8 @@ function updateQuestionFields(select) {
     questionDiv.querySelector('.short-answer').style.display = 'none';
     questionDiv.querySelector('.reservation').style.display = 'none';
     questionDiv.querySelector('.time-reservation').style.display = 'none';
+    questionDiv.querySelector('.info').style.display = 'none';
+    questionDiv.querySelector('.email-verification').style.display = 'none';
 
     // 선택한 유형에 따라 필드 보이기
     const displayFields = {
@@ -223,7 +150,9 @@ function updateQuestionFields(select) {
         dropdown: ['options'],
         preference: ['options', 'rank-limit'],
         reservation: ['reservation'],
-        time_reservation: ['time-reservation']
+        time_reservation: ['time-reservation'],
+        info: ['info'],
+        email: ['email-verification']
     };
 
     const fieldsToShow = displayFields[selectedValue] || [];
@@ -258,6 +187,91 @@ function updateInputType(select) {
     if (selectedValue === 'integer') {
         integerRangeDiv.style.display = 'block'; // 정수 범위 입력 필드 보이기
     }
+}
+
+// 날짜 및 시간 처리 함수
+function initializeFlatpickr(index) {
+  const dateRangeInput = document.getElementById(`dateRange${index}`);
+  const excludeDatesInput = document.getElementById(`excludeDates${index}`);
+  const startDateInput = document.getElementById(`startDate${index}`);
+  const endDateInput = document.getElementById(`endDate${index}`);
+  const exceptionDatesInput = document.getElementById(`exceptionDates${index}`);
+  const timeRangeInput = document.getElementById(`timeRange${index}`);
+  let excludeDates = [];
+
+  // 선택한 날짜에 하루 추가 처리
+  function addOneDay(date) {
+      const newDate = new Date(date);
+      newDate.setDate(newDate.getDate() + 1);
+      return newDate;
+  }
+
+  // 시간값 버리고 날짜값만 처리
+  function formatDate(date) {
+    return date.toISOString().split('T')[0];
+  }
+
+  // [날짜 예약] 예약 가능 날짜 범위 선택 초기화 처리
+  flatpickr(dateRangeInput, {
+    mode: "range",
+    dateFormat: "Y-m-d",
+    onChange: function(selectedDates) {
+        if (selectedDates.length === 2) {
+            const [startDate, endDate] = selectedDates;
+
+            startDateInput.value = formatDate(addOneDay(startDate));
+            endDateInput.value = formatDate(addOneDay(endDate));
+
+            excludeDatesInput._flatpickr.set('minDate', startDate);
+            excludeDatesInput._flatpickr.set('maxDate', endDate);
+        }
+    }
+  });
+
+  // [날짜 예약] 예약 제외 날짜 선택 초기화 처리
+  flatpickr(excludeDatesInput, {
+      mode: "multiple",
+      dateFormat: "Y-m-d",
+      onChange: function(selectedDates) {
+          excludeDates.length = 0; // 기존 배열 초기화
+          selectedDates.forEach(date => {
+              excludeDates.push(addOneDay(date));
+          });
+          exceptionDatesInput.value = excludeDates.map(formatDate).join(',');
+      }
+  });
+
+  // [시간 예약] 예약 가능 날짜 선택 초기화 처리
+  flatpickr(timeRangeInput, {
+      mode: "multiple",
+      dateFormat: "Y-m-d",
+      onChange: function(selectedDates) {
+          const availableDatesPlusOne = selectedDates.map(addOneDay);
+          document.getElementById(`availableDates${index}`).value = availableDatesPlusOne.map(formatDate).join(',');
+      }
+  });
+
+  // [시간 예약] 첫 시간, 마지막 시간 선택 초기화 처리
+  function setupTimePicker(timeInputId, hiddenInputId) {
+      flatpickr(document.getElementById(timeInputId), {
+          enableTime: true,
+          noCalendar: true,
+          dateFormat: "H:i",
+          time_24hr: true,
+          onChange: function(selectedDates) {
+              const timeValue = selectedDates[0].toISOString().split('T')[1].substring(0, 5); // 선택된 시간 가져오기
+              const utcDate = new Date(`1970-01-01T${timeValue}:00Z`); // UTC로 변환
+              const kstDate = new Date(utcDate.getTime() + 9 * 60 * 60 * 1000); // KST로 변환
+              const kstTimeValue = kstDate.toISOString().split('T')[1].substring(0, 5); // KST 시간 형식으로 변환
+              
+              document.getElementById(timeInputId).value = kstTimeValue; // 시작/종료 시간 필드에 설정
+              document.getElementById(hiddenInputId).value = kstTimeValue; // hidden input에 설정
+          }
+      });
+  }
+
+  setupTimePicker(`startTime${index}`, `startTimeHidden${index}`);
+  setupTimePicker(`endTime${index}`, `endTimeHidden${index}`);
 }
 
 console.log("createQuestion.js가 성공적으로 로드되었습니다.");

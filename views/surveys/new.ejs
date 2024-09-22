@@ -18,6 +18,10 @@
     <form action="/survey" method="POST">
         <label for="title">설문조사 제목:</label>
         <input type="text" name="title" required>
+        <label for="startDate">응답 시작 날짜:</label>
+        <input type="text" name="startDate" id="startDate" required>
+        <label for="endDate">응답 종료 날짜:</label>
+        <input type="text" name="endDate" id="endDate" required>
         
         <h2>문항 추가</h2>
         <div id="questions"></div> <!-- 처음에는 빈 상태로 시작 -->
@@ -28,6 +32,15 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="/js/createQuestion.js"></script>
     <script>
+      flatpickr("#startDate", {
+          enableTime: true,
+          dateFormat: "Y-m-d H:i",
+      });
+      flatpickr("#endDate", {
+          enableTime: true,
+          dateFormat: "Y-m-d H:i",
+      });
+
       function removeOption(button) {
           const optionDiv = button.parentElement;
           optionDiv.remove(); // 해당 선택지 삭제

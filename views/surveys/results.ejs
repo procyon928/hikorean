@@ -2,21 +2,51 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>결과 보기</title>
+    <title><%= survey.title %> 결과</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.css">
+    <style>
+        #resultsTable {
+            width: 100%;
+            margin: 20px 0;
+        }
+    </style>
 </head>
 <body>
-    <h1>설문조사 결과</h1>
-    <ul>
-        <% responses.forEach(function(response) { %>
-            <li>
-                사용자: <%= response.userId.username %>
-                <ul>
-                    <% response.answers.forEach(function(answer) { %>
-                        <li>답변: <%= answer.answer %></li>
+    <h1><%= survey.title %> 결과</h1>
+    <div id="resultsTable"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const data = <%- JSON.stringify(responses) %>; // 서버에서 전달된 응답 데이터
+
+            // 데이터 변환: Handsontable의 형식에 맞게 변환
+            const tableData = data.map(response => {
+                const answerData = {};
+                response.answers.forEach(answer => {
+                    answerData[answer.questionId] = answer.answer;
+                });
+                return {
+                    userId: response.userId ? response.userId.username : '익명',
+                    ...answerData
+                };
+            });
+
+            // Handsontable 생성
+            const container = document.getElementById('resultsTable');
+            const hot = new Handsontable(container, {
+                data: tableData,
+                colHeaders: true,
+                columns: [
+                    { data: 'userId', title: '응답자' },
+                    <% survey.questions.forEach(question => { %>
+                        { data: '<%= question._id %>', title: '<%= question.questionText %>' },
                     <% }); %>
-                </ul>
-            </li>
-        <% }); %>
-    </ul>
+                ],
+                rowHeaders: true,
+                licenseKey: 'non-commercial-and-evaluation' // 라이센스 키
+            });
+        });
+    </script>
 </body>
 </html>

@@ -45,10 +45,11 @@ router.post('/send-email', ensureAuthenticated, async (req, res) => { // 미들�
       });
       await logEntry.save();
 
-      res.send('메일이 성공적으로 발송되었습니다.');
+      // JSON 형식으로 응답
+      return res.json({ message: '메일이 성공적으로 발송되었습니다.' });
   } catch (error) {
       console.error('메일 발송 오류:', error);
-      return res.status(500).send('메일 발송 오류, 관리자에게 문의하세요.');
+      return res.status(500).json({ message: '메일 발송 오류, 관리자에게 문의하세요.' });
   }
 });
 

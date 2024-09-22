@@ -3,81 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <title><%= survey.title %> 응답하기</title>
-    <!-- <script src="/js/displayCalendar.js"></script> -->
-    <script>
-        function displayCalendar(startDate, endDate, maxParticipants, surveyId, exceptionDates, index) {
-            const calendarDiv = document.getElementById('calendar');
-            calendarDiv.innerHTML = ''; // 기존 내용 초기화
-
-            const start = new Date(startDate);
-            const end = new Date(endDate);
-            const days = [];
-
-            // 시작일부터 종료일까지의 날짜 배열 생성
-            for (let d = start; d <= end; d.setDate(d.getDate() + 1)) {
-                days.push(new Date(d));
-            }
-
-            // 7열 형식의 테이블 생성
-            const table = document.createElement('table');
-            const headerRow = document.createElement('tr');
-            const daysOfWeek = ['월', '화', '수', '목', '금', '토', '일'];
-
-            daysOfWeek.forEach(day => {
-                const th = document.createElement('th');
-                th.innerText = day;
-                headerRow.appendChild(th);
-            });
-            table.appendChild(headerRow);
-
-            for (let i = 0; i < days.length; i += 7) {
-                const row = document.createElement('tr');
-                for (let j = 0; j < 7; j++) {
-                    if (i + j < days.length) {
-                        const cell = document.createElement('td');
-                        const date = days[i + j];
-                        const dateString = new Date(date).toISOString().split('T')[0];
-
-                        // 날짜에 대한 응답 수 확인
-                        if (exceptionDates.includes(dateString)) {
-                            cell.innerHTML = `${date.getDate()} (${date.getMonth() + 1}/${date.getFullYear()})<br>예약 불가`;
-                            cell.style.backgroundColor = 'gray'; // 예약 불가 날짜 색상
-                            cell.style.color = 'white';
-                        } else {
-                            fetch(`/survey/${surveyId}/countResponses?date=${dateString}`)
-                                .then(response => response.json())
-                                .then(data => {
-                                    cell.innerHTML = `
-                                        <input type="radio" name="answers[${index}][answer]" value="${dateString}" 
-                                              id="date-${dateString}" 
-                                              ${data.count >= maxParticipants ? 'disabled' : ''} 
-                                        >
-                                        ${date.getDate()} (${date.getMonth() + 1}/${date.getFullYear()})<br>
-                                        응답 수: ${data.count}/${maxParticipants}
-                                    `;
-                                    if (data.count >= maxParticipants) {
-                                        cell.style.backgroundColor = 'red'; // 최대 인원 초과 시 배경색 변경
-                                        cell.style.color = 'white'; // 글자색 변경
-                                    } else {
-                                        cell.style.cursor = 'pointer'; // 클릭 가능하다는 표시
-                                    }
-                                });
-                        }
-                        row.appendChild(cell);
-                    }
-                }
-                table.appendChild(row);
-            }
-
-            calendarDiv.appendChild(table);
-        }
-    </script>
 </head>
 <body>
     <h1><%= survey.title %> 응답하기</h1>
+    <% if (survey.startDate) { %>
+        <p>응답 시작 시간: <%= survey.startDate.toLocaleString() %></p>
+    <% } %>
+    <% if (survey.endDate) { %>
+        <p>응답 종료 시간: <%= survey.endDate.toLocaleString() %></p>
+    <% } %>
+    <% if (message) { %>
+        <p><%= message %></p>
+    <% } else { %>
     <form action="/survey/<%= survey._id %>/respond" method="POST" onsubmit="return validateForm()">
         <% survey.questions.forEach(function(question, index) { %>
             <div>
+              <% if (question.questionType === 'info') { %>
+                  <h3><%= question.questionText %></h3>
+                  <p><%= question.questionDescription %></p>
+                  <p><%= question.infoText %></p>
+              <% } else { %>
                 <label><%= question.questionText %></label>
                 
                 <!-- 문항 설명 표시 -->
@@ -151,7 +96,78 @@
                 <% } else if (question.questionType === 'reservation') { %>
                   <label>예약 날짜 선택:</label>
                   <div id="calendar"></div>
+                  
+                  <input type="hidden" name="answers[<%= index %>][questionId]" value="<%= question._id %>">
+
                   <script>
+                    console.log('Index:', <%= index %>);
+                      function displayCalendar(startDate, endDate, maxParticipants, surveyId, exceptionDates, index) {
+                          const calendarDiv = document.getElementById('calendar');
+                          calendarDiv.innerHTML = ''; // 기존 내용 초기화
+              
+                          const start = new Date(startDate);
+                          const end = new Date(endDate);
+                          const days = [];
+              
+                          // 시작일부터 종료일까지의 날짜 배열 생성
+                          for (let d = start; d <= end; d.setDate(d.getDate() + 1)) {
+                              days.push(new Date(d));
+                          }
+              
+                          // 7열 형식의 테이블 생성
+                          const table = document.createElement('table');
+                          const headerRow = document.createElement('tr');
+                          const daysOfWeek = ['월', '화', '수', '목', '금', '토', '일'];
+              
+                          daysOfWeek.forEach(day => {
+                              const th = document.createElement('th');
+                              th.innerText = day;
+                              headerRow.appendChild(th);
+                          });
+                          table.appendChild(headerRow);
+              
+                          for (let i = 0; i < days.length; i += 7) {
+                              const row = document.createElement('tr');
+                              for (let j = 0; j < 7; j++) {
+                                  if (i + j < days.length) {
+                                      const cell = document.createElement('td');
+                                      const date = days[i + j];
+                                      const dateString = new Date(date).toISOString().split('T')[0];
+              
+                                      // 날짜에 대한 응답 수 확인
+                                      if (exceptionDates.includes(dateString)) {
+                                          cell.innerHTML = `${date.getDate()} (${date.getMonth() + 1}/${date.getFullYear()})<br>예약 불가`;
+                                          cell.style.backgroundColor = 'gray'; // 예약 불가 날짜 색상
+                                          cell.style.color = 'white';
+                                      } else {
+                                          fetch(`/survey/${surveyId}/countResponses?date=${dateString}`)
+                                              .then(response => response.json())
+                                              .then(data => {
+                                                  cell.innerHTML = `
+                                                      <input type="radio" name="answers[${index}][answer]" value="${dateString}" 
+                                                            id="date-${dateString}" 
+                                                            ${data.count >= maxParticipants ? 'disabled' : ''} 
+                                                      >
+                                                      ${date.getDate()} (${date.getMonth() + 1}/${date.getFullYear()})<br>
+                                                      응답 수: ${data.count}/${maxParticipants}
+                                                  `;
+                                                  if (data.count >= maxParticipants) {
+                                                      cell.style.backgroundColor = 'red'; // 최대 인원 초과 시 배경색 변경
+                                                      cell.style.color = 'white'; // 글자색 변경
+                                                  } else {
+                                                      cell.style.cursor = 'pointer'; // 클릭 가능하다는 표시
+                                                  }
+                                              });
+                                      }
+                                      row.appendChild(cell);
+                                  }
+                              }
+                              table.appendChild(row);
+                          }
+              
+                          calendarDiv.appendChild(table);
+                      }
+              
                       const exceptionDates = <%- JSON.stringify(question.reservation.exceptionDates) %>; // 예외 날짜 배열 가져오기
                       displayCalendar(
                           '<%= question.reservation.startDate %>',
@@ -162,6 +178,76 @@
                           <%= index %>
                       );
                   </script>
+                <% } else if (question.questionType === 'time_reservation') { %>
+                  <label>예약 가능한 날짜 선택:</label>
+                  <select name="timeReservationDate" onchange="handleTimeReservationDateChange(this, <%= index %>)">
+                      <option value="">날짜 선택</option>
+                      <% question.time_reservation.availableDates.forEach(date => { %>
+                          <option value="<%= date %>"><%= date %></option>
+                      <% }); %>
+                  </select>
+                  <div id="timeSlots<%= index %>" style="margin-top: 10px;"></div>
+              
+                  <input type="hidden" name="answers[<%= index %>][questionId]" value="<%= question._id %>">
+
+                  <script>
+                    console.log('Index:', <%= index %>);
+                    function handleTimeReservationDateChange(select, questionIndex) {
+                        const selectedDate = select.value;
+                        const timeSlotsDiv = document.getElementById(`timeSlots${questionIndex}`);
+                        timeSlotsDiv.innerHTML = ''; // 기존 내용 초기화
+                        
+                        if (selectedDate) {
+                            const startTime = '<%= question.time_reservation.startTime %>';
+                            const endTime = '<%= question.time_reservation.endTime %>';
+                            const interval = <%= question.time_reservation.interval %>;
+                            
+                            // 시작 시간과 종료 시간을 Date 객체로 변환
+                            const startDateTime = new Date(`1970-01-01T${startTime}:00`);
+                            const endDateTime = new Date(`1970-01-01T${endTime}:00`);
+                            const timeSlots = [];
+                
+                            // 시간 슬롯 배열 생성
+                            for (let time = startDateTime; time <= endDateTime; time.setMinutes(time.getMinutes() + interval)) {
+                                timeSlots.push(time.toTimeString().split(' ')[0].substring(0, 5)); // HH:mm 형식으로 저장
+                            }
+                
+                            // fetch 요청을 Promise 배열로 변환
+                            const fetchPromises = timeSlots.map(time => {
+                                return fetch(`/survey/<%= survey._id %>/countResponses?date=${selectedDate}&time=${time}`)
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        return { time, count: data.count }; // 시간과 응답 수를 객체로 반환
+                                    });
+                            });
+                
+                            // 모든 fetch 요청이 완료된 후 처리
+                            Promise.all(fetchPromises).then(results => {
+                                results.forEach(result => {
+                                    const { time, count } = result;
+                
+                                    const radio = document.createElement('input');
+                                    radio.type = 'radio';
+                                    radio.name = `answers[${questionIndex}][answer]`;
+                                    radio.value = `${selectedDate} ${time}`;
+                                    radio.id = `time-${selectedDate}-${time}`;
+                                    if (count >= <%= question.time_reservation.maxParticipants %>) {
+                                        radio.disabled = true; // 최대 인원 초과 시 비활성화
+                                    }
+                
+                                    const label = document.createElement('label');
+                                    label.htmlFor = `time-${selectedDate}-${time}`;
+                                    label.innerText = `${time} (응답 수: ${count}/${<%= question.time_reservation.maxParticipants %>})`;
+                
+                                    timeSlotsDiv.appendChild(radio);
+                                    timeSlotsDiv.appendChild(label);
+                                    timeSlotsDiv.appendChild(document.createElement('br')); // 줄 바꿈
+                                });
+                            });
+                        }
+                    }
+                </script>
+                
                 <% } else if (question.questionType === 'preference') { %>
                     <% question.options.forEach((option, optionIndex) => { %>
                         <label><%= option %></label>
@@ -172,11 +258,86 @@
                             <% } %>
                         </select>
                     <% }); %>
-                <% } %>
+                    <input type="hidden" name="answers[<%= index %>][questionId]" value="<%= question._id %>">
+
+                    <% } else if (question.questionType === 'email') { %>
+                      <div>
+                          <label for="email">이메일 주소:</label>
+                          <input type="email" id="email" name="email" required>
+                          <button type="button" onclick="sendVerificationCode()">검증 코드 발송</button>
+                      </div>
+                      <div>
+                          <label for="verificationCode">검증 코드:</label>
+                          <input type="text" id="verificationCode" name="verificationCode" required>
+                          <button type="button" onclick="verifyCode()">검증</button>
+                      </div>
+                      <input type="hidden" name="answers[<%= index %>][answer]" id="emailAnswer<%= index %>" value="">
+                      <input type="hidden" name="answers[<%= index %>][questionId]" value="<%= question._id %>">
+                      <script>
+                          let generatedCode; // 검증 코드를 저장할 변수
+                  
+                          function sendVerificationCode() {
+                              const email = document.getElementById('email').value;
+                  
+                              // 이메일 주소가 비어 있는지 확인
+                              if (!email) {
+                                  alert('이메일 주소를 입력해 주세요.');
+                                  return;
+                              }
+                  
+                              // 4자리 랜덤 검증 코드 생성
+                              generatedCode = Math.floor(1000 + Math.random() * 9000).toString();
+                  
+                              fetch('/email/send-email', {
+                                  method: 'POST',
+                                  headers: {
+                                      'Content-Type': 'application/json'
+                                  },
+                                  body: JSON.stringify({
+                                      recipient: email,
+                                      subject: `[${generatedCode}] 이메일 검증 코드입니다.`,
+                                      message: `이메일 검증 코드 [${generatedCode}]를 입력해 주세요.` // 랜덤 코드 전송
+                                  })
+                              })
+                              .then(response => {
+                                  if (!response.ok) {
+                                      throw new Error('메일 발송 실패');
+                                  }
+                                  return response.json();
+                              })
+                              .then(data => {
+                                  alert(data.message);
+                              })
+                              .catch(error => {
+                                  console.error('Error:', error);
+                                  alert('메일 발송 중 오류가 발생했습니다: ' + error.message);
+                              });
+                          }
+                  
+                          function verifyCode() {
+                              const code = document.getElementById('verificationCode').value;
+                  
+                              // 입력한 코드와 생성한 코드 비교
+                              if (code === generatedCode) {
+                                  alert('검증이 완료되었습니다.');
+                                  document.getElementById('email').disabled = true;
+                                  document.getElementById('verificationCode').disabled = true;
+
+                                  document.getElementById(`emailAnswer<%= index %>`).value = document.getElementById('email').value; // hidden input에 이메일 전송
+                              } else {
+                                  alert('검증 코드가 일치하지 않습니다.');
+                              }
+                          }
+                      </script>
+                  <% } %>
+                  
+              <% } %>
             </div>
         <% }); %>
+        <input type="hidden" name="startedAt" value="<%= startedAt.toISOString() %>">
         <button type="submit">응답 제출</button>
     </form>
+    <% } %>
 
     <script>
       function validateForm() {

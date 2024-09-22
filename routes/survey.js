@@ -20,7 +20,7 @@ router.get('/new', isAdmin, (req, res) => {
 // 설문조사 생성 처리
 router.post('/', isAdmin, async (req, res) => {
   console.log(req.body); // 요청 본문 출력
-  const { title, questions } = req.body;
+  const { title, questions, startDate, endDate } = req.body;
 
   // 비어있는 필드 확인
   if (!questions || !Array.isArray(questions)) {
@@ -58,43 +58,83 @@ router.post('/', isAdmin, async (req, res) => {
           endTime: question.time_reservation ? question.time_reservation.endTime : null,
           interval: question.time_reservation ? question.time_reservation.interval : null,
           maxParticipants: question.time_reservation ? question.time_reservation.maxParticipants : null
-      }
+      },
+      infoText: question.infoText || null
   }));
 
-  const survey = new Survey({ title, questions: formattedQuestions, createdBy: req.session.user._id });
+  const survey = new Survey({
+      title,
+      questions: formattedQuestions,
+      startDate: startDate ? new Date(startDate) : null, // 비어있으면 null로 설정
+      endDate: endDate ? new Date(endDate) : null, // 비어있으면 null로 설정
+      createdBy: req.session.user._id
+  });
   await survey.save();
   res.redirect('/survey/list');
 });
 
+// 이메일 검증 처리 라우터
+router.post('/verify-code', async (req, res) => {
+  const { code } = req.body;
+
+  // 세션에서 검증 코드 가져오기
+  const sessionCode = req.session.verificationCode;
+
+  // 입력한 코드와 세션 코드 비교
+  if (!sessionCode || sessionCode !== code) {
+      return res.status(400).json({ valid: false, message: '잘못된 검증 코드입니다.' });
+  }
+
+  // 검증 성공 처리
+  req.session.verificationCode = undefined; // 코드 제거
+  res.json({ valid: true, message: '이메일이 성공적으로 검증되었습니다.' });
+});
+
 // 응답 처리
 router.post('/:id/respond', async (req, res) => {
-  const { answers } = req.body;
+  const { answers, startedAt, email } = req.body;
+  console.log('Answers received:', answers);
   const survey = await Survey.findById(req.params.id);
 
   // 응답 검증
   const formattedAnswers = []; // 빈 배열 생성
-
+  let answerIndex = 0; // 실제 답변 인덱스
+  
   for (let i = 0; i < survey.questions.length; i++) {
       const question = survey.questions[i];
-      const answerObj = answers[i] || {}; // answers[i]가 없을 경우 빈 객체로 초기화
-
+  
+      // info 문항은 처리하지 않음
+      if (question.questionType === 'info') {
+          continue; // info 문항은 건너뜀
+      }
+  
+      const answerObj = answers[answerIndex] || {}; // answers[answerIndex]가 없을 경우 빈 객체로 초기화
+  
       const answer = answerObj.answer || ""; // 응답이 없으면 빈 문자열로 처리
       const questionId = answerObj.questionId || question._id; // questionId 초기화
-
+  
       // 필수 문항 체크
       if (question.isRequired && (!answer || answer.trim() === "")) {
           return res.status(400).send(`문항 ${i + 1}은 필수입니다.`);
       }
-
+  
       // 포맷팅된 답변 추가
       const otherAnswer = answerObj.otherAnswer || "";
 
       // 기존 문항 유형에 대한 처리
-      formattedAnswers.push({
-          questionId: questionId,
-          answer: answer, // 항상 빈 값이거나 실제 응답이 들어가게 됩니다.
-          otherAnswer: otherAnswer
-      });
+      if (question.questionType === 'preference') {
+          const selectedRanks = answerObj.answer || []; // 선택된 순위 정보를 가져옴
+          formattedAnswers.push({
+              questionId: questionId,
+              answer: selectedRanks // 모든 선택지에 대한 순위 정보를 저장
+          });
+      } else {
+          formattedAnswers.push({
+              questionId: questionId,
+              answer: answer, // 항상 빈 값이거나 실제 응답이 들어가게 됩니다.
+              otherAnswer: otherAnswer
+          });
+      }
 
       // 추가적인 검증 로직
       if (question.questionType === 'short_answer') {
@@ -117,33 +157,15 @@ router.post('/:id/respond', async (req, res) => {
           }
           // 'all'일 경우 검증을 생략합니다.
       }
-
-      // 선호도 문항 처리
-      else if (question.questionType === 'preference') {
-          const answerObj = {};
-          const selectedRanks = new Set(); // 중복 순위를 체크하기 위한 Set
-
-          for (let optionIndex = 0; optionIndex < question.options.length; optionIndex++) {
-              const rank = answerObj[`answer[${optionIndex}]`];
-              if (rank) {
-                  if (selectedRanks.has(rank)) {
-                      return res.status(400).send(`순위 ${rank}는 이미 다른 선택지에서 선택되었습니다.`);
-                  }
-                  selectedRanks.add(rank);
-              }
-          }
-
-          formattedAnswers.push({
-              questionId: questionId,
-              answer: answerObj // 모든 선택지에 대한 순위 정보를 저장
-          });
-      }
+      answerIndex++;
   }
 
   const response = new Response({
       surveyId: req.params.id,
       userId: req.session.user ? req.session.user._id : null, // 로그인한 경우 userId 설정
-      answers: formattedAnswers // 포맷팅된 answers 사용
+      answers: formattedAnswers, // 포맷팅된 answers 사용
+      startedAt: new Date(startedAt),
+      email
   });
   await response.save();
   
@@ -151,20 +173,58 @@ router.post('/:id/respond', async (req, res) => {
   res.redirect('/survey');
 });
 
-// 응답 수 카운트 API
+// 설문조사 응답 페이지
+router.get('/:id/respond', ensureAuthenticated, async (req, res) => {
+  const survey = await Survey.findById(req.params.id);
+  const now = new Date();
+
+  let message = null;
+
+  // 시작 날짜와 종료 날짜 확인
+  if (survey.startDate || survey.endDate) {
+    const startDate = survey.startDate ? new Date(survey.startDate) : null;
+    const endDate = survey.endDate ? new Date(survey.endDate) : null;
+
+    if (startDate && now < startDate) {
+        return res.render('surveys/respond', { survey, message: '설문 가능 기간이 아닙니다.' });
+    }
+    if (endDate && now > endDate) {
+        return res.render('surveys/respond', { survey, message: '설문 기간이 종료되었습니다.' });
+    }
+  }
+
+  // 현재 시간을 시작 시간으로 설정
+  const startedAt = new Date();
+
+  // 설문조사 응답 페이지 렌더링
+  res.render('surveys/respond', { survey, startedAt, message });
+});
+
 router.get('/:id/countResponses', async (req, res) => {
-  const { date } = req.query;
+  const { date, time } = req.query;
+  const surveyId = req.params.id;
 
-  // KST로 변환
-  const kstDate = convertToKST(date);
+  let count;
 
-  const count = await Response.countDocuments({
-      surveyId: req.params.id,
-      'answers.answer': kstDate // 선택된 날짜에 대한 응답 수
-  });
+  // date와 time이 모두 있는 경우 (time-reservation)
+  if (date && time) {
+      const responseDateTime = `${date} ${time}`;
+      count = await Response.countDocuments({
+          surveyId: surveyId,
+          'answers.answer': responseDateTime // 선택된 날짜와 시간에 대한 응답 수
+      });
+  } 
+  // date만 있는 경우 (reservation)
+  else if (date) {
+      count = await Response.countDocuments({
+          surveyId: surveyId,
+          'answers.answer': date // 선택된 날짜에 대한 응답 수
+      });
+  }
 
   res.json({ count });
 });
+
 
 // 설문조사 수정 페이지
 router.get('/:id/edit', isAdmin, async (req, res) => {
@@ -191,16 +251,12 @@ router.get('/', async (req, res) => {
   res.render('surveys/survey', { surveys }); // 사용자 목록을 렌더링
 });
 
-// 설문조사 응답 페이지
-router.get('/:id/respond', ensureAuthenticated, async (req, res) => {
-    const survey = await Survey.findById(req.params.id);
-    res.render('surveys/respond', { survey });
-});
 
 // 설문조사 결과 보기 페이지 (관리자용)
 router.get('/:id/results', isAdmin, async (req, res) => {
-    const responses = await Response.find({ surveyId: req.params.id }).populate('userId', 'username');
-    res.render('surveys/results', { responses });
+  const responses = await Response.find({ surveyId: req.params.id }).populate('userId', 'username');
+  const survey = await Survey.findById(req.params.id);
+  res.render('surveys/results', { responses, survey });
 });
 
 module.exports = router;

@@ -1,0 +1,677 @@
+node.js와 mongoDB로 설문조사 페이지를 만들고 있어
+기본적으로 설문조사를 생성하는 페이지와, 생성한 설문조사에 응답하는 페이지를 구현해야 해.
+아래는 db 모델이야
+```
+const SurveySchema = new mongoose.Schema({
+    title: { type: String, required: true },
+    questions: [{
+        questionText: { type: String, required: true },
+        questionDescription: { type: String },
+        questionType: { 
+            type: String,
+            enum: ['short_answer', 'long_answer', 'single_choice', 'multiple_choice', 'date', 'dropdown', 'preference', 'reservation', 'time_reservation'],
+            required: true 
+        },
+        inputType: { 
+            type: String,
+            enum: ['all', 'integer', 'letters'],
+            default: 'all',
+            required: function () { return this.questionType === 'short_answer'; }
+        },
+        reservation: {
+            startDate: { type: String },
+            endDate: { type: String },
+            maxParticipants: { type: Number },
+            exceptionDates: [{ type: String }]
+        },
+        time_reservation: {
+            availableDates: [{ type: String }], // 선택된 예약 날짜들
+            startTime: { type: String }, // 첫 번째 예약 가능 시간
+            endTime: { type: String }, // 마지막 예약 가능 시간
+            interval: { type: Number }, // 예약 시간 간격
+            maxParticipants: { type: Number } // 시간당 최대 예약 인원
+        },
+        options: [{ type: String }], // 객관식 선택지
+        minValue: { type: Number },
+        maxValue: { type: Number },
+        rankLimit: { type: Number },
+        isRequired: { type: Boolean, default: false },
+        allowOther: { type: Boolean, default: false },
+        prefixText: { type: String }, // 입력 필드 앞에 붙일 텍스트
+        suffixText: { type: String }  // 입력 필드 뒤에 붙일 텍스트
+    }],  
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    createdAt: { type: Date, default: Date.now }
+});
+```
+아래는 설문조사 생성 관련 스크립트 코드야
+```
+let questionCount = 0; // 문항 개수 카운트
+
+// 문항 HTML 구조를 반환하는 함수
+function createQuestionHTML(index) {
+    return `
+        <div class="question">
+            <button type="button" onclick="moveQuestion(this, 'up')">↑</button>
+            <button type="button" onclick="moveQuestion(this, 'down')">↓</button>
+            <input type="text" name="questions[${index}][questionText]" placeholder="문항 내용" required>
+            <input type="text" name="questions[${index}][questionDescription]" placeholder="문항 설명">
+            <label>
+                <input type="checkbox" name="questions[${index}][isRequired]" value="true"> 필수
+            </label>
+            <select name="questions[${index}][questionType]" onchange="updateQuestionFields(this)">
+                <option value="short_answer">단답형</option>
+                <option value="long_answer">장문형</option>
+                <option value="single_choice">단일 선택</option>
+                <option value="multiple_choice">다중 선택</option>
+                <option value="date">날짜 입력</option>
+                <option value="dropdown">드롭다운 선택</option>
+                <option value="preference">선호도</option>
+                <option value="reservation">날짜 예약</option>
+                <option value="time_reservation">시간 예약</option>
+            </select>
+            <div class="options" style="display: none;">
+                <div class="option">
+                    <input type="text" name="questions[${index}][options][]" placeholder="선택지 입력">
+                    <button type="button" onclick="removeOption(this)">삭제</button>
+                </div>
+                <button type="button" onclick="addOption(this)">선택지 추가</button>
+            </div>
+            <div class="allow-other" style="display: none;">
+                <label>
+                    <input type="checkbox" name="questions[${index}][allowOther]" value="true"> 기타 응답 수집
+                </label>
+            </div>
+            <div class="textarea" style="display: none;">
+                <label>답변:</label>
+                <textarea name="questions[${index}][answer]" rows="4" placeholder="답변 입력"></textarea>
+            </div>
+            <div class="date" style="display: none;">
+                <label>날짜 입력:</label>
+                <input type="date" name="questions[${index}][date]" placeholder="날짜 입력">
+            </div>
+            <div class="short-answer" style="display: none;">
+                <label>단답형 답변:</label>
+                <input type="text" name="questions[${index}][prefixText]" placeholder="앞에 붙일 텍스트">
+                <input type="text" name="questions[${index}][shortAnswer]" placeholder="단답형 답변 입력">
+                <input type="text" name="questions[${index}][suffixText]" placeholder="뒤에 붙일 텍스트">
+                <select name="questions[${index}][inputType]" onchange="updateInputType(this)">
+                    <option value="all">모든 값</option>
+                    <option value="letters">영문자만 입력</option>
+                    <option value="integer">정수만 입력</option>
+                </select>
+                <div class="integer-range" style="display: none;">
+                    <input type="number" name="questions[${index}][minValue]" placeholder="최소값">
+                    <input type="number" name="questions[${index}][maxValue]" placeholder="최대값">
+                </div>
+            </div>
+            <div class="rank-limit" style="display: none;">
+                <label>최대 순위:</label>
+                <input type="number" name="questions[${index}][rankLimit]" min="1" placeholder="최대 순위 입력">
+            </div>
+            <div class="reservation" style="display: none;">
+                <label for="dateRange${index}">날짜 범위 선택:</label>
+                <input type="text" id="dateRange${index}" placeholder="시작 날짜와 마감 날짜 선택" readonly>
+                <label for="excludeDates${index}">제외할 날짜 선택:</label>
+                <input type="text" id="excludeDates${index}" placeholder="제외할 날짜 선택" readonly>
+                
+                <label for="maxParticipants${index}">일일 최대 예약 가능 인원:</label>
+                <input type="number" id="maxParticipants${index}" name="questions[${index}][reservation][maxParticipants]" min="1">
+                
+                <input type="hidden" name="questions[${index}][reservation][startDate]" id="startDate${index}">
+                <input type="hidden" name="questions[${index}][reservation][endDate]" id="endDate${index}">
+                <input type="hidden" name="questions[${index}][reservation][exceptionDates]" id="exceptionDates${index}">
+            </div>
+            <div class="time-reservation" style="display: none;">
+                <label for="timeRange${index}">예약 가능 날짜 선택:</label>
+                <input type="text" id="timeRange${index}" placeholder="예약 날짜 선택" readonly>
+                
+                <label for="startTime${index}">첫번째 예약 시간:</label>
+                <input type="text" id="startTime${index}" placeholder="14:00">
+                
+                <label for="endTime${index}">마지막 예약 시간:</label>
+                <input type="text" id="endTime${index}" placeholder="16:00">
+                
+                <label for="interval${index}">예약 시간 간격:</label>
+                <select name="questions[${index}][time_reservation][interval]" id="interval${index}">
+                    <option value="10">10분</option>
+                    <option value="15">15분</option>
+                    <option value="20">20분</option>
+                    <option value="30" selected>30분</option>
+                    <option value="60">60분</option>
+                </select>
+
+                <label>시간당 최대 예약 가능 인원:</label>
+                <input type="number" name="questions[${index}][time_reservation][maxParticipants]" min="1">
+
+                <input type="hidden" name="questions[${index}][time_reservation][availableDates]" id="availableDates${index}">
+                <input type="hidden" name="questions[${index}][time_reservation][startTime]" id="startTimeHidden${index}">
+                <input type="hidden" name="questions[${index}][time_reservation][endTime]" id="endTimeHidden${index}">
+            </div>
+            <button type="button" onclick="removeQuestion(this)">문항 삭제</button>
+        </div>
+    `;
+}
+
+// 문항 추가 함수
+function addQuestion() {
+    const questionsDiv = document.getElementById('questions');
+    questionsDiv.insertAdjacentHTML('beforeend', createQuestionHTML(questionCount));
+    const newQuestionDiv = questionsDiv.lastElementChild;
+    const newQuestionSelect = newQuestionDiv.querySelector('select');
+    updateQuestionFields(newQuestionSelect); // 추가된 문항의 상태 업데이트
+    initializeFlatpickr(questionCount); // Flatpickr 초기화
+    questionCount++;
+}
+
+// 날짜 및 시간 처리 함수
+function initializeFlatpickr(index) {
+    const dateRangeInput = document.getElementById(`dateRange${index}`);
+    const excludeDatesInput = document.getElementById(`excludeDates${index}`);
+    const startDateInput = document.getElementById(`startDate${index}`);
+    const endDateInput = document.getElementById(`endDate${index}`);
+    const exceptionDatesInput = document.getElementById(`exceptionDates${index}`);
+    const timeRangeInput = document.getElementById(`timeRange${index}`);
+    let excludeDates = [];
+
+    // 선택한 날짜에 하루 추가 처리
+    function addOneDay(date) {
+        const newDate = new Date(date);
+        newDate.setDate(newDate.getDate() + 1);
+        return newDate;
+    }
+
+    // 시간값 버리고 날짜값만 처리
+    function formatDate(date) {
+      return date.toISOString().split('T')[0];
+    }
+
+    // [날짜 예약] 예약 가능 날짜 범위 선택 초기화 처리
+    flatpickr(dateRangeInput, {
+      mode: "range",
+      dateFormat: "Y-m-d",
+      onChange: function(selectedDates) {
+          if (selectedDates.length === 2) {
+              const [startDate, endDate] = selectedDates;
+
+              startDateInput.value = formatDate(addOneDay(startDate));
+              endDateInput.value = formatDate(addOneDay(endDate));
+
+              excludeDatesInput._flatpickr.set('minDate', startDate);
+              excludeDatesInput._flatpickr.set('maxDate', endDate);
+          }
+      }
+    });
+
+    // [날짜 예약] 예약 제외 날짜 선택 초기화 처리
+    flatpickr(excludeDatesInput, {
+        mode: "multiple",
+        dateFormat: "Y-m-d",
+        onChange: function(selectedDates) {
+            excludeDates.length = 0; // 기존 배열 초기화
+            selectedDates.forEach(date => {
+                excludeDates.push(addOneDay(date));
+            });
+            exceptionDatesInput.value = excludeDates.map(formatDate).join(',');
+        }
+    });
+
+    // [시간 예약] 예약 가능 날짜 선택 초기화 처리
+    flatpickr(timeRangeInput, {
+        mode: "multiple",
+        dateFormat: "Y-m-d",
+        onChange: function(selectedDates) {
+            const availableDatesPlusOne = selectedDates.map(addOneDay);
+            document.getElementById(`availableDates${index}`).value = availableDatesPlusOne.map(formatDate).join(',');
+        }
+    });
+
+    // [시간 예약] 첫 시간, 마지막 시간 선택 초기화 처리
+    function setupTimePicker(timeInputId, hiddenInputId) {
+        flatpickr(document.getElementById(timeInputId), {
+            enableTime: true,
+            noCalendar: true,
+            dateFormat: "H:i",
+            time_24hr: true,
+            onChange: function(selectedDates) {
+                const timeValue = selectedDates[0].toISOString().split('T')[1].substring(0, 5); // 선택된 시간 가져오기
+                const utcDate = new Date(`1970-01-01T${timeValue}:00Z`); // UTC로 변환
+                const kstDate = new Date(utcDate.getTime() + 9 * 60 * 60 * 1000); // KST로 변환
+                const kstTimeValue = kstDate.toISOString().split('T')[1].substring(0, 5); // KST 시간 형식으로 변환
+                
+                document.getElementById(timeInputId).value = kstTimeValue; // 시작/종료 시간 필드에 설정
+                document.getElementById(hiddenInputId).value = kstTimeValue; // hidden input에 설정
+            }
+        });
+    }
+
+    setupTimePicker(`startTime${index}`, `startTimeHidden${index}`);
+    setupTimePicker(`endTime${index}`, `endTimeHidden${index}`);
+}
+
+function updateQuestionFields(select) {
+  const questionDiv = select.closest('.question');
+    const selectedValue = select.value;
+
+    // 모든 추가 입력 필드 숨기기
+    questionDiv.querySelector('.options').style.display = 'none';
+    questionDiv.querySelector('.textarea').style.display = 'none';
+    questionDiv.querySelector('.date').style.display = 'none';
+    questionDiv.querySelector('.short-answer').style.display = 'none';
+    questionDiv.querySelector('.reservation').style.display = 'none';
+    questionDiv.querySelector('.time-reservation').style.display = 'none';
+
+    // 선택한 유형에 따라 필드 보이기
+    const displayFields = {
+        single_choice: ['options', 'allow-other'],
+        multiple_choice: ['options', 'allow-other'],
+        long_answer: ['textarea'],
+        date: ['date'],
+        short_answer: ['short-answer'],
+        dropdown: ['options'],
+        preference: ['options', 'rank-limit'],
+        reservation: ['reservation'],
+        time_reservation: ['time-reservation']
+    };
+
+    const fieldsToShow = displayFields[selectedValue] || [];
+    fieldsToShow.forEach(field => {
+        questionDiv.querySelector(`.${field}`).style.display = 'block';
+    });
+}
+
+function addOption(button) {
+    const optionsDiv = button.parentElement;
+    const questionDiv = optionsDiv.closest('.question'); // 현재 문항 div
+    const questionIndex = Array.from(document.getElementById('questions').children).indexOf(questionDiv); // 질문 인덱스 추출
+    const newOptionDiv = document.createElement('div');
+    newOptionDiv.className = 'option';
+    newOptionDiv.innerHTML = `
+        <input type="text" name="questions[${questionIndex}][options][]" placeholder="선택지 입력">
+        <button type="button" onclick="removeOption(this)">삭제</button>
+    `;
+    optionsDiv.insertBefore(newOptionDiv, button);
+}
+
+function updateInputType(select) {
+    const questionDiv = select.closest('.question'); // 가장 가까운 질문 div 찾기
+    const selectedValue = select.value;
+
+    const integerRangeDiv = questionDiv.querySelector('.integer-range');
+
+    // 모든 입력 필드 초기화
+    integerRangeDiv.style.display = 'none';
+
+    // 선택한 입력 유형에 따라 필드 보이기
+    if (selectedValue === 'integer') {
+        integerRangeDiv.style.display = 'block'; // 정수 범위 입력 필드 보이기
+    }
+}
+```
+아래는 응답 페이지 코드
+```
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title><%= survey.title %> 응답하기</title>
+    <!-- <script src="/js/displayCalendar.js"></script> -->
+</head>
+<body>
+    <h1><%= survey.title %> 응답하기</h1>
+    <form action="/survey/<%= survey._id %>/respond" method="POST" onsubmit="return validateForm()">
+        <% survey.questions.forEach(function(question, index) { %>
+            <div>
+                <label><%= question.questionText %></label>
+                
+                <!-- 문항 설명 표시 -->
+                <p><%= question.questionDescription %></p>
+
+                <% if (question.isRequired) { %>
+                    <span style="color: red;">*</span>
+                <% } %>
+
+                <% if (question.questionType === 'short_answer') { %>
+                    <span><%= question.prefixText || '' %></span>
+                    <input type="text" name="answers[<%= index %>][answer]" 
+                           <% if (question.isRequired) { %> required <% } %>
+                           <% if (question.inputType === 'letters') { %> 
+                               pattern="[a-zA-Z\s]+" title="영문자만 입력 가능합니다."
+                               oninput="this.value = this.value.toUpperCase();" 
+                           <% } %>
+                           <% if (question.inputType === 'integer') { %> 
+                               pattern="\d+" title="정수만 입력 가능합니다." 
+                               onblur="validateIntegerInput(<%= index %>)"
+                           <% } %>
+                    >
+                    <span><%= question.suffixText || '' %></span>
+                    <input type="hidden" name="answers[<%= index %>][questionId]" value="<%= question._id %>">
+                    <% if (question.inputType === 'integer') { %>
+                        <input type="hidden" name="answers[<%= index %>][minValue]" value="<%= question.minValue %>">
+                        <input type="hidden" name="answers[<%= index %>][maxValue]" value="<%= question.maxValue %>">
+                    <% } %>
+                <% } else if (question.questionType === 'long_answer') { %>
+                    <textarea name="answers[<%= index %>][answer]" 
+                              <% if (question.isRequired) { %> required <% } %>
+                    ></textarea>
+                    <input type="hidden" name="answers[<%= index %>][questionId]" value="<%= question._id %>">
+                <% } else if (question.questionType === 'single_choice' || question.questionType === 'multiple_choice') { %>
+                    <% question.options.forEach(function(option) { %>
+                        <label>
+                            <input type="<%= question.questionType === 'single_choice' ? 'radio' : 'checkbox' %>" 
+                                   name="answers[<%= index %>][answer]" value="<%= option %>"
+                                   <% if (question.isRequired) { %> required <% } %>
+                            > <%= option %>
+                        </label>
+                    <% }); %>
+                    
+                    <% if (question.allowOther) { %>
+                        <label>
+                            <input type="<%= question.questionType === 'single_choice' ? 'radio' : 'checkbox' %>" 
+                                   name="answers[<%= index %>][answer]" value="기타 응답" 
+                                   id="otherOption<%= index %>" 
+                                   <% if (question.isRequired) { %> required <% } %>
+                            > 기타 응답
+                        </label>
+                        <input type="text" id="otherAnswer<%= index %>" name="answers[<%= index %>][otherAnswer]" placeholder="기타 응답 입력"
+                               oninput="document.getElementById('otherOption<%= index %>').checked = true;">
+                    <% } %>
+                    
+                    <input type="hidden" name="answers[<%= index %>][questionId]" value="<%= question._id %>">
+                <% } else if (question.questionType === 'dropdown') { %>
+                    <select name="answers[<%= index %>][answer]" 
+                            <% if (question.isRequired) { %> required <% } %>
+                    >
+                        <% question.options.forEach(function(option) { %>
+                            <option value="<%= option %>"><%= option %></option>
+                        <% }); %>
+                    </select>
+                    <input type="hidden" name="answers[<%= index %>][questionId]" value="<%= question._id %>">
+                <% } else if (question.questionType === 'date') { %>
+                    <input type="date" name="answers[<%= index %>][answer]" 
+                           <% if (question.isRequired) { %> required <% } %>
+                    >
+                    <input type="hidden" name="answers[<%= index %>][questionId]" value="<%= question._id %>">
+                <% } else if (question.questionType === 'reservation') { %>
+                  <label>예약 날짜 선택:</label>
+                  <div id="calendar"></div>
+                  
+                  <script>
+                      function displayCalendar(startDate, endDate, maxParticipants, surveyId, exceptionDates, index) {
+                          const calendarDiv = document.getElementById('calendar');
+                          calendarDiv.innerHTML = ''; // 기존 내용 초기화
+              
+                          const start = new Date(startDate);
+                          const end = new Date(endDate);
+                          const days = [];
+              
+                          // 시작일부터 종료일까지의 날짜 배열 생성
+                          for (let d = start; d <= end; d.setDate(d.getDate() + 1)) {
+                              days.push(new Date(d));
+                          }
+              
+                          // 7열 형식의 테이블 생성
+                          const table = document.createElement('table');
+                          const headerRow = document.createElement('tr');
+                          const daysOfWeek = ['월', '화', '수', '목', '금', '토', '일'];
+              
+                          daysOfWeek.forEach(day => {
+                              const th = document.createElement('th');
+                              th.innerText = day;
+                              headerRow.appendChild(th);
+                          });
+                          table.appendChild(headerRow);
+              
+                          for (let i = 0; i < days.length; i += 7) {
+                              const row = document.createElement('tr');
+                              for (let j = 0; j < 7; j++) {
+                                  if (i + j < days.length) {
+                                      const cell = document.createElement('td');
+                                      const date = days[i + j];
+                                      const dateString = new Date(date).toISOString().split('T')[0];
+              
+                                      // 날짜에 대한 응답 수 확인
+                                      if (exceptionDates.includes(dateString)) {
+                                          cell.innerHTML = `${date.getDate()} (${date.getMonth() + 1}/${date.getFullYear()})<br>예약 불가`;
+                                          cell.style.backgroundColor = 'gray'; // 예약 불가 날짜 색상
+                                          cell.style.color = 'white';
+                                      } else {
+                                          fetch(`/survey/${surveyId}/countResponses?date=${dateString}`)
+                                              .then(response => response.json())
+                                              .then(data => {
+                                                  cell.innerHTML = `
+                                                      <input type="radio" name="answers[${index}][answer]" value="${dateString}" 
+                                                            id="date-${dateString}" 
+                                                            ${data.count >= maxParticipants ? 'disabled' : ''} 
+                                                      >
+                                                      ${date.getDate()} (${date.getMonth() + 1}/${date.getFullYear()})<br>
+                                                      응답 수: ${data.count}/${maxParticipants}
+                                                  `;
+                                                  if (data.count >= maxParticipants) {
+                                                      cell.style.backgroundColor = 'red'; // 최대 인원 초과 시 배경색 변경
+                                                      cell.style.color = 'white'; // 글자색 변경
+                                                  } else {
+                                                      cell.style.cursor = 'pointer'; // 클릭 가능하다는 표시
+                                                  }
+                                              });
+                                      }
+                                      row.appendChild(cell);
+                                  }
+                              }
+                              table.appendChild(row);
+                          }
+              
+                          calendarDiv.appendChild(table);
+                      }
+              
+                      const exceptionDates = <%- JSON.stringify(question.reservation.exceptionDates) %>; // 예외 날짜 배열 가져오기
+                      displayCalendar(
+                          '<%= question.reservation.startDate %>',
+                          '<%= question.reservation.endDate %>',
+                          <%= question.reservation.maxParticipants %>,
+                          '<%= survey._id %>',
+                          exceptionDates, // 예외 날짜 배열 전달
+                          <%= index %>
+                      );
+                  </script>
+                <% } else if (question.questionType === 'preference') { %>
+                    <% question.options.forEach((option, optionIndex) => { %>
+                        <label><%= option %></label>
+                        <select name="answers[<%= index %>][answer][<%= optionIndex %>]" onchange="updateRank(this)">
+                            <option value="">순위 선택</option>
+                            <% for (let i = 1; i <= question.rankLimit; i++) { %>
+                                <option value="<%= i %>"><%= i %></option>
+                            <% } %>
+                        </select>
+                    <% }); %>
+                <% } %>
+            </div>
+        <% }); %>
+        <button type="submit">응답 제출</button>
+    </form>
+
+    <script>
+      function validateForm() {
+          const questions = document.querySelectorAll('div'); // 각 질문 div 선택
+          questions.forEach((questionDiv, index) => {
+              const otherInput = document.getElementById(`otherAnswer${index}`);
+              const otherOption = document.getElementById(`otherOption${index}`);
+              
+              // 기타 응답이 선택되지 않았으면 입력값 제거
+              if (!otherOption.checked) {
+                  otherInput.value = ''; // 입력값을 비움
+              }
+          });
+          return true; // 기본 제출 동작 허용
+      }
+
+      function updateRank(select) {
+          const selectedValue = select.value;
+          const allSelects = document.querySelectorAll(`select[name^="answers[${select.name.split('[')[1].split(']')[0]}][answer]"]`);
+
+          allSelects.forEach(s => {
+              if (s !== select && s.value === selectedValue) {
+                  s.value = ""; // 중복된 순위는 해제
+              }
+          });
+      }
+    </script> 
+</body>
+</html>
+```
+그리고 아래는 서버코드야
+```
+// 설문조사 생성 처리
+router.post('/', isAdmin, async (req, res) => {
+  console.log(req.body); // 요청 본문 출력
+  const { title, questions } = req.body;
+
+  // 비어있는 필드 확인
+  if (!questions || !Array.isArray(questions)) {
+      console.error('Questions are missing or not an array');
+      return res.status(400).send('Invalid questions format');
+  }
+
+  // 각 문항에 대해 설명과 필수 여부를 추가하여 저장
+  const formattedQuestions = questions.map(question => ({
+      questionText: question.questionText,
+      questionDescription: question.questionDescription, // 문항 설명 추가
+      questionType: question.questionType,
+      inputType: question.inputType,
+      options: question.options || [],
+      minValue: question.minValue,
+      maxValue: question.maxValue,
+      isRequired: question.isRequired === 'true',
+      allowOther: question.allowOther === 'true',
+      rankLimit: question.rankLimit,
+      prefixText: question.prefixText,
+      suffixText: question.suffixText,
+      reservation: {
+          startDate: question.reservation ? question.reservation.startDate.split('T')[0] : null,
+          endDate: question.reservation ? question.reservation.endDate.split('T')[0] : null,
+          maxParticipants: question.reservation ? question.reservation.maxParticipants : null,
+          exceptionDates: question.reservation && question.reservation.exceptionDates 
+              ? question.reservation.exceptionDates.split(',').map(date => date.trim())
+              : []  // 기본값은 빈 배열
+      },
+      time_reservation: {
+          availableDates: question.time_reservation && question.time_reservation.availableDates 
+          ? question.time_reservation.availableDates.split(',').map(date => date.trim())
+              : [], // 기본값은 빈 배열
+          startTime: question.time_reservation ? question.time_reservation.startTime : null,
+          endTime: question.time_reservation ? question.time_reservation.endTime : null,
+          interval: question.time_reservation ? question.time_reservation.interval : null,
+          maxParticipants: question.time_reservation ? question.time_reservation.maxParticipants : null
+      }
+  }));
+
+  const survey = new Survey({ title, questions: formattedQuestions, createdBy: req.session.user._id });
+  await survey.save();
+  res.redirect('/survey/list');
+});
+
+// 응답 처리
+router.post('/:id/respond', async (req, res) => {
+  const { answers } = req.body;
+  const survey = await Survey.findById(req.params.id);
+
+  // 응답 검증
+  const formattedAnswers = []; // 빈 배열 생성
+
+  for (let i = 0; i < survey.questions.length; i++) {
+      const question = survey.questions[i];
+      const answerObj = answers[i] || {}; // answers[i]가 없을 경우 빈 객체로 초기화
+
+      const answer = answerObj.answer || ""; // 응답이 없으면 빈 문자열로 처리
+      const questionId = answerObj.questionId || question._id; // questionId 초기화
+
+      // 필수 문항 체크
+      if (question.isRequired && (!answer || answer.trim() === "")) {
+          return res.status(400).send(`문항 ${i + 1}은 필수입니다.`);
+      }
+
+      // 포맷팅된 답변 추가
+      const otherAnswer = answerObj.otherAnswer || "";
+
+      // 기존 문항 유형에 대한 처리
+      formattedAnswers.push({
+          questionId: questionId,
+          answer: answer, // 항상 빈 값이거나 실제 응답이 들어가게 됩니다.
+          otherAnswer: otherAnswer
+      });
+
+      // 추가적인 검증 로직
+      if (question.questionType === 'short_answer') {
+          const inputType = question.inputType; // inputType 사용
+
+          if (inputType === 'integer') {
+              const minValue = parseInt(answerObj.minValue, 10); // 최소값 가져오기
+              const maxValue = parseInt(answerObj.maxValue, 10); // 최대값 가져오기
+
+              // 정수 입력 유효성 검사
+              const answerValue = parseInt(answer, 10);
+              if (!Number.isInteger(answerValue) || answerValue < minValue || answerValue > maxValue) {
+                  return res.status(400).send(`문항 ${i + 1}의 입력값은 ${minValue}와 ${maxValue} 사이의 정수여야 합니다.`);
+              }
+          } else if (inputType === 'letters') {
+              // 영문자 입력 유효성 검사
+              if (/[^a-zA-Z\s]/.test(answer)) {
+                  return res.status(400).send(`문항 ${i + 1}의 입력값은 영문자만 가능합니다.`);
+              }
+          }
+          // 'all'일 경우 검증을 생략합니다.
+      }
+
+      // 선호도 문항 처리
+      else if (question.questionType === 'preference') {
+          const answerObj = {};
+          const selectedRanks = new Set(); // 중복 순위를 체크하기 위한 Set
+
+          for (let optionIndex = 0; optionIndex < question.options.length; optionIndex++) {
+              const rank = answerObj[`answer[${optionIndex}]`];
+              if (rank) {
+                  if (selectedRanks.has(rank)) {
+                      return res.status(400).send(`순위 ${rank}는 이미 다른 선택지에서 선택되었습니다.`);
+                  }
+                  selectedRanks.add(rank);
+              }
+          }
+
+          formattedAnswers.push({
+              questionId: questionId,
+              answer: answerObj // 모든 선택지에 대한 순위 정보를 저장
+          });
+      }
+  }
+
+  const response = new Response({
+      surveyId: req.params.id,
+      userId: req.session.user ? req.session.user._id : null, // 로그인한 경우 userId 설정
+      answers: formattedAnswers // 포맷팅된 answers 사용
+  });
+  await response.save();
+  
+  // 설문조사 목록 페이지로 리디렉션
+  res.redirect('/survey');
+});
+
+// 응답 수 카운트 API
+router.get('/:id/countResponses', async (req, res) => {
+  const { date } = req.query;
+
+  // KST로 변환
+  const kstDate = convertToKST(date);
+
+  const count = await Response.countDocuments({
+      surveyId: req.params.id,
+      'answers.answer': kstDate // 선택된 날짜에 대한 응답 수
+  });
+
+  res.json({ count });
+});
+```
+설문 생성에 'time-reservation' 문항을 추가했는데, 응답페이지에서 응답할 수 있는 코드를 추가해 줄 수 있어?
+availableDates를 tab으로 구분하게 하고, 응답자가 그 중 하루를 선택하면 startTime부터 endTime까지 간격은 'interval' 값으로 라디오 버튼을 생성해서 그 중 하루를 선택할 수 있게 하고 싶어. 만약 startTime이 14:00이고, endTime이 16:00이고 interval은 30이라면 생성되는 라디오 버튼은 [14:00, 14:30, 15:00, 15:30, 16:00]일 거야.
+그리고 각각의 시간 옆에는 "응답 수: ${data.count}/${maxParticipants}"을 넣어서 '해당 날짜+시간' 응답수를 count해서 보여주고 maxParticipants와 값이 같아지면 선택하지 못하도록 하고 싶어. 해당 인덱스 anwser db에 저장하고 count 하는 값은 선택한 날짜와 선택한 시간의 조합이겠지? 이 처리방식은 기존의 reservation과 비슷하게 처리하면 좋겠어.
+
+전체 코드를 알려주지 말고 수정해야하는 부분을 수정 전, 수정 후로 알려줄래?
