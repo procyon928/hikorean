@@ -121,75 +121,56 @@
             document.querySelector(`.nav-link[onclick="showTab('${tabId}')"]`).classList.add('active');
         }
 
-        function compareTranslations(googleText, microsoftText, deeplText) {
-            const diff1 = Diff.diffChars(googleText, microsoftText);
-            const diff2 = Diff.diffChars(microsoftText, deeplText);
-            const diff3 = Diff.diffChars(googleText, deeplText);
+        function compareTranslations(googleTranslation, microsoftTranslation, deeplTranslation) {
+            // 각 탭에 대해 결과를 설정합니다.
+            setTabContent('tab1', googleTranslation, microsoftTranslation, 'Google 번역', 'Microsoft 번역');
+            setTabContent('tab2', microsoftTranslation, deeplTranslation, 'Microsoft 번역', 'DeepL 번역');
+            setTabContent('tab3', googleTranslation, deeplTranslation, 'Google 번역', 'DeepL 번역');
+        }
 
-            let diffHtml = `<div id="tab1" class="tab-content active">
-                                <div style="display: flex; justify-content: space-between;" class="mt-2">
-                                    <div style="flex: 1; margin-right: 10px;">
-                                        <p style="margin: 0;" onclick="setFinalText('${googleText}')"><strong>Google:</strong></p>
-                                        <span>${buildDiffHtml(diff1, true)}</span>
-                                    </div>
-                                    <div style="flex: 1;">
-                                        <p style="margin: 0;" onclick="setFinalText('${microsoftText}')"><strong>Microsoft:</strong></p>
-                                        <span>${buildDiffHtml(diff1, false)}</span>
-                                    </div>
-                                </div>
-                            </div>`;
+        function setTabContent(tabId, leftText, rightText, leftLabel, rightLabel) {
+            const leftDiv = `
+                <div class="col-6 p-2">
+                    <h6 onclick="setFinalText('${leftText.replace(/'/g, "\\'")}')">${leftLabel}</h6>
+                    ${highlightDifferences(leftText, rightText)}
+                </div>`;
+            
+            const rightDiv = `
+                <div class="col-6 p-2">
+                    <h6 onclick="setFinalText('${rightText.replace(/'/g, "\\'")}')">${rightLabel}</h6>
+                    ${highlightDifferences(rightText, leftText)}
+                </div>`;
+            
+            // 기존에 있는 tab-content를 제거하고 새로운 내용을 추가
+            const existingTab = document.getElementById(tabId);
+            if (existingTab) {
+                existingTab.remove();
+            }
 
-            diffHtml += `<div id="tab2" class="tab-content">
-                            <div style="display: flex; justify-content: space-between;" class="mt-2">
-                                <div style="flex: 1; margin-right: 10px;">
-                                    <p style="margin: 0;" onclick="setFinalText('${microsoftText}')"><strong>Microsoft:</strong></p>
-                                    <span>${buildDiffHtml(diff2, true)}</span>
-                                </div>
-                                <div style="flex: 1;">
-                                    <p style="margin: 0;" onclick="setFinalText('${deeplText}')"><strong>DeepL:</strong></p>
-                                    <span>${buildDiffHtml(diff2, false)}</span>
-                                </div>
-                            </div>
-                        </div>`;
-
-            diffHtml += `<div id="tab3" class="tab-content">
-                            <div style="display: flex; justify-content: space-between;" class="mt-2">
-                                <div style="flex: 1; margin-right: 10px;">
-                                    <p style="margin: 0;" onclick="setFinalText('${googleText}')"><strong>Google:</strong></p>
-                                    <span>${buildDiffHtml(diff3, true)}</span>
-                                </div>
-                                <div style="flex: 1;">
-                                    <p style="margin: 0;" onclick="setFinalText('${deeplText}')"><strong>DeepL:</strong></p>
-                                    <span>${buildDiffHtml(diff3, false)}</span>
-                                </div>
-                            </div>
-                        </div>`;
-
-            // 결과를 표시
-            document.getElementById('diffResult').innerHTML = diffHtml;
+            const tabContent = `
+                <div class="tab-content active" id="${tabId}">
+                    <div class="row no-gutters">
+                        ${leftDiv}
+                        ${rightDiv}
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('diffResult').innerHTML += tabContent;
             showTab('tab1'); // 첫 번째 탭을 활성화
         }
 
-        function buildDiffHtml(diff, isAddedTransparent) {
-            let html = '<span>'; // 음영 처리
-            diff.forEach(part => {
-                const borderRadius = '5px'; // 원하는 둥근 정도
+        function highlightDifferences(text1, text2) {
+            const diff = Diff.diffWords(text1, text2);
+            return diff.map(part => {
+                // 추가된 부분은 null로 처리하고, 제거된 부분은 붉은색으로 강조
                 if (part.added) {
-                    // 추가된 텍스트에 대해 배경색과 텍스트 색상 변경
-                    const backgroundColor = isAddedTransparent ? 'white' : 'rgba(0, 255, 0, 0.2)'; // 배경색
-                    const textColor = isAddedTransparent ? 'white' : 'black'; // 기본 텍스트 색상
-                    html += `<span style="background-color: ${backgroundColor}; color: ${textColor}; border-radius: ${borderRadius}; padding: 2px;">${part.value}</span>`;
+                    return ''; // 추가된 부분은 빈 문자열로 처리
                 } else if (part.removed) {
-                    // 제거된 텍스트에 대해 배경색과 텍스트 색상 변경
-                    const backgroundColor = isAddedTransparent ? 'rgba(255, 0, 0, 0.2)' : 'white'; // 배경색
-                    const textColor = isAddedTransparent ? 'black' : 'white'; // 기본 텍스트 색상
-                    html += `<span style="background-color: ${backgroundColor}; color: ${textColor}; border-radius: ${borderRadius}; padding: 2px;">${part.value}</span>`;
-                } else {
-                    html += part.value; // 변경 없음
+                    return `<span style="background-color: #fcc; border-radius: 5px; padding: 2px;">${part.value}</span>`; // 제거된 부분은 붉은색으로 강조
                 }
-            });
-            html += '</span>';
-            return html;
+                return part.value; // 변경 없음
+            }).join('');
         }
 
         function setFinalText(text) {
