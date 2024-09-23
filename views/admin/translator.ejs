@@ -127,7 +127,7 @@
             const diff3 = Diff.diffChars(googleText, deeplText);
 
             let diffHtml = `<div id="tab1" class="tab-content active">
-                                <div style="display: flex; justify-content: space-between;">
+                                <div style="display: flex; justify-content: space-between;" class="mt-2">
                                     <div style="flex: 1; margin-right: 10px;">
                                         <p style="margin: 0;" onclick="setFinalText('${googleText}')"><strong>Google:</strong></p>
                                         <span>${buildDiffHtml(diff1, true)}</span>
@@ -140,7 +140,7 @@
                             </div>`;
 
             diffHtml += `<div id="tab2" class="tab-content">
-                            <div style="display: flex; justify-content: space-between;">
+                            <div style="display: flex; justify-content: space-between;" class="mt-2">
                                 <div style="flex: 1; margin-right: 10px;">
                                     <p style="margin: 0;" onclick="setFinalText('${microsoftText}')"><strong>Microsoft:</strong></p>
                                     <span>${buildDiffHtml(diff2, true)}</span>
@@ -153,7 +153,7 @@
                         </div>`;
 
             diffHtml += `<div id="tab3" class="tab-content">
-                            <div style="display: flex; justify-content: space-between;">
+                            <div style="display: flex; justify-content: space-between;" class="mt-2">
                                 <div style="flex: 1; margin-right: 10px;">
                                     <p style="margin: 0;" onclick="setFinalText('${googleText}')"><strong>Google:</strong></p>
                                     <span>${buildDiffHtml(diff3, true)}</span>
@@ -172,17 +172,18 @@
 
         function buildDiffHtml(diff, isAddedTransparent) {
             let html = '<span>'; // 음영 처리
-              diff.forEach(part => {
+            diff.forEach(part => {
+                const borderRadius = '5px'; // 원하는 둥근 정도
                 if (part.added) {
                     // 추가된 텍스트에 대해 배경색과 텍스트 색상 변경
-                    const backgroundColor = isAddedTransparent ? 'white' : 'rgba(0, 255, 0, 0.3)'; // 배경색
+                    const backgroundColor = isAddedTransparent ? 'white' : 'rgba(0, 255, 0, 0.2)'; // 배경색
                     const textColor = isAddedTransparent ? 'white' : 'black'; // 기본 텍스트 색상
-                    html += `<span style="background-color: ${backgroundColor}; color: ${textColor};">${part.value}</span>`;
+                    html += `<span style="background-color: ${backgroundColor}; color: ${textColor}; border-radius: ${borderRadius}; padding: 2px;">${part.value}</span>`;
                 } else if (part.removed) {
                     // 제거된 텍스트에 대해 배경색과 텍스트 색상 변경
-                    const backgroundColor = isAddedTransparent ? 'rgba(255, 0, 0, 0.3)' : 'white'; // 배경색
+                    const backgroundColor = isAddedTransparent ? 'rgba(255, 0, 0, 0.2)' : 'white'; // 배경색
                     const textColor = isAddedTransparent ? 'black' : 'white'; // 기본 텍스트 색상
-                    html += `<span style="background-color: ${backgroundColor}; color: ${textColor};">${part.value}</span>`;
+                    html += `<span style="background-color: ${backgroundColor}; color: ${textColor}; border-radius: ${borderRadius}; padding: 2px;">${part.value}</span>`;
                 } else {
                     html += part.value; // 변경 없음
                 }
@@ -190,7 +191,6 @@
             html += '</span>';
             return html;
         }
-
 
         function setFinalText(text) {
             document.getElementById('finalText').value = text;
