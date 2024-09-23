@@ -123,9 +123,9 @@
 
         function compareTranslations(googleTranslation, microsoftTranslation, deeplTranslation) {
             // 각 탭에 대해 결과를 설정합니다.
-            setTabContent('tab1', googleTranslation, microsoftTranslation, 'Google 번역', 'Microsoft 번역');
-            setTabContent('tab2', microsoftTranslation, deeplTranslation, 'Microsoft 번역', 'DeepL 번역');
-            setTabContent('tab3', googleTranslation, deeplTranslation, 'Google 번역', 'DeepL 번역');
+            setTabContent('tab1', googleTranslation, microsoftTranslation, '✅ Google 번역', '✅ Microsoft 번역');
+            setTabContent('tab2', microsoftTranslation, deeplTranslation, '✅ Microsoft 번역', '✅ DeepL 번역');
+            setTabContent('tab3', googleTranslation, deeplTranslation, '✅ Google 번역', '✅ DeepL 번역');
         }
 
         function setTabContent(tabId, leftText, rightText, leftLabel, rightLabel) {
@@ -149,7 +149,7 @@
 
             const tabContent = `
                 <div class="tab-content active" id="${tabId}">
-                    <div class="row no-gutters">
+                    <div class="row no-gutters mt-2">
                         ${leftDiv}
                         ${rightDiv}
                     </div>
