@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>간단한 번역기</title>
+    <title>비교 번역기</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         /* 제목 아래 마진 추가 */
@@ -18,64 +18,70 @@
         .diff {
             color: red;
         }
+        .tab.active {
+            border-bottom: 1px solid transparent;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        #tabs {
+            white-space: nowrap; /* 탭이 한 줄에 표시되도록 설정 */
+        }
     </style>
 </head>
 <body>
     <div class="container mt-5 mb-3">
-        <h1 class="text-center">간단한 번역기</h1>
+        <h1 class="text-center">비교 번역기</h1>
         <form id="translateForm">
-            <div class="form-group">
-                <label for="textToTranslate"><h5>한국어 원문 입력:</h5></label>
-                <textarea id="textToTranslate" class="form-control" rows="4" required></textarea>
-            </div>
-            <div class="form-group">
-                <label for="targetLang">번역할 언어 선택:</label>
-                <select id="targetLang" class="form-control" required>
+            <div class="form-group d-flex justify-content-end align-items-center">
+                <!-- <label for="targetLang" class="mb-0">번역할 언어 선택:</label> -->
+                <select id="targetLang" class="form-control" required style="width: 50%;">
                     <option value="en">영어</option>
                     <option value="sc">중국어 간체</option>
                     <option value="tc">중국어 번체</option>
                     <option value="jp">일본어</option>
-                    <option value="vi">베트남어</option>
+                    <!-- <option value="vi">베트남어</option> -->
                 </select>
             </div>
+            
+            <div class="form-group">
+                <label for="textToTranslate"><h5>한국어 원문 입력:</h5></label>
+                <textarea id="textToTranslate" class="form-control" rows="4" required></textarea>
+            </div>
+          
             <div class="text-center">
-                <button type="submit" class="btn btn-primary">번역</button>
+                <button type="submit" class="btn btn-primary mt-2 mr-2">번역</button>
+                <button type="button" class="btn btn-secondary mt-2" id="clearOriginalButton">제거</button>
             </div>
-        </form>
-
-        <div id="results" class="mt-4">
-            <h5>번역 결과:</h5>
-            <div>
-                <label>
-                    <input type="radio" name="translation" value="google" id="googleRadio"><b> Google 번역</b>
-                </label>
-                <div id="googleResult" class="result-box"></div>
-            </div>
-            <div>
-                <label>
-                    <input type="radio" name="translation" value="microsoft" id="microsoftRadio"><b> Microsoft 번역</b>
-                </label>
-                <div id="microsoftResult" class="result-box"></div>
-            </div>
-            <div>
-                <label>
-                    <input type="radio" name="translation" value="deepl" id="deeplRadio"><b> DeepL 번역</b>
-                </label>
-                <div id="deeplResult" class="result-box"></div>
-            </div>
+          </form>
+        
+        <div class="mt-4">
+            <h5>번역 결과 비교:</h5>
+            <ul class="nav nav-tabs" id="tabs">
+                <li class="nav-item">
+                    <a class="nav-link active" onclick="showTab('tab1')">Google/MS</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showTab('tab2')">MS/DeepL</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="showTab('tab3')">Google/DeepL</a>
+                </li>
+            </ul>
+          
+            <div id="diffResult"></div>
         </div>
 
         <div class="mt-4">
             <h5>최종 번역 결과:</h5>
             <textarea id="finalText" class="form-control" rows="4"></textarea>
             <div class="text-center">
-                <button id="copyButton" class="btn btn-secondary mt-2">복사</button>
+                <button id="copyButton" class="btn btn-primary mt-2 mr-2">복사</button>
+                <button type="button" class="btn btn-secondary mt-2" id="clearTranslationButton">제거</button>
             </div>
-        </div>
-
-        <div class="mt-4">
-            <h5>번역 결과 비교:</h5>
-            <div id="diffResult"></div>
         </div>
     </div>
 
@@ -84,7 +90,7 @@
         document.getElementById('translateForm').addEventListener('submit', async function(event) {
             event.preventDefault();
             const textToTranslate = document.getElementById('textToTranslate').value;
-            const targetLang = document.getElementById('targetLang').value; // 선택된 언어 가져오기
+            const targetLang = document.getElementById('targetLang').value;
 
             // AJAX 요청으로 번역 API 호출
             const response = await fetch('/', {
@@ -92,63 +98,104 @@
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ text: textToTranslate, targetLang }) // 선택된 언어로 번역
+                body: JSON.stringify({ text: textToTranslate, targetLang })
             });
 
             const results = await response.json();
-            document.getElementById('googleResult').innerText = results.google;
-            document.getElementById('microsoftResult').innerText = results.microsoft;
-            document.getElementById('deeplResult').innerText = results.deepl;
-
-            // 라디오 버튼 클릭 이벤트 추가
-            document.querySelectorAll('input[name="translation"]').forEach(function(radio) {
-                radio.addEventListener('change', function() {
-                    const selectedValue = this.value;
-                    let selectedText = '';
-
-                    if (selectedValue === 'google') {
-                        selectedText = results.google;
-                    } else if (selectedValue === 'microsoft') {
-                        selectedText = results.microsoft;
-                    } else if (selectedValue === 'deepl') {
-                        selectedText = results.deepl;
-                    }
-
-                    // 선택된 텍스트를 textarea에 입력
-                    document.getElementById('finalText').value = selectedText;
-                });
-            });
-
+            
             // 번역 결과 비교
             compareTranslations(results.google, results.microsoft, results.deepl);
         });
 
-        function compareTranslations(googleText, microsoftText, deeplText) {
-            // 비교할 텍스트를 배열로 변환
-            const diff1 = Diff.diffWords(googleText, microsoftText);
-            const diff2 = Diff.diffWords(microsoftText, deeplText);
-            const diff3 = Diff.diffWords(googleText, deeplText);
-
-            let diffHtml = '<h6>Google vs Microsoft:</h6>';
-            diff1.forEach(part => {
-                const color = part.added ? 'green' : part.removed ? 'red' : 'black';
-                diffHtml += `<span style="color:${color}">${part.value}</span>`;
+        function showTab(tabId) {
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
             });
+            document.getElementById(tabId).classList.add('active');
 
-            diffHtml += '<h6>Microsoft vs DeepL:</h6>';
-            diff2.forEach(part => {
-                const color = part.added ? 'green' : part.removed ? 'red' : 'black';
-                diffHtml += `<span style="color:${color}">${part.value}</span>`;
+            const tabButtons = document.querySelectorAll('.nav-link');
+            tabButtons.forEach(button => {
+                button.classList.remove('active');
             });
-
-            diffHtml += '<h6>Google vs DeepL:</h6>';
-            diff3.forEach(part => {
-                const color = part.added ? 'green' : part.removed ? 'red' : 'black';
-                diffHtml += `<span style="color:${color}">${part.value}</span>`;
-            });
-
-            document.getElementById('diffResult').innerHTML = diffHtml;
+            document.querySelector(`.nav-link[onclick="showTab('${tabId}')"]`).classList.add('active');
         }
+
+        function compareTranslations(googleText, microsoftText, deeplText) {
+            const diff1 = Diff.diffChars(googleText, microsoftText);
+            const diff2 = Diff.diffChars(microsoftText, deeplText);
+            const diff3 = Diff.diffChars(googleText, deeplText);
+
+            let diffHtml = `<div id="tab1" class="tab-content active">
+                                <div style="display: flex; justify-content: space-between;">
+                                    <div style="flex: 1; margin-right: 10px;">
+                                        <p style="margin: 0;" onclick="setFinalText('${googleText}')"><strong>Google:</strong></p>
+                                        <span>${buildDiffHtml(diff1, true)}</span>
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <p style="margin: 0;" onclick="setFinalText('${microsoftText}')"><strong>Microsoft:</strong></p>
+                                        <span>${buildDiffHtml(diff1, false)}</span>
+                                    </div>
+                                </div>
+                            </div>`;
+
+            diffHtml += `<div id="tab2" class="tab-content">
+                            <div style="display: flex; justify-content: space-between;">
+                                <div style="flex: 1; margin-right: 10px;">
+                                    <p style="margin: 0;" onclick="setFinalText('${microsoftText}')"><strong>Microsoft:</strong></p>
+                                    <span>${buildDiffHtml(diff2, true)}</span>
+                                </div>
+                                <div style="flex: 1;">
+                                    <p style="margin: 0;" onclick="setFinalText('${deeplText}')"><strong>DeepL:</strong></p>
+                                    <span>${buildDiffHtml(diff2, false)}</span>
+                                </div>
+                            </div>
+                        </div>`;
+
+            diffHtml += `<div id="tab3" class="tab-content">
+                            <div style="display: flex; justify-content: space-between;">
+                                <div style="flex: 1; margin-right: 10px;">
+                                    <p style="margin: 0;" onclick="setFinalText('${googleText}')"><strong>Google:</strong></p>
+                                    <span>${buildDiffHtml(diff3, true)}</span>
+                                </div>
+                                <div style="flex: 1;">
+                                    <p style="margin: 0;" onclick="setFinalText('${deeplText}')"><strong>DeepL:</strong></p>
+                                    <span>${buildDiffHtml(diff3, false)}</span>
+                                </div>
+                            </div>
+                        </div>`;
+
+            // 결과를 표시
+            document.getElementById('diffResult').innerHTML = diffHtml;
+            showTab('tab1'); // 첫 번째 탭을 활성화
+        }
+
+        function buildDiffHtml(diff, isAddedTransparent) {
+            let html = '<span>'; // 음영 처리
+              diff.forEach(part => {
+                if (part.added) {
+                    // 추가된 텍스트에 대해 배경색과 텍스트 색상 변경
+                    const backgroundColor = isAddedTransparent ? 'white' : 'rgba(0, 255, 0, 0.3)'; // 배경색
+                    const textColor = isAddedTransparent ? 'white' : 'black'; // 기본 텍스트 색상
+                    html += `<span style="background-color: ${backgroundColor}; color: ${textColor};">${part.value}</span>`;
+                } else if (part.removed) {
+                    // 제거된 텍스트에 대해 배경색과 텍스트 색상 변경
+                    const backgroundColor = isAddedTransparent ? 'rgba(255, 0, 0, 0.3)' : 'white'; // 배경색
+                    const textColor = isAddedTransparent ? 'black' : 'white'; // 기본 텍스트 색상
+                    html += `<span style="background-color: ${backgroundColor}; color: ${textColor};">${part.value}</span>`;
+                } else {
+                    html += part.value; // 변경 없음
+                }
+            });
+            html += '</span>';
+            return html;
+        }
+
+
+        function setFinalText(text) {
+            document.getElementById('finalText').value = text;
+        }
+
 
         // 복사 버튼 클릭 이벤트
         document.getElementById('copyButton').addEventListener('click', function() {
@@ -156,6 +203,15 @@
             textArea.select();
             document.execCommand('copy'); // 클립보드에 복사
             alert('복사되었습니다.');
+        });
+
+        // 제거 버튼 클릭 이벤트
+        document.getElementById('clearOriginalButton').addEventListener('click', function() {
+            document.getElementById('textToTranslate').value = ''; // 한국어 원문 입력 지우기
+        });
+
+        document.getElementById('clearTranslationButton').addEventListener('click', function() {
+            document.getElementById('finalText').value = ''; // 번역 결과 지우기
         });
     </script>
 </body>
