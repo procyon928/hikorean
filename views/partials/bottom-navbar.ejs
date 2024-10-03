@@ -1,3 +1,12 @@
+<style>
+  /* PC 화면에서만 사이드바 너비를 고려한 본문의 왼쪽 여백 설정 */
+  @media (min-width: 992px) { /* 992px 이상 화면에서만 적용 */
+      body {
+          margin-left: 250px; /* 사이드바의 너비 */
+      }
+  }
+</style>
+
 <!-- 하단 내비게이션바 및 사이드바 (views/partials/bottom-navbar.ejs) -->
 <nav id="bottom-navbar" class="navbar navbar-expand-lg navbar-light d-lg-none shadow" style="background-color: rgba(255, 255, 255, 0.99); position: fixed; bottom: 0; width: 100%; z-index: 2000; transition: transform 0.3s;">
   <div class="container-fluid">
@@ -50,7 +59,7 @@
 
 
 <!-- 사이드바 (PC 화면 전용) -->
-<div class="d-none d-lg-block" style="position: fixed; left: 0; top: 0; height: 100%; width: 200px; background-color: rgba(0, 0, 0, 0.1); z-index: 1000;">
+<div class="d-none d-lg-block shadow" style="position: fixed; left: 0; top: 0; height: 100%; width: 250px; background-color: rgba(255, 255, 255, 0.99); z-index: 1000;">
   <ul class="navbar-nav flex-column">
       <li class="nav-item">
           <a class="nav-link text-center" href="/home" style="opacity: 0.7;">
