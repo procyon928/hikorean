@@ -17,6 +17,7 @@
         }
         .calendar-table {
             border-collapse: collapse;
+            max-width: 100%;
             width: 100%;
             background-color: transparent;
         }
@@ -105,8 +106,11 @@
 <body>
     <%- include('partials/navbar') %> 
     <%- include('partials/bottom-navbar') %>
-    <div class="container mt-4 p-0" style="max-width: 1200px;">
-
+    <div class="container-fluid p-0" style="max-width: 960px;">
+        <div class="content-box text-white text-center p-2 position-relative" style="background-color: #91AD09;">
+            <span class="small">여기에 원하는 콘텐츠를 입력하세요!</span>
+            <i class="bi bi-x position-absolute top-0 end-0 m-2" style="color: white; cursor: pointer;" aria-label="Close"></i>
+        </div>
         <div class="my-3">
           <div class="swiper-container">
               <div class="swiper-wrapper">
@@ -129,30 +133,30 @@
           </div>
         </div>
 
-        <div class="row justify-content-center my-3">
-            <div class="col-12 d-flex justify-content-center">
-                <a class="nav-link text-center opacity-75 p-0 mx-4" href="#">
-                    <i class="bi bi-wifi" style="font-size: 22px;"></i>
-                    <div class="small">무선인터넷</div>
+        <div class="row my-3 mx-0">
+            <div class="col-12 d-flex justify-content-evenly p-0">
+                <a class="text-body text-decoration-none text-center opacity-75 p-0" href="#" style="width: 20%;">
+                    <i class="bi bi-info-square" style="font-size: 22px;"></i>
+                    <div class="small">사무실 정보</div>
                 </a>
-                <a class="nav-link text-center opacity-75 p-0 mx-4" href="#">
-                    <i class="bi bi-clock" style="font-size: 22px;"></i>
-                    <div class="small">운영 시간</div>
+                <a class="text-body text-decoration-none text-center opacity-75 p-0" href="#" style="width: 20%;">
+                    <i class="bi bi-link" style="font-size: 22px;"></i>
+                    <div class="small">교육원 홈페이지</div>
                 </a>
-                <a class="nav-link text-center opacity-75 p-0 mx-4" href="#">
-                    <i class="bi bi-telephone" style="font-size: 22px;"></i>
-                    <div class="small">연락처</div>
+                <a class="text-body text-decoration-none text-center opacity-75 p-0" href="#" style="width: 20%;">
+                    <i class="bi bi-download" style="font-size: 22px;"></i>
+                    <div class="small">양식 다운로드</div>
                 </a>
-                <a class="nav-link text-center opacity-75 p-0 mx-4" href="#">
-                    <i class="bi bi-chat-left-text" style="font-size: 22px;"></i>
-                    <div class="small">커뮤니티</div>
+                <a class="text-body text-decoration-none text-center opacity-75 p-0" href="#" style="width: 20%;">
+                    <i class="bi bi-award" style="font-size: 22px;"></i>
+                    <div class="small">증명서 신청</div>
                 </a>
             </div>
         </div>
 
-        <div class="row">
+        <div class="row my-3 mx-0">
             <div class="col-12">
-                <div class="table-responsive border rounded-4 bg-white bg-border shadow-sm p-2" style="overflow: hidden; width: 90%; margin: 0 auto;">
+                <div class="table-responsive border rounded-4 bg-white bg-border shadow-sm p-2">
                     <div class="scrollable-container">
                         <table class="calendar-table" style="background-color: transparent;">
                             <thead>
@@ -215,8 +219,6 @@
             </div>
         </div>
 
-
-        
         <div class="text-center mt-4">
             <a href="/posts?category=general" class="btn btn-secondary m-2">일반 게시판</a>
             <a href="/posts?category=secondhand" class="btn btn-secondary m-2">거래 게시판</a>
@@ -302,6 +304,11 @@
             nextEl: '.swiper-button-next', // 다음 버튼
             prevEl: '.swiper-button-prev', // 이전 버튼
         },
+    });
+
+    // 버튼 클릭 시 콘텐츠 박스 숨기기
+    document.querySelector('.bi-x').addEventListener('click', function() {
+        document.querySelector('.content-box').style.display = 'none';
     });
     </script>
 </body>
