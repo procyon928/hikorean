@@ -32,7 +32,7 @@
             font-weight: bold;
         }
         .scrollable-container {
-            max-height: 245px; /* 원하는 최대 높이 설정 */
+            max-height: 150px; /* 원하는 최대 높이 설정 */
             overflow-y: scroll; /* 스크롤 가능하게 설정 */
             position: relative; /* 상대 위치 설정 */
             margin-top: -1px; /* 경계선이 보이지 않도록 조정 */
@@ -47,22 +47,6 @@
             top: 0; /* 상단에 고정 */
             background-color: white; /* 배경색 설정 (필요 시) */
             z-index: 10; /* z-index 설정 (필요 시) */
-        }
-        .today {
-            background-color: #e9ecef; /* 회색 배경 */
-            border-radius: 50%; /* 원형 모양 */
-            width: 40px; /* 고정된 너비 */
-            height: 40px; /* 고정된 높이 */
-            display: flex; /* Flexbox 사용 */
-            flex-direction: column; /* 세로 방향으로 정렬 */
-            align-items: center; /* 수직 가운데 정렬 */
-            justify-content: center; /* 수평 가운데 정렬 */
-            position: absolute; /* 절대 위치 설정 */
-            top: 50%; /* 수직 중앙 정렬 */
-            left: 50%; /* 수평 중앙 정렬 */
-            transform: translate(-50%, -50%); /* 중앙 정렬을 위해 이동 */
-            box-sizing: border-box; /* 박스 모델 조정 */
-            padding: 0; /* 내부 패딩 제거 */
         }
         .schedule-info {
             display: none; /* 기본적으로 숨김 */
@@ -115,17 +99,17 @@
             <div class="col-12">
                 <div class="table-responsive border rounded-4 bg-white bg-border shadow-sm p-2">
                     <div class="scrollable-container">
-                        <table class="calendar-table" style="background-color: transparent;">
+                        <table class="calendar-table">
                             <thead>
-                                <tr>
-                                    <th> </th>
-                                    <th>월</th>
-                                    <th>화</th>
-                                    <th>수</th>
-                                    <th>목</th>
-                                    <th>금</th>
-                                    <th>토</th>
-                                    <th>일</th>
+                                <tr style="height: 40px;">
+                                    <th class="p-1 small"> </th>
+                                    <th class="p-0 pt-2 small align-top">월</th>
+                                    <th class="p-0 pt-2 small align-top">화</th>
+                                    <th class="p-0 pt-2 small align-top">수</th>
+                                    <th class="p-0 pt-2 small align-top">목</th>
+                                    <th class="p-0 pt-2 small align-top">금</th>
+                                    <th class="p-0 pt-2 small align-top">토</th>
+                                    <th class="p-0 pt-2 small align-top">일</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -144,29 +128,31 @@
                                     }).flat(); // 모든 날짜를 하나의 배열로 평탄화
                                 %>
                                 <% 
-                                    const startDate = new Date('2024-09-02');
-                                    const weeks = 13; // 총 13주
-                                    for (let i = 0; i < weeks; i++) {
-                                        let weekDays = [];
-                                        for (let j = 0; j < 7; j++) {
-                                            const currentDate = new Date(startDate);
-                                            currentDate.setDate(startDate.getDate() + (i * 7) + j);
-                                            weekDays.push(currentDate);
-                                        }
+                                const startDate = new Date('2024-09-02');
+                                const weeks = 13; // 총 13주
+                                for (let i = 0; i < weeks; i++) {
+                                    let weekDays = [];
+                                    for (let j = 0; j < 7; j++) {
+                                        const currentDate = new Date(startDate);
+                                        currentDate.setDate(startDate.getDate() + (i * 7) + j);
+                                        weekDays.push(currentDate);
+                                    }
                                 %>
-                                <tr>
-                                    <td style="font-size: 75%;" class="text-primary"><%= i + 1 %></td> <!-- 주차 수 추가 -->
-                                    <% weekDays.forEach((day) => { %>
-                                    <td>
-                                        <div class="<%= day.toDateString() === today.toDateString() ? 'today' : '' %>">
-                                            <%= day.getDate() %>
-                                            <% if (scheduleDates.some(date => date.toDateString() === day.toDateString())) { %>
-                                                <span class="schedule-dot" style="color: red; font-size: 0.5em; display: block; margin-top: 0px; cursor: pointer;">&#9679;</span> <!-- 빨간 점 표시 -->
-                                            <% } %>
-                                        </div>
-                                        <div class="schedule-info" style="display: none; margin-top: 5px; text-align: left; grid-column: span 7; width: 100%;"></div> <!-- 일정 정보 표시용 div -->
-                                    </td>
-                                    <% }); %>
+                                <tr style="height: 40px;">
+                                  <td class="text-primary p-1 align-top small">
+                                      <%= (i + 1) <= 10 ? (i + 1) : '' %>
+                                  </td> <!-- 주차 수 추가 -->
+                                <% weekDays.forEach((day) => { %>
+                                <td class="p-1 small align-top">
+                                    <div style="<%= day.toDateString() === today.toDateString() ? 'font-weight: bold;' : '' %>">
+                                        <%= day.getDate() %>
+                                        <% if (scheduleDates.some(date => date.toDateString() === day.toDateString())) { %>
+                                            <span class="schedule-dot text-danger" style="font-size: 0.5em; display: block; margin-top: 0px; cursor: pointer;">&#9679;</span> <!-- 빨간 점 표시 -->
+                                        <% } %>
+                                    </div>
+                                    <div class="schedule-info" style="display: none; margin-top: 5px; text-align: left; grid-column: span 7; width: 100%;"></div> <!-- 일정 정보 표시용 div -->
+                                </td>
+                                <% }); %>
                                 </tr>
                                 <% } %>
                             </tbody>
@@ -183,7 +169,7 @@
                     <div class="small">사무실 정보</div>
                 </a>
                 <a class="text-body text-decoration-none text-center opacity-75 p-0" href="#" style="width: 20%;">
-                    <i class="bi bi-link" style="font-size: 22px;"></i>
+                    <i class="bi bi-person-workspace" style="font-size: 22px;"></i>
                     <div class="small">수강지원</div>
                 </a>
                 <a class="text-body text-decoration-none text-center opacity-75 p-0" href="#" style="width: 20%;">
@@ -191,7 +177,7 @@
                     <div class="small">양식 다운로드</div>
                 </a>
                 <a class="text-body text-decoration-none text-center opacity-75 p-0" href="#" style="width: 20%;">
-                    <i class="bi bi-award" style="font-size: 22px;"></i>
+                    <i class="bi bi-printer" style="font-size: 22px;"></i>
                     <div class="small">증명서 신청</div>
                 </a>
             </div>
@@ -218,30 +204,6 @@
               <div class="swiper-pagination"></div>
           </div>
         </div>
-
-        <div class="text-center mt-4">
-            <a href="/posts?category=general" class="btn btn-secondary m-2">일반 게시판</a>
-            <a href="/posts?category=secondhand" class="btn btn-secondary m-2">거래 게시판</a>
-            <a href="/posts?category=culture" class="btn btn-secondary m-2">문화 게시판</a>
-            <a href="/posts?category=question" class="btn btn-secondary m-2">한국어 질문 게시판</a>
-        </div>
-
-        <div class="text-center mt-4">
-            <a href="/login" class="btn btn-primary m-2">로그인</a>
-            <a href="/admin" class="btn btn-secondary m-2">관리자 페이지</a>
-        </div>
-        <p>콘텐츠가 늘어나면</p>
-        <p>콘텐츠가 늘어나면</p>
-        <p>콘텐츠가 늘어나면</p>
-        <p>콘텐츠가 늘어나면</p>
-        <p>콘텐츠가 늘어나면</p>
-        <p>콘텐츠가 늘어나면</p>
-        <p>콘텐츠가 늘어나면</p>
-        <p>콘텐츠가 늘어나면</p>
-        <p>콘텐츠가 늘어나면</p>
-        <p>콘텐츠가 늘어나면</p>
-        <p>콘텐츠가 늘어나면</p>
-        <p>콘텐츠가 늘어나면</p>
         <p>콘텐츠가 늘어나면</p>
         <p>콘텐츠가 늘어나면</p>
         <p>콘텐츠가 늘어나면</p>
@@ -250,44 +212,89 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const scheduleDots = document.querySelectorAll('.schedule-dot');
+    const scheduleDots = document.querySelectorAll('.schedule-dot');
 
-        scheduleDots.forEach(dot => {
-            dot.addEventListener('click', function() {
-              const scheduleInfoDiv = this.closest('td').querySelector('.schedule-info');
-                const dayElement = this.parentElement.firstChild; // 날짜 가져오기
-                const dayContent = dayElement.textContent; // 날짜 텍스트 가져오기
-                const currentYear = new Date().getFullYear(); // 현재 연도 가져오기
-                const date = new Date(`${currentYear}-${new Date().getMonth() + 1}-${dayContent}`); // 날짜 객체 생성
+    // 오늘 날짜 기준으로 스크롤 이동
+    setTimeout(() => {
+        const today = new Date();
+        const todayDay = today.getDate();
+        const todayMonth = today.getMonth();
+        const todayYear = today.getFullYear(); 
+        // console.log("오늘 날짜:", today.toDateString()); // 오늘 날짜 로그
 
-                // AJAX 요청을 통해 해당 날짜의 일정을 가져오도록 수정
-                fetch(`/schedules?date=${date.toISOString().split('T')[0]}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        scheduleInfoDiv.innerHTML = ''; // 기존 내용 초기화
-                        if (data.length > 0) {
-                            data.forEach(schedule => {
-                                scheduleInfoDiv.innerHTML += `
-                                    <div>
-                                        <strong>제목:</strong> ${schedule.title}<br>
-                                        <strong>유형:</strong> ${schedule.category}<br>
-                                        <strong>시작:</strong> ${new Date(schedule.startDate).toLocaleString()}<br>
-                                        <strong>종료:</strong> ${schedule.endDate ? new Date(schedule.endDate).toLocaleString() : '없음'}<br>
-                                        <strong>설명:</strong> ${schedule.description}<br>
-                                        <strong>링크:</strong> <a href="${schedule.link}" target="_blank">${schedule.link}</a><br>
-                                        <hr>
-                                    </div>
-                                `;
-                            });
-                        } else {
-                            scheduleInfoDiv.innerHTML = '<div>일정이 없습니다.</div>';
-                        }
-                        // 토글
-                        scheduleInfoDiv.style.display = scheduleInfoDiv.style.display === 'none' ? 'block' : 'none';
-                    });
+        const tableRows = document.querySelectorAll('.calendar-table tbody tr');
+        let targetRow = null;
+
+        tableRows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            cells.forEach(cell => {
+                const cellDate = new Date(todayYear, todayMonth, cell.firstChild.textContent);
+                // console.log("셀 날짜:", cellDate.toDateString());
+                if (cellDate.toDateString() === today.toDateString()) {
+                    targetRow = row; // 오늘 날짜가 포함된 행 찾기
+                    // console.log("오늘 날짜가 포함된 행:", row); // 행 로그
+                }
             });
         });
+
+        // 오늘 날짜가 포함된 행으로 스크롤 이동
+        if (targetRow) {
+            const scrollableContainer = document.querySelector('.scrollable-container');
+            const targetScrollTop = targetRow.offsetTop - scrollableContainer.offsetTop; // 기본 위치 계산
+            // console.log("targetRow offsetTop:", targetRow.offsetTop);
+            // console.log("scrollableContainer offsetTop:", scrollableContainer.offsetTop);
+
+            // 주차 계산
+            const weekNumber = Math.floor((targetRow.rowIndex) / 1) + 1; // 1주차부터 시작
+            const offset = (weekNumber - 1) * 40; // 각 주의 높이를 40px로 설정
+
+            // 스크롤 위치 조정 (부드러운 애니메이션)
+            scrollableContainer.scrollTo({
+                top: offset,
+                behavior: 'smooth' // 부드러운 스크롤 애니메이션
+            });
+        } else {
+            console.log("오늘 날짜가 포함된 행을 찾지 못했습니다."); // 행을 찾지 못했을 때 로그
+        }
+    }, 0); // 즉시 실행
+
+    scheduleDots.forEach(dot => {
+        dot.addEventListener('click', function() {
+            const scheduleInfoDiv = this.closest('td').querySelector('.schedule-info');
+            const dayElement = this.parentElement.firstChild; // 날짜 가져오기
+            const dayContent = dayElement.textContent; // 날짜 텍스트 가져오기
+            const currentYear = new Date().getFullYear(); // 현재 연도 가져오기
+            const date = new Date(`${currentYear}-${new Date().getMonth() + 1}-${dayContent}`); // 날짜 객체 생성
+
+            // AJAX 요청을 통해 해당 날짜의 일정을 가져오도록 수정
+            fetch(`/schedules?date=${date.toISOString().split('T')[0]}`)
+                .then(response => response.json())
+                .then(data => {
+                    scheduleInfoDiv.innerHTML = ''; // 기존 내용 초기화
+                    if (data.length > 0) {
+                        data.forEach(schedule => {
+                            scheduleInfoDiv.innerHTML += `
+                                <div>
+                                    <strong>제목:</strong> ${schedule.title}<br>
+                                    <strong>유형:</strong> ${schedule.category}<br>
+                                    <strong>시작:</strong> ${new Date(schedule.startDate).toLocaleString()}<br>
+                                    <strong>종료:</strong> ${schedule.endDate ? new Date(schedule.endDate).toLocaleString() : '없음'}<br>
+                                    <strong>설명:</strong> ${schedule.description}<br>
+                                    <strong>링크:</strong> <a href="${schedule.link}" target="_blank">${schedule.link}</a><br>
+                                    <hr>
+                                </div>
+                            `;
+                        });
+                    } else {
+                        scheduleInfoDiv.innerHTML = '<div>일정이 없습니다.</div>';
+                    }
+                    // 토글
+                    scheduleInfoDiv.style.display = scheduleInfoDiv.style.display === 'none' ? 'block' : 'none';
+                });
+        });
     });
+});
+
 
     const swiper = new Swiper('.swiper-container', {
         // 옵션 설정
