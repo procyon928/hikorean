@@ -8,15 +8,18 @@
 ├── /routes                     // 라우트 정의 폴더
 │   ├── auth.js                // 회원 가입 및 로그인 관련 라우트
 │   ├── admin.js               // 관리자 페이지 관련 라우트
+│   ├── admission.js               // 입학 안내 페이지 관련 라우트
 │   ├── email.js               // 이메일 발송 관련 라우트
+│   ├── home.js               // 메인 페이지 관련 라우트
 │   ├── post.js                // 게시글 CRUD 관련 라우트
 │   ├── comment.js             // 댓글 CRUD 관련 라우트
 │   ├── boardSetting.js        // 카테고리별 게시판 레이아웃 세팅 관련 라우트
 │   ├── notice.js              // 안내문 CRUD 관련 라우트
 │   ├── translation.js         // 안내문 번역 처리 관련 라우트
 │   ├── translate.js           // 구글, 마이크로소프트, DeepL 번역 api 사용 관련 라우트
+│   ├── schedule.js            // 스케줄 CRUD 라우트
 │   ├── survey.js              // 설문조사 관련 라우트
-│   └── shortUrl.js              // url 단축 및 qr코드 생성 관련 라우트
+│   └── shortUrl.js            // url 단축 및 qr코드 생성 관련 라우트
 │
 ├── /middleware                 // 미들웨어 정의 폴더
 │   └── auth.js                // 인증 및 권한 확인 미들웨어
@@ -28,24 +31,34 @@
 │   ├── Log.js                 // 로그 저장 모델 정의
 │   ├── boardSetting.js        // 카테고리별 게시판 레이아웃 세팅 모델 정의
 │   ├── Notice.js              // 안내문 모델 정의
-│   ├── TemporaryTranslation.js    // 안내문 번역 내용 임시 저장 모델 정의
+│   ├── TemporaryTranslation.js // 안내문 번역 내용 임시 저장 모델 정의
 │   ├── Survey.js              // 설문조사 모델 정의
-│   ├── Response.js              // 설문조사 응답 모델 정의
+│   ├── Response.js            // 설문조사 응답 모델 정의
+│   ├── Schedule.js            // 스케줄 모델 정의
 │   └── ShortUrl.js            // url 단축 및 qr코드 생성 모델 정의
 │
 ├── /public                     // 정적 파일 저장 폴더 (HTML, CSS, JS 등)
+│   ├── /css                   
+│   │   └── calendar.css       // 달력 스타일
 │   ├── js
+│   │   ├── schedule.js        // 스케줄 CRUD 관련 JavaScript
 │   │   └── createQuestion.js  // views/surveys/new.ejs의 문항 추가 스크립트 코드
 │   ├── login.html             // 로그인 페이지 HTML 파일
 │   ├── signup.html            // 회원가입 페이지 HTML 파일
 │   └── ...                    // 기타 정적 파일
 │
 ├── /views                      // 서버 사이드 렌더링을 위한 뷰 템플릿 폴더
+│   ├── admission               // 입학 안내 페이지 관련 EJS 템플릿 폴더
+│   │   ├── nationality.ejs     // 메인 페이지
+│   │   ├── admissionguide1.ejs // 안내 페이지 1
+│   │   └── admissionguide2.ejs // 안내 페이지 2
 │   ├── admin.ejs              // 회원 등급 관리 관리자 페이지
 │   ├── admin_email.ejs        // 관리자 이메일 발송 페이지
+│   ├── home.ejs               // 메인 페이지
 │   ├── /admin
 │   │   ├── logs.ejs           // 로그 기록 페이지
 │   │   ├── short-url.ejs      // url 단축 및 qr코드 생성 페이지
+│   │   ├── schedule.ejs       // 관리자 스케줄 관리 페이지
 │   │   └── translator.ejs      // 다중 언어 번역 페이지
 │   ├── /partials
 │   │   ├── header.ejs         // adminLTE의 header include 코드
@@ -57,19 +70,22 @@
 │   │   ├── list.ejs           // 게시글 목록 페이지
 │   │   ├── new.ejs            // 게시글 작성 페이지
 │   │   └── settings.ejs       // 카테고리별 게시판 레이아웃 세팅 페이지
-│   ├── /surveys                  // 설문조사 관련 뷰 템플릿
-│   │   ├── new.ejs         // 설문조사 작성 페이지
+│   ├── /surveys                // 설문조사 관련 뷰 템플릿
+│   │   ├── new.ejs            // 설문조사 작성 페이지
 │   │   ├── edit.ejs           // 설문조사 수정 페이지
 │   │   ├── list.ejs           // 설문조사 목록 페이지
-│   │   ├── results.ejs            // 설문조사 응답 결과 조회 사용자 페이지
-│   │   ├── respond.ejs           // 설문조사 응답 사용자 페이지
-│   │   ├── survey.ejs           // 생성된 설문조사 목록 사용자 페이지
+│   │   ├── results.ejs        // 설문조사 응답 결과 조회 사용자 페이지
+│   │   ├── respond.ejs        // 설문조사 응답 사용자 페이지
+│   │   ├── survey.ejs         // 생성된 설문조사 목록 사용자 페이지
 │   └── /notices                // 안내문 관련 뷰 템플릿
 │       ├── list.ejs           // 안내문 목록 페이지
 │       ├── new.ejs            // 안내문 한국어 원문 작성 페이지
 │       ├── edit.ejs           // 안내문 한국어 원문 수정 페이지
 │       ├── translator.ejs     // 안내문 다른 언어 번역 및 최종 번역 결과 저장 페이지
 │       └── content.ejs        // 최종 번역 결과를 쿼리에 따라 언어를 구분하여 보여주는 페이지 
+│
+├── /data                       // JSON 파일 저장 폴더
+│   └── content.json            // JSON 데이터 파일
 │
 ├── index.js                    // 애플리케이션의 진입점
 └── package.json                // 프로젝트 패키지 설정 파일

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>입학 안내</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="overlay" style="display: none;"></div>
+    
+    <!-- 언어 선택 팝업 -->
+    <div id="language-popup" class="popup p-4">
+        <h2>안내 언어 선택</h2>
+        <h3>Select language</h3>
+        <div class="row">
+            <div class="col-12 mb-3">
+                <button class="btn btn-primary btn-block py-3" onclick="setLanguage('ko')">한국어</button>
+            </div>
+            <div class="col-12 mb-3">
+                <button class="btn btn-primary btn-block py-3" onclick="setLanguage('en')">영어</button>
+            </div>
+            <div class="col-12 mb-3">
+                <button class="btn btn-primary btn-block py-3" onclick="setLanguage('sc')">중국어 간체</button>
+            </div>
+            <div class="col-12 mb-3">
+                <button class="btn btn-primary btn-block py-3" onclick="setLanguage('tc')">중국어 번체</button>
+            </div>
+            <div class="col-12 mb-3">
+                <button class="btn btn-primary btn-block py-3" onclick="setLanguage('jp')">일본어</button>
+            </div>
+            <div class="col-12 mb-3">
+                <button class="btn btn-primary btn-block py-3" onclick="setLanguage('vi')">베트남어</button>
+            </div>
+        </div>
+    </div>  
+
+    <!-- 새로운 팝업을 위한 div -->
+    <div id="info-popup" class="popup p-4" style="display: none;">
+        <h1 id="welcome-message" class="text-center" data-message="welcome"></h1>
+        <h2 id="select-nationality-message" class="text-center" data-message="selectNationality"></h2>
+    
+        <div class="form-group">
+            <label for="valid-visa" data-message="validVisa"></label>
+            <div>
+                <label>
+                    <input type="radio" name="visa" value="yes"> <span data-message="yes"></span>
+                </label>
+                <label>
+                    <input type="radio" name="visa" value="no"> <span data-message="no"></span>
+                </label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="nationality-select" data-message="selectCountry"><%= messages[lang].selectCountry %></label>
+            <select id="nationality-select" class="form-control">
+                <option value="ko">한국</option>
+                <option value="us">미국</option>
+                <option value="cn">중국</option>
+                <option value="jp">일본</option>
+                <option value="tw">대만</option>
+                <option value="vn">베트남</option>
+            </select>
+        </div>
+
+        <button id="submit-button" class="btn btn-success btn-block" onclick="submitForm()">제출</button>
+    </div>
+
+    <script>
+        // JSON 데이터에서 메시지를 가져오기
+        const messages = <%- JSON.stringify(messages) %>;
+
+        // 페이지 로드 시 언어 선택 팝업 표시
+        window.onload = function() {
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('language-popup').style.display = 'block';
+        };
+
+        function setLanguage(lang) {
+            // 모든 요소를 선택하여 메시지 업데이트
+            const elements = document.querySelectorAll('[data-message]');
+            elements.forEach(element => {
+                const messageKey = element.getAttribute('data-message');
+                if (messages[lang][messageKey]) {
+                    if (element.tagName === 'INPUT' || element.tagName === 'SELECT') {
+                        // 라디오 버튼이나 선택 요소의 경우
+                        element.nextSibling.nodeValue = messages[lang][messageKey];
+                    } else {
+                        // 일반 텍스트 요소의 경우
+                        element.innerText = messages[lang][messageKey];
+                    }
+                }
+            });
+
+            // 언어 선택 팝업 숨기기
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('language-popup').style.display = 'none';
+
+            // 새로운 팝업 표시
+            document.getElementById('overlay').style.display = 'block'; // overlay 보이기
+            document.getElementById('info-popup').style.display = 'block'; // info-popup 보이기
+            document.getElementById('welcome-message').innerText = messages[lang].welcome;
+            document.getElementById('select-nationality-message').innerText = messages[lang].selectNationality;
+        }
+
+        function submitForm() {
+            const visaValue = document.querySelector('input[name="visa"]:checked').value;
+            const nationalityValue = document.getElementById('nationality-select').value;
+            const lang = document.getElementById('language-select').value; // 현재 선택된 언어
+
+            let redirectUrl = '';
+
+            if (visaValue === 'yes') {
+                redirectUrl = '/admission/admissionguide1';
+            } else if (visaValue === 'no') {
+                if (['ko', 'us', 'cn', 'jp', 'tw'].includes(nationalityValue)) {
+                    redirectUrl = '/admission/admissionguide1';
+                } else if (nationalityValue === 'vn') {
+                    redirectUrl = '/admission/admissionguide2';
+                }
+            }
+
+            // 언어를 쿼리 파라미터로 추가하여 페이지 이동
+            window.location.href = `${redirectUrl}?lang=${lang}`;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!-- 하단 내비게이션바 및 사이드바 (views/partials/bottom-navbar.ejs) -->
+<nav id="bottom-navbar" class="navbar navbar-expand-lg navbar-light d-lg-none" style="background-color: rgba(255, 255, 255, 0.99); position: fixed; bottom: 0; width: 100%; z-index: 2000; transition: transform 0.3s;">
+  <div class="container-fluid">
+      <ul class="navbar-nav d-flex justify-content-around" style="width: 100%; flex-direction: row;">
+          <li class="nav-item" style="width: 25%;">
+              <a class="nav-link text-center opacity-75" href="/home">
+                  <img src="/img/home-icon.png" alt="홈" class="opacity-75" style="width: 22px; height: 22px;">
+                  <div class="mt-2 small">홈</div>
+              </a>
+          </li>
+          <li class="nav-item" style="width: 25%;">
+              <a class="nav-link text-center opacity-75" href="/notices">
+                  <img src="/img/notice-icon.png" alt="안내문" class="opacity-75" style="width: 22px; height: 22px;">
+                  <div class="mt-2 small">안내문</div>
+              </a>
+          </li>
+          <li class="nav-item" style="width: 25%;">
+              <a class="nav-link text-center opacity-75" href="/community">
+                  <img src="/img/community-icon.png" alt="커뮤니티" class="opacity-75" style="width: 22px; height: 22px;">
+                  <div class="mt-2 small">커뮤니티</div>
+              </a>
+          </li>
+          <li class="nav-item" style="width: 25%;">
+              <a class="nav-link text-center opacity-75" href="/more">
+                  <img src="/img/dots-icon.png" alt="더 보기" class="opacity-75" style="width: 22px; height: 22px;">
+                  <div class="mt-2 small">더 보기</div>
+              </a>
+          </li>
+      </ul>
+  </div>
+</nav>
+
+<script>
+    let lastScrollTop = 0; // 마지막 스크롤 위치
+    const navbar = document.getElementById('bottom-navbar');
+
+    window.addEventListener('scroll', function() {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+        if (scrollTop > lastScrollTop) {
+            // 아래로 스크롤할 때
+            navbar.style.transform = 'translateY(100%)'; // 내비게이션 바 숨기기
+        } else {
+            // 위로 스크롤할 때
+            navbar.style.transform = 'translateY(0)'; // 내비게이션 바 보이기
+        }
+        lastScrollTop = scrollTop; // 현재 스크롤 위치 업데이트
+    });
+</script>
+
+
+<!-- 사이드바 (PC 화면 전용) -->
+<div class="d-none d-lg-block" style="position: fixed; left: 0; top: 0; height: 100%; width: 200px; background-color: rgba(0, 0, 0, 0.1); z-index: 1000;">
+  <ul class="navbar-nav flex-column">
+      <li class="nav-item">
+          <a class="nav-link text-center" href="/home" style="opacity: 0.7;">
+              <img src="/img/home-icon.png" alt="홈" style="width: 44px; height: 44px; opacity: 0.7;">
+              <div style="opacity: 0.7;">홈</div>
+          </a>
+      </li>
+      <li class="nav-item">
+          <a class="nav-link text-center" href="/notices" style="opacity: 0.7;">
+              <img src="/img/notice-icon.png" alt="안내문" style="width: 44px; height: 44px; opacity: 0.7;">
+              <div style="opacity: 0.7;">안내문</div>
+          </a>
+      </li>
+      <li class="nav-item">
+          <a class="nav-link text-center" href="/community" style="opacity: 0.7;">
+              <img src="/img/community-icon.png" alt="커뮤니티" style="width: 44px; height: 44px; opacity: 0.7;">
+              <div style="opacity: 0.7;">커뮤니티</div>
+          </a>
+      </li>
+      <li class="nav-item">
+          <a class="nav-link text-center" href="/more" style="opacity: 0.7;">
+              <img src="/img/dots-icon.png" alt="더 보기" style="width: 44px; height: 44px; opacity: 0.7;">
+              <div style="opacity: 0.7;">더 보기</div>
+          </a>
+      </li>
+  </ul>
+</div>

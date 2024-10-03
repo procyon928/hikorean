@@ -1,0 +1,52 @@
+{
+  "messages": {
+      "ko": {
+          "welcome": "안녕하세요. 환영합니다.",
+          "selectNationality": "국적을 선택해주세요.",
+          "validVisa": "현재 유효한 비자를 갖고 있습니까?",
+          "yes": "네",
+          "no": "아니오",
+          "selectCountry": "여권상의 국적을 선택해 주세요."
+      },
+      "en": {
+          "welcome": "Hello. Welcome.",
+          "selectNationality": "Please select your nationality.",
+          "validVisa": "Do you have a valid visa?",
+          "yes": "Yes",
+          "no": "No",
+          "selectCountry": "Please select your nationality on your passport."
+      },
+      "sc": {
+          "welcome": "你好。欢迎。",
+          "selectNationality": "请选择您的国籍。",
+          "validVisa": "您是否持有有效签证？",
+          "yes": "是",
+          "no": "否",
+          "selectCountry": "请选择您护照上的国籍。"
+      },
+      "tc": {
+          "welcome": "你好。歡迎。",
+          "selectNationality": "請選擇您的國籍。",
+          "validVisa": "您是否持有有效簽證？",
+          "yes": "是",
+          "no": "否",
+          "selectCountry": "請選擇您護照上的國籍。"
+      },
+      "jp": {
+          "welcome": "こんにちは。ようこそ。",
+          "selectNationality": "国籍を選択してください。",
+          "validVisa": "現在、有効なビザをお持ちですか？",
+          "yes": "はい",
+          "no": "いいえ",
+          "selectCountry": "パスポートに記載されている国籍を選択してください。"
+      },
+      "vi": {
+          "welcome": "Xin chào. Chào mừng.",
+          "selectNationality": "Vui lòng chọn quốc tịch của bạn.",
+          "validVisa": "Bạn có visa hợp lệ không?",
+          "yes": "Có",
+          "no": "Không",
+          "selectCountry": "Vui lòng chọn quốc tịch trên hộ chiếu của bạn."
+      }
+  }
+}

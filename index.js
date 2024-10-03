@@ -17,6 +17,9 @@ const translationRoutes = require('./routes/translation');
 const { router: translateRouter } = require('./routes/translate');
 const surveyRoutes = require('./routes/survey');
 const shortUrlRoutes = require('./routes/shortUrl');
+const admissionRoutes = require('./routes/admission');
+const scheduleRoutes = require('./routes/schedule');
+const homeRoutes = require('./routes/home');
 const { ensureAuthenticated, isAdmin } = require('./middleware/auth');
 
 const app = express();
@@ -47,11 +50,6 @@ app.set('views', path.join(__dirname, 'views')); // views 폴더 설정
 
 // 정적 파일 제공
 app.use(express.static(path.join(__dirname, 'public')));
-
-// 홈 페이지
-app.get('/', (req, res) => {
-    res.render('index');
-});
 
 // 회원가입 페이지
 app.get('/signup', (req, res) => {
@@ -93,6 +91,9 @@ app.use(translationRoutes);
 app.use(translateRouter);
 app.use('/survey', surveyRoutes);
 app.use('/', boardSettingRoutes.router);
+app.use('/admission', admissionRoutes);
+app.use('/admin/schedule', scheduleRoutes);
+app.use('/', homeRoutes);
 app.use(shortUrlRoutes); // 제일 하위에 두기
 
 // 서버 시작
