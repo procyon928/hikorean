@@ -46,7 +46,8 @@ router.post('/login', async (req, res) => {
       req.session.user = {
           id: user._id,
           role: user.role,
-          username: user.username
+          username: user.username,
+          email: user.email
       };
 
       // 로그인 로그 추가

@@ -7,6 +7,7 @@ const path = require('path');
 const session = require('express-session');
 const ejs = require('ejs');
 const authRoutes = require('./routes/auth');
+const accountRoutes = require('./routes/account'); // account.js 라우터 추가
 const adminRoutes = require('./routes/admin');
 const emailRoutes = require('./routes/email');
 const postRoutes = require('./routes/post');
@@ -41,8 +42,8 @@ app.use(session({
 
 // 사용자 세션 정보를 로컬 변수로 전달하는 미들웨어 추가
 app.use((req, res, next) => {
-  res.locals.user = req.session.user; // 사용자 세션 정보를 로컬 변수로 전달
-  next();
+    res.locals.user = req.session.user; // 사용자 세션 정보를 로컬 변수로 전달
+    next();
 });
 
 // body-parser 미들웨어 설정
@@ -58,7 +59,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // 회원가입 페이지 라우터
 app.get('/signup', (req, res) => {
-  res.render('signup'); // signup.ejs를 렌더링
+    res.render('signup'); // signup.ejs를 렌더링
 });
 
 // 로그인 페이지
@@ -68,6 +69,7 @@ app.get('/login', (req, res) => {
 
 // 라우터 설정
 app.use(authRoutes); // auth.js 라우터를 사용
+app.use(accountRoutes); // account.js 라우터를 사용 (추가됨)
 app.use('/admin', adminRoutes);
 app.use('/email', emailRoutes);
 app.use(postRoutes);

@@ -3,95 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <title>안내문 목록</title>
-    <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            border: 1px solid #ccc;
-            text-align: center;
-            width: 11%; /* 각 열의 폭을 동일하게 설정 */
-        }
-    </style>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/css/adminlte.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="/styles.css">
 </head>
-<body>
-    <h1>안내문 목록</h1>
-    <a href="/notices/new">새 안내문 작성</a>
-    <table>
-        <thead>
-            <tr>
-                <th>제목</th>
-                <th>작성일</th>
-                <th>수정일</th>
-                <th>중국어 간체</th>
-                <th>중국어 번체</th>
-                <th>일본어</th>
-                <th>영어</th>
-                <th>베트남어</th>
-                <th>수정 및 삭제</th>
-            </tr>
-        </thead>
-        <tbody>
-            <% 
-            const getStatus = (finalSavedAt, updatedAt) => {
-                if (!finalSavedAt) return '🔴'; // 조건 1: finalSavedAt이 빈값
-                if (updatedAt && finalSavedAt < updatedAt) return '🟡'; // 조건 2: finalSavedAt < updatedAt
-                return '🟢'; // 조건 3: finalSavedAt > updatedAt 또는 updatedAt이 빈값
-            };
-            %>
-            <% notices.forEach(notice => { %>
-                <tr>
-                    <td>
-                      <a href="/notices/translate/<%= notice._id %>"><%= notice.title %></a>
-                      <a href="/notices/<%= notice.shortId %>?lang=ko">🔗</a>
-                    </td>
-                    <td><%= notice.createdAt.toLocaleDateString() %><br><%= notice.createdBy ? notice.createdBy : '' %></td>
-                    <td><%= notice.updatedAt ? notice.updatedAt.toLocaleDateString() : '' %><br><%= notice.updatedBy ? notice.updatedBy : '' %></td>
-                    <td>
-                        <a href="/notices/<%= notice.shortId %>?lang=sc"><%= getStatus(notice.translations.sc?.finalSavedAt, notice.updatedAt) %></a>
-                        <a href="#" onclick="copyToClipboard('<%= notice.translations.sc?.final.join(' ') %>')">📋</a><br>
-                        <%= notice.translations.sc?.finalSavedBy ? notice.translations.sc.finalSavedBy : '' %></td>
-                    <td>
-                        <a href="/notices/<%= notice.shortId %>?lang=tc"><%= getStatus(notice.translations.tc?.finalSavedAt, notice.updatedAt) %></a>
-                        <a href="#" onclick="copyToClipboard('<%= notice.translations.tc?.final.join(' ') %>')">📋</a><br>
-                        <%= notice.translations.tc?.finalSavedBy ? notice.translations.tc.finalSavedBy : '' %></td>
-                    <td>
-                        <a href="/notices/<%= notice.shortId %>?lang=jp"><%= getStatus(notice.translations.jp?.finalSavedAt, notice.updatedAt) %></a>
-                        <a href="#" onclick="copyToClipboard('<%= notice.translations.jp?.final.join(' ') %>')">📋</a><br>
-                        <%= notice.translations.jp?.finalSavedBy ? notice.translations.jp.finalSavedBy : '' %></td>
-                    <td>
-                        <a href="/notices/<%= notice.shortId %>?lang=en"><%= getStatus(notice.translations.en?.finalSavedAt, notice.updatedAt) %></a>
-                        <a href="#" onclick="copyToClipboard('<%= notice.translations.en?.final.join(' ') %>')">📋</a><br>
-                        <%= notice.translations.en?.finalSavedBy ? notice.translations.en.finalSavedBy : '' %></td>
-                    <td>
-                        <a href="/notices/<%= notice.shortId %>?lang=vi"><%= getStatus(notice.translations.vi?.finalSavedAt, notice.updatedAt) %></a>
-                        <a href="#" onclick="copyToClipboard('<%= notice.translations.vi?.final.join(' ') %>')">📋</a><br>
-                        <%= notice.translations.vi?.finalSavedBy ? notice.translations.vi.finalSavedBy : '' %></td>
-                    <td>
-                        <a href="/notices/edit/<%= notice._id %>">수정</a>
-                        <form action="/notices/delete/<%= notice._id %>" method="POST" style="display:inline;">
-                            <button type="submit">삭제</button>
-                        </form>
-                    </td>
-                </tr>
-            <% }) %>
-        </tbody>
-    </table>
+<body class="hold-transition sidebar-mini">
+  <div class="wrapper">
 
-    <script>
-      function copyToClipboard(text) {
-          if (text.trim().length > 0) {
-              const textarea = document.createElement('textarea');
-              textarea.value = text;
-              document.body.appendChild(textarea);
-              textarea.select();
-              document.execCommand('copy');
-              document.body.removeChild(textarea);
-              alert('클립보드에 복사되었습니다!');
-          }
-      }
-      </script>
+    <%- include('../partials/header') %>
+    <%- include('../partials/sidebar') %>
+
+    <div class="content-wrapper">
+      <section class="content">
+        <div class="container-fluid">
+          <h1 class="mt-4 text-center">안내문 목록</h1>
+          <div class="mb-4 text-end">
+            <a href="/notices/new" class="btn btn-primary">새 안내문 작성</a>
+          </div>
+          <div class="card">
+            <div class="card-body">
+              <table class="table table-bordered">
+                <thead class="table-light">
+                  <tr>
+                    <th>제목</th>
+                    <th>작성일</th>
+                    <th>수정일</th>
+                    <th>중국어 간체</th>
+                    <th>중국어 번체</th>
+                    <th>일본어</th>
+                    <th>영어</th>
+                    <th>베트남어</th>
+                    <th>수정 및 삭제</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% 
+                  const getStatus = (finalSavedAt, updatedAt) => {
+                      if (!finalSavedAt) return '🔴'; // 조건 1: finalSavedAt이 빈값
+                      if (updatedAt && finalSavedAt < updatedAt) return '🟡'; // 조건 2: finalSavedAt < updatedAt
+                      return '🟢'; // 조건 3: finalSavedAt > updatedAt 또는 updatedAt이 빈값
+                  };
+                  %>
+                  <% notices.forEach(notice => { %>
+                    <tr>
+                      <td>
+                        <a href="/notices/translate/<%= notice._id %>"><%= notice.title %></a>
+                        <a href="/notices/<%= notice.shortId %>?lang=ko" class="link-secondary">🔗</a>
+                      </td>
+                      <td><%= notice.createdAt.toLocaleDateString() %><br><%= notice.createdBy ? notice.createdBy : '' %></td>
+                      <td><%= notice.updatedAt ? notice.updatedAt.toLocaleDateString() : '' %><br><%= notice.updatedBy ? notice.updatedBy : '' %></td>
+                      <td>
+                          <a href="/notices/<%= notice.shortId %>?lang=sc" class="link-secondary"><%= getStatus(notice.translations.sc?.finalSavedAt, notice.updatedAt) %></a>
+                          <a href="#" onclick="copyToClipboard('<%= notice.translations.sc?.final.join(' ') %>')">📋</a><br>
+                          <%= notice.translations.sc?.finalSavedBy ? notice.translations.sc.finalSavedBy : '' %>
+                      </td>
+                      <td>
+                          <a href="/notices/<%= notice.shortId %>?lang=tc" class="link-secondary"><%= getStatus(notice.translations.tc?.finalSavedAt, notice.updatedAt) %></a>
+                          <a href="#" onclick="copyToClipboard('<%= notice.translations.tc?.final.join(' ') %>')">📋</a><br>
+                          <%= notice.translations.tc?.finalSavedBy ? notice.translations.tc.finalSavedBy : '' %>
+                      </td>
+                      <td>
+                          <a href="/notices/<%= notice.shortId %>?lang=jp" class="link-secondary"><%= getStatus(notice.translations.jp?.finalSavedAt, notice.updatedAt) %></a>
+                          <a href="#" onclick="copyToClipboard('<%= notice.translations.jp?.final.join(' ') %>')">📋</a><br>
+                          <%= notice.translations.jp?.finalSavedBy ? notice.translations.jp.finalSavedBy : '' %>
+                      </td>
+                      <td>
+                          <a href="/notices/<%= notice.shortId %>?lang=en" class="link-secondary"><%= getStatus(notice.translations.en?.finalSavedAt, notice.updatedAt) %></a>
+                          <a href="#" onclick="copyToClipboard('<%= notice.translations.en?.final.join(' ') %>')">📋</a><br>
+                          <%= notice.translations.en?.finalSavedBy ? notice.translations.en.finalSavedBy : '' %>
+                      </td>
+                      <td>
+                          <a href="/notices/<%= notice.shortId %>?lang=vi" class="link-secondary"><%= getStatus(notice.translations.vi?.finalSavedAt, notice.updatedAt) %></a>
+                          <a href="#" onclick="copyToClipboard('<%= notice.translations.vi?.final.join(' ') %>')">📋</a><br>
+                          <%= notice.translations.vi?.finalSavedBy ? notice.translations.vi.finalSavedBy : '' %>
+                      </td>
+                      <td>
+                          <a href="/notices/edit/<%= notice._id %>" class="btn btn-warning btn-sm">수정</a>
+                          <form action="/notices/delete/<%= notice._id %>" method="POST" style="display:inline;">
+                              <button type="submit" class="btn btn-danger btn-sm">삭제</button>
+                          </form>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    function copyToClipboard(text) {
+        if (text.trim().length > 0) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            alert('클립보드에 복사되었습니다!');
+        }
+    }
+  </script>
 </body>
 </html>
