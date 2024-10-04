@@ -1,5 +1,5 @@
 const express = require('express');
-const bcrypt = require('bcrypt'); // bcrypt 추가
+const bcrypt = require('bcryptjs'); // bcrypt 추가
 const { User } = require('../models/User');
 const Log = require('../models/Log');
 

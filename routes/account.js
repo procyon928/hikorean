@@ -1,6 +1,6 @@
 const express = require('express');
 const { User } = require('../models/User'); // User 모델 가져오기
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const router = express.Router();
 
 // 회원 페이지

@@ -1,6 +1,6 @@
 // models/User.js
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt'); // bcrypt를 사용하여 비밀번호 해싱
+const bcrypt = require('bcryptjs'); // bcrypt를 사용하여 비밀번호 해싱
 
 const rolesMap = {
   user: '일반 유저',
