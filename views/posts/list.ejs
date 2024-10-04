@@ -25,13 +25,6 @@
             } else if (response.ok) {
                 // 조회수 증가 요청
                 await fetch(`/posts/${postId}/incrementViews`, { method: 'POST' });
-                
-                // 조회수 업데이트
-                const postElement = document.querySelector(`[data-post-id="${postId}"]`);
-                const viewsElement = postElement.querySelector('.views');
-                const currentViews = parseInt(viewsElement.textContent.match(/\d+/)[0], 10);
-                viewsElement.textContent = `(조회수: ${currentViews + 1})`;
-                
                 window.location.href = `/posts/${postId}?category=${category}`; // 권한이 있을 경우 게시글 상세 페이지로 이동
             } else {
                 alert('게시글을 불러오는 중 오류가 발생했습니다.');
@@ -49,51 +42,59 @@
             <p class="small">어떤 글도 좋습니다. 자유롭게 글을 올려주세요.</p>
 
             <div class="post-list border-2 border-top border-dark p-0">
-                <p class="small m-0 my-1">카테고리</p>
+                <p class="small m-0 my-2">카테고리</p>
                 <div class="border-1 border-top border-dark">
-                      <ul class="list-unstyled">
-                          <% if (posts.length === 0) { %>
-                              <li>등록된 게시글이 없습니다.</li>
-                          <% } else { %>
-                              <% posts.forEach(post => { %>
-                                  <li data-post-id="<%= post._id %>" class="border-bottom pb-1">
-                                      <div class="d-flex justify-content-between align-items-center w-100">
-                                          <a href="javascript:void(0);" class="small text-reset text-decoration-none" onclick="checkPermission('<%= post._id %>', '<%= post.category %>')">
-                                              [<%= allowedCategories[post.category] %>] <%= post.title %>
-                                          </a>
-                                          <div class="actions ms-3 d-flex align-items-center"> <!-- Flexbox로 수직 정렬 -->
-                                              <% if (user && (user.role === 'superadmin' || (user.role === 'admin' && boardSetting.writePermission.includes('admin')))) { %>
-                                                  <form action="/posts/delete/<%= post._id %>?category=<%= post.category %>" method="POST" style="display:inline;" onsubmit="return confirmDelete();">
-                                                      <button type="submit" class="btn btn-link text-danger p-0" title="삭제">
-                                                          <i class="bi bi-x-lg" style="font-size: 14px;"></i>
-                                                      </button>
-                                                  </form>
-                                                  <a href="/posts/edit/<%= post._id %>?category=<%= post.category %>" class="text-danger ms-2" title="수정"> <!-- 여백 추가 -->
-                                                      <i class="bi bi-arrow-repeat" style="font-size: 14px;"></i>
-                                                  </a>
-                                              <% } else if (user && user.id === post.author._id.toString()) { %>
-                                                  <!-- 작성자일 경우 아무것도 표시하지 않음 -->
-                                              <% } %>
-                                          </div>
-                                      </div>
-                                      <div class="post-meta text-secondary" style="font-size: 0.75rem;">
-                                          <% if (!(boardSetting && boardSetting.hideAuthor)) { %>
-                                              <span class="author"><%= post.author ? post.author.username : '작성자 없음' %></span>
-                                          <% } %>
-                                          <% if (!(boardSetting && boardSetting.hideDate)) { %>
-                                              <span class="date"> | <%= post.createdAt.toISOString().slice(0, 10).replace(/-/g, '/') %> <%= post.createdAt.toTimeString().slice(0, 5) %></span>
-                                          <% } %>
-                                          <span class="views" <% if (boardSetting && boardSetting.hideViews) { %>style="display:none;"<% } %>> 
-                                              | 조회 <%= post.views %>
-                                          </span>
-                                          <span class="comments" <% if (boardSetting && boardSetting.hideCommentCount) { %>style="display:none;"<% } %>> 
-                                              | 댓글 <%= post.commentCount %>
-                                          </span>
-                                      </div>
-                                  </li>
-                              <% }) %>
-                          <% } %>
-                      </ul>
+                  <ul class="list-unstyled">
+                    <% if (posts.length === 0) { %>
+                        <li>등록된 게시글이 없습니다.</li>
+                    <% } else { %>
+                        <% posts.forEach(post => { %>
+                            <li data-post-id="<%= post._id %>" class="border-bottom py-1" onclick="checkPermission('<%= post._id %>', '<%= post.category %>')" style="cursor: pointer;">
+                                <div class="d-flex justify-content-between align-items-center w-100">
+                                    <span class="small text-reset text-decoration-none">
+                                        [<%= allowedCategories[post.category] %>] <%= post.title %>
+                                    </span>
+                                    <div class="actions ms-3 d-flex align-items-center">
+                                        <% if (user && (user.role === 'superadmin' || (user.role === 'admin' && boardSetting.writePermission.includes('admin')))) { %>
+                                            <form action="/posts/delete/<%= post._id %>?category=<%= post.category %>" method="POST" style="display:inline;" onsubmit="return confirmDelete();">
+                                                <button type="submit" class="btn btn-link text-danger p-0" title="삭제">
+                                                    <i class="bi bi-x-lg" style="font-size: 14px;"></i>
+                                                </button>
+                                            </form>
+                                            <a href="/posts/edit/<%= post._id %>?category=<%= post.category %>" class="text-danger ms-2" title="수정">
+                                                <i class="bi bi-arrow-repeat" style="font-size: 14px;"></i>
+                                            </a>
+                                        <% } else if (user && user.id === post.author._id.toString()) { %>
+                                            <!-- 작성자일 경우 아무것도 표시하지 않음 -->
+                                        <% } %>
+                                    </div>
+                                </div>
+                                <div class="post-meta text-secondary d-flex align-items-center" style="font-size: 0.75rem;">
+                                    <% if (!(boardSetting && boardSetting.hideAuthor)) { %>
+                                        <span class="author"><%= post.author ? post.author.username : '작성자 없음' %></span>
+                                    <% } %>
+                                    <% if (!(boardSetting && boardSetting.hideDate)) { %>
+                                        <div class="separator mx-1 border-start border-secondary-subtle" style="height: 0.8em;"></div>
+                                        <span class="date"><%= post.createdAt.toISOString().slice(0, 10).replace(/-/g, '/') %> <%= post.createdAt.toTimeString().slice(0, 5) %></span>
+                                    <% } %>
+                                    <% if (!(boardSetting && boardSetting.hideViews)) { %>
+                                        <div class="separator mx-1 border-start border-secondary-subtle" style="height: 0.8em;"></div>
+                                        <span class="views"> 
+                                            조회 <%= post.views %>
+                                        </span>
+                                    <% } %>
+                                    <% if (!(boardSetting && boardSetting.hideCommentCount)) { %>
+                                        <div class="separator mx-1 border-start border-secondary-subtle" style="height: 0.8em;"></div>
+                                        <span class="comments"> 
+                                            댓글 <%= post.commentCount %>
+                                        </span>
+                                    <% } %>
+                                </div>
+                            </li>
+                        <% }) %>
+                    <% } %>
+                </ul>
+                
                 </div>
             </div>
             
