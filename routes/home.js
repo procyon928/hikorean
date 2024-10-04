@@ -18,19 +18,17 @@ router.get('/', async (req, res) => {
   try {
       const schedules = await Schedule.find(); // 모든 스케줄 가져오기
 
-      // 오늘 날짜를 KST로 변환
-      const today = new Date();
-      const timezoneOffset = today.getTimezoneOffset() * 60 * 1000; // UTC 오프셋을 밀리초로 변환
-      const koreaOffset = 9 * 60 * 60 * 1000; // KST 오프셋 (9시간)
-      const todayKST = new Date(today.getTime() + timezoneOffset + koreaOffset); // 오늘 날짜를 KST로 변환
+      // 현재 시간 (서버가 KST로 운영되므로 직접 사용)
+      const todayKST = new Date(); // 서버의 현재 시간
 
       console.log('Schedules:', schedules); // 추가된 로그
-      res.render('home', { schedules, todayKST, holidays }); // 스케줄 데이터와 todayKST를 뷰로 전달
+      res.render('home', { schedules, todayKST, holidays }); // 스케줄 데이터와 today를 뷰로 전달
   } catch (err) {
       console.error(err);
       res.status(500).send(err.message);
   }
 });
+
 
 router.get('/schedules', async (req, res) => {
   const date = new Date(req.query.date);
