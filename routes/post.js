@@ -12,10 +12,8 @@ router.get('/posts', async (req, res) => {
   const user = req.session.user; // 로그인한 사용자 정보
   const category = req.query.category;
 
-  // admin 또는 superadmin인 경우 카테고리 검증 생략
-  if (user && (user.role === 'admin' || user.role === 'superadmin')) {
-    // 카테고리 검증 생략
-  } else if (user && !validateCategory(category)) {
+  // 카테고리 검증을 비회원도 가능하도록 수정
+  if (user && !validateCategory(category)) {
     return res.status(400).send("<script>alert('유효하지 않은 카테고리입니다.'); window.location.href='/';</script>");
   }
 
@@ -38,6 +36,7 @@ router.get('/posts', async (req, res) => {
 
   return res.render('posts/list', { posts, user, category, allowedCategories, boardSetting, canWrite });
 });
+
 
 // 게시글 작성 페이지
 router.get('/posts/new', ensureAuthenticated, (req, res) => {
