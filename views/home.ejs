@@ -90,14 +90,58 @@
 <body>
     <%- include('partials/navbar') %> 
     <%- include('partials/bottom-navbar') %>
-    <div class="container-fluid p-0" style="max-width: 960px;">
+    <div class="container-fluid p-0 mb-5" style="max-width: 960px;">
         <div class="content-box text-white text-center p-2 position-relative" style="background-color: #91AD09;">
-            <span class="small">여기에 원하는 콘텐츠를 입력하세요!</span>
+            <span class="small text-decoration-underline">여기에 원하는 콘텐츠를 입력하세요!</span>
             <i class="bi bi-x position-absolute top-0 end-0 m-2" style="color: white; cursor: pointer;" aria-label="Close"></i>
         </div>
+        
+        <div class="my-3">
+          <div class="swiper-container">
+              <div class="swiper-wrapper">
+                  <div class="swiper-slide">
+                      <img src="/img/notice1.png" alt="Image 1" />
+                  </div>
+                  <div class="swiper-slide">
+                      <img src="/img/notice2.png" alt="Image 2" />
+                  </div>
+                  <div class="swiper-slide">
+                      <img src="/img/notice3.png" alt="Image 3" />
+                  </div>
+                  <!-- 더 많은 슬라이드 추가 가능 -->
+              </div>
+              <!-- 추가 내비게이션 버튼 (선택 사항) -->
+              <div class="swiper-button-next"></div>
+              <div class="swiper-button-prev"></div>
+              <!-- 추가 페이지네이션 (선택 사항) -->
+              <div class="swiper-pagination"></div>
+          </div>
+        </div>
+
+        <div class="row my-3 mx-0">
+            <div class="col-12 d-flex justify-content-evenly p-0">
+                <a class="text-body text-decoration-none text-center opacity-75 p-0" href="#" style="width: 20%;">
+                    <i class="bi bi-info-square" style="font-size: 22px;"></i>
+                    <div class="small">사무실 정보</div>
+                </a>
+                <a class="text-body text-decoration-none text-center opacity-75 p-0" href="#" style="width: 20%;">
+                    <i class="bi bi-person-workspace" style="font-size: 22px;"></i>
+                    <div class="small">수강지원</div>
+                </a>
+                <a class="text-body text-decoration-none text-center opacity-75 p-0" href="#" style="width: 20%;">
+                    <i class="bi bi-download" style="font-size: 22px;"></i>
+                    <div class="small">양식 다운로드</div>
+                </a>
+                <a class="text-body text-decoration-none text-center opacity-75 p-0" href="#" style="width: 20%;">
+                    <i class="bi bi-printer" style="font-size: 22px;"></i>
+                    <div class="small">증명서 신청</div>
+                </a>
+            </div>
+        </div>
+
         <div class="row my-3 mx-0">
             <div class="col-12">
-                <div class="table-responsive border rounded-4 bg-white bg-border shadow-sm p-2">
+                <div class="table-responsive border rounded-3 bg-white shadow-sm p-2">
                     <div class="scrollable-container">
                         <table class="calendar-table">
                             <thead>
@@ -163,51 +207,26 @@
         </div>
 
         <div class="row my-3 mx-0">
-            <div class="col-12 d-flex justify-content-evenly p-0">
-                <a class="text-body text-decoration-none text-center opacity-75 p-0" href="#" style="width: 20%;">
-                    <i class="bi bi-info-square" style="font-size: 22px;"></i>
-                    <div class="small">사무실 정보</div>
-                </a>
-                <a class="text-body text-decoration-none text-center opacity-75 p-0" href="#" style="width: 20%;">
-                    <i class="bi bi-person-workspace" style="font-size: 22px;"></i>
-                    <div class="small">수강지원</div>
-                </a>
-                <a class="text-body text-decoration-none text-center opacity-75 p-0" href="#" style="width: 20%;">
-                    <i class="bi bi-download" style="font-size: 22px;"></i>
-                    <div class="small">양식 다운로드</div>
-                </a>
-                <a class="text-body text-decoration-none text-center opacity-75 p-0" href="#" style="width: 20%;">
-                    <i class="bi bi-printer" style="font-size: 22px;"></i>
-                    <div class="small">증명서 신청</div>
-                </a>
+            <div class="col-12">
+                <div class="table-responsive border rounded-3 shadow-sm p-3">
+                    <i class="bi bi-pen-fill text-primary"></i><p class="fw-bold ms-1 mb-2 d-inline-block">최신 글</p>
+                      <p class="small mb-1"><strong>[자유]</strong> 같이 밥 먹을 사람을 찾습니다.</p>
+                      <p class="small mb-1"><strong>[한국어질문]</strong> 이 문법이 뭐예요?</p>
+                      <p class="small mb-1"><strong>[문화]</strong> 한국 친구와 함께 한강에서 치맥을!</p>
+                </div>
             </div>
         </div>
-        
-        <div class="my-3">
-          <div class="swiper-container">
-              <div class="swiper-wrapper">
-                  <div class="swiper-slide">
-                      <img src="/img/notice1.png" alt="Image 1" />
-                  </div>
-                  <div class="swiper-slide">
-                      <img src="/img/notice2.png" alt="Image 2" />
-                  </div>
-                  <div class="swiper-slide">
-                      <img src="/img/notice3.png" alt="Image 3" />
-                  </div>
-                  <!-- 더 많은 슬라이드 추가 가능 -->
-              </div>
-              <!-- 추가 내비게이션 버튼 (선택 사항) -->
-              <div class="swiper-button-next"></div>
-              <div class="swiper-button-prev"></div>
-              <!-- 추가 페이지네이션 (선택 사항) -->
-              <div class="swiper-pagination"></div>
-          </div>
+
+        <div class="row my-3 mx-0">
+            <div class="col-12">
+                <div class="table-responsive border rounded-3 shadow-sm p-3">
+                  <i class="bi bi-fire text-danger"></i><p class="fw-bold ms-1 mb-2 d-inline-block">인기 글</p>
+                    <p class="small mb-1"><strong>[자유]</strong> 한국어 잘하는 방법</p>
+                    <p class="small mb-1"><strong>[홍익당근]</strong> 책상을 판매합니다.</p>
+                    <p class="small mb-1"><strong>[문화]</strong> 한국 친구와 함께 한강에서 치맥을!</p>
+                </div>
+            </div>
         </div>
-        <p>콘텐츠가 늘어나면</p>
-        <p>콘텐츠가 늘어나면</p>
-        <p>콘텐츠가 늘어나면</p>
-        <p>콘텐츠가 늘어나면</p>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script>
