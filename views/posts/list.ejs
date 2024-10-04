@@ -75,7 +75,9 @@
                                     <% } %>
                                     <% if (!(boardSetting && boardSetting.hideDate)) { %>
                                         <div class="separator mx-1 border-start border-secondary-subtle" style="height: 0.8em;"></div>
-                                        <span class="date"><%= post.createdAt.toISOString().slice(0, 10).replace(/-/g, '/') %> <%= post.createdAt.toTimeString().slice(0, 5) %></span>
+                                        <span class="date">
+                                            <%= post.isSameDay ? post.timeOnly : post.createdAtKST %>
+                                        </span> <!-- 조건에 따라 표시 -->
                                     <% } %>
                                     <% if (!(boardSetting && boardSetting.hideViews)) { %>
                                         <div class="separator mx-1 border-start border-secondary-subtle" style="height: 0.8em;"></div>
@@ -89,7 +91,7 @@
                                             댓글 <%= post.commentCount %>
                                         </span>
                                     <% } %>
-                                </div>
+                                </div>          
                             </li>
                         <% }) %>
                     <% } %>

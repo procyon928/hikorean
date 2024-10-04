@@ -6,6 +6,8 @@ const Comment = require('../models/Comment');
 const { ensureAuthenticated } = require('../middleware/auth');
 const BoardSetting = require('../models/boardSetting');
 const { allowedCategories, validateCategory, checkAuthor, checkWritePermission, checkReadPermission, checkCommentWritePermission  } = require('./boardSetting');
+const moment = require('moment-timezone');
+const { convertToKST } = require('../utils/dateUtils');
 
 // 게시글 목록 페이지
 router.get('/posts', async (req, res) => {
@@ -24,19 +26,24 @@ router.get('/posts', async (req, res) => {
 
   let posts;
   if (category) {
-    posts = await Post.find({ category }).populate('author', 'username');
+    posts = await Post.find({ category }).populate('author', 'username').sort({ createdAt: -1 });
   } else {
-    posts = await Post.find().populate('author', 'username');
+    posts = await Post.find().populate('author', 'username').sort({ createdAt: -1 });
   }
 
-  // 각 게시글에 대해 댓글 수를 계산
+  // 현재 날짜를 한국 시간으로 가져오기
+  const nowKST = moment().tz('Asia/Seoul').startOf('day'); // 현재 날짜의 시작 시점
+
+  // 각 게시글에 대해 댓글 수를 계산하고 시간 변환
   for (const post of posts) {
-    post.commentCount = await Comment.countDocuments({ post: post._id });
+      post.commentCount = await Comment.countDocuments({ post: post._id });
+      post.createdAtKST = convertToKST(post.createdAt, 'YYYY/MM/DD HH:mm'); // 전체 형식
+      post.timeOnly = convertToKST(post.createdAt, 'HH:mm'); // hh:mm 형식
+      post.isSameDay = moment(post.createdAt).tz('Asia/Seoul').isSame(nowKST, 'day'); // 같은 날짜인지 확인
   }
 
   return res.render('posts/list', { posts, user, category, allowedCategories, boardSetting, canWrite });
 });
-
 
 // 게시글 작성 페이지
 router.get('/posts/new', ensureAuthenticated, (req, res) => {
