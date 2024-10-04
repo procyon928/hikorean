@@ -1,4 +1,5 @@
 const express = require('express');
+const bcrypt = require('bcrypt'); // bcrypt 추가
 const { User } = require('../models/User');
 const Log = require('../models/Log');
 
@@ -6,27 +7,38 @@ const router = express.Router();
 
 // 회원가입 기능
 router.post('/signup', async (req, res) => {
-    const { username, email, password } = req.body;
+  const { username, email, password } = req.body;
 
-    try {
-        const newUser = new User({ username, email, password });
-        await newUser.save();
-        res.send('회원가입 성공!');
-    } catch (error) {
-        console.error('회원가입 오류:', error);
-        res.status(500).send('회원가입 중 오류가 발생했습니다.');
-    }
+  try {
+      // 비밀번호 해싱
+      const hashedPassword = await bcrypt.hash(password, 10); // 비밀번호 해싱
+
+      const newUser = new User({ username, email, password: hashedPassword }); // 해싱된 비밀번호 저장
+      await newUser.save();
+
+      // 회원가입 성공 후 로그인 페이지로 리다이렉트
+      res.render('signup', { success: true }); // success 변수를 true로 설정하여 리다이렉션 메시지 표시
+  } catch (error) {
+      console.error('회원가입 오류:', error);
+      res.status(500).send('회원가입 중 오류가 발생했습니다.');
+  }
 });
 
 // 로그인 기능
 router.post('/login', async (req, res) => {
-  const { username, password } = req.body;
+  const { username, password, referer } = req.body; // referer 추가
 
   try {
       const user = await User.findOne({ username });
 
-      // 사용자 존재 여부 및 비밀번호 확인
-      if (!user || user.password !== password) {
+      // 사용자 존재 여부 확인
+      if (!user) {
+          return res.status(401).send('아이디 또는 비밀번호가 잘못되었습니다.');
+      }
+
+      // 비밀번호 확인
+      const isMatch = await bcrypt.compare(password, user.password); // 해싱된 비밀번호와 비교
+      if (!isMatch) {
           return res.status(401).send('아이디 또는 비밀번호가 잘못되었습니다.');
       }
 
@@ -46,12 +58,12 @@ router.post('/login', async (req, res) => {
       });
       await logEntry.save();
 
-      res.send('로그인 성공!');
+      // referer가 있으면 해당 페이지로 리다이렉션, 없으면 기본 페이지로
+      res.redirect(referer || '/');
   } catch (error) {
       console.error('로그인 오류:', error);
       res.status(500).send('로그인 중 오류가 발생했습니다.');
   }
 });
-
 
 module.exports = router;

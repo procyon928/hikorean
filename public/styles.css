@@ -1,3 +1,8 @@
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background-color: rgba(0, 0, 0, 0.01); /* 검은색 배경과 2% 투명도 */
+}
+
 /* public/styles.css */
 .header1 { font-size: 24px; font-weight: bold; color:brown; }
 .header2 { font-size: 20px; font-weight: bold; }

@@ -2,9 +2,15 @@
 <nav class="navbar" style="background-color: #254B7A;"> 
   <div class="d-flex justify-content-between align-items-center w-100"> <!-- align-items-center 추가 -->
       <div class="nav-item text-start w-25 ms-3">
-          <a href="/login" class="nav-link p-0 me-2">
-            <i class="bi bi-person-circle" style="font-size: 22px; color: white; opacity: 0.75;"></i>
-          </a>
+          <% if (!user) { %> <!-- 로그인하지 않은 경우 -->
+              <a href="/login" class="nav-link p-0 me-2">
+                  <i class="bi bi-person-fill-add" style="font-size: 22px; color: white; opacity: 0.75;"></i>
+              </a>
+          <% } else { %> <!-- 로그인한 경우 -->
+              <a href="/account" class="nav-link p-0 me-2">
+                  <i class="bi bi-person-fill-check" style="font-size: 22px; color: white; opacity: 0.75;"></i>
+              </a>
+          <% } %>
       </div>
       <div class="nav-item text-center d-flex justify-content-center"> <!-- flexbox 추가 -->
           <a class="navbar-brand d-flex align-items-center m-0" href="#" style="font-size: 18px;">

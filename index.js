@@ -20,7 +20,6 @@ const shortUrlRoutes = require('./routes/shortUrl');
 const admissionRoutes = require('./routes/admission');
 const scheduleRoutes = require('./routes/schedule');
 const homeRoutes = require('./routes/home');
-const { ensureAuthenticated, isAdmin } = require('./middleware/auth');
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -40,6 +39,12 @@ app.use(session({
     cookie: { secure: false } // HTTPS 사용 시 true로 설정
 }));
 
+// 사용자 세션 정보를 로컬 변수로 전달하는 미들웨어 추가
+app.use((req, res, next) => {
+  res.locals.user = req.session.user; // 사용자 세션 정보를 로컬 변수로 전달
+  next();
+});
+
 // body-parser 미들웨어 설정
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -51,37 +56,18 @@ app.set('views', path.join(__dirname, 'views')); // views 폴더 설정
 // 정적 파일 제공
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 회원가입 페이지
+// 회원가입 페이지 라우터
 app.get('/signup', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'signup.html'));
+  res.render('signup'); // signup.ejs를 렌더링
 });
 
 // 로그인 페이지
 app.get('/login', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'login.html'));
+    res.render('login'); // login.ejs를 렌더링
 });
 
-// 관리자 페이지
-app.get('/admin', (req, res) => {
-    // 세션 로그 추가
-    console.log('세션:', req.session);
-   
-    // 세션에서 사용자 역할을 가져옴
-    if (!req.session.user) {
-    return res.status(403).json({ message: '로그인이 필요합니다.' });
-    }
-   
-    const userRole = req.session.user.role;
-    console.log('사용자 역할:', userRole);
-   
-    if (userRole !== 'admin' && userRole !== 'superadmin') {
-    return res.status(403).json({ message: '접근 권한이 없습니다.' });
-    }
-    res.render('admin'); // admin.ejs를 렌더링
-   });
-
 // 라우터 설정
-app.use(authRoutes); // 제일 상위에 두기
+app.use(authRoutes); // auth.js 라우터를 사용
 app.use('/admin', adminRoutes);
 app.use('/email', emailRoutes);
 app.use(postRoutes);
