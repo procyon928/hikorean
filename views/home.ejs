@@ -15,7 +15,7 @@
     <style>
         body {
             font-family: 'Noto Sans KR', sans-serif;
-            background-color: rgba(0, 0, 0, 0.02); /* 검은색 배경과 2% 투명도 */
+            background-color: rgba(0, 0, 0, 0.03); /* 검은색 배경과 2% 투명도 */
         }
         .calendar-table {
             border-collapse: collapse;
@@ -63,7 +63,7 @@
             overflow: hidden; /* 넘치는 내용 숨기기 */
             position: relative;
             height: auto;
-            padding-top: 25px;
+            padding-top: 22px;
         }
         .swiper-slide img {
             display: block;
@@ -78,7 +78,7 @@
             opacity: 0.7;
         }
         .swiper-pagination {
-            top: -5px !important; /* 슬라이드 위쪽에 위치 */
+            top: -7px !important; /* 슬라이드 위쪽에 위치 */
             left: 50%; /* 중앙 배치 */
             transform: translateX(-50%, 0); /* 중앙 정렬을 위해 이동 */
             z-index: 10; /* 다른 요소 위에 표시 */
@@ -86,8 +86,8 @@
         .swiper-pagination .swiper-pagination-bullet {
             background-color: #254B7A; /* 기본 배경색 */
             opacity: 0.2; /* 기본 투명도 */
-            width: 12px; /* 너비 */
-            height: 12px; /* 높이 */
+            width: 10px; /* 너비 */
+            height: 10px; /* 높이 */
             margin: 0 4px; /* 간격 조정 */
             border-radius: 50%; /* 원형으로 만들기 */
         }
@@ -131,27 +131,27 @@
         <div class="row my-3 mx-0">
             <div class="col-12 d-flex justify-content-center p-0">
                 <a class="text-body text-decoration-none text-center opacity-75 p-0 mx-1" href="#" style="width: 20%;">
-                    <i class="bi bi-info-square" style="font-size: 22px;"></i>
-                    <div class="small">사무실 정보</div>
+                    <img src="/img/school.png" alt="교육원 정보" style="width: 22px; height: 22px;">
+                    <div class="small pt-1" style="font-size: 0.8rem;">교육원 정보</div>
                 </a>
                 <a class="text-body text-decoration-none text-center opacity-75 p-0 mx-1" href="https://koreanle.hongik.ac.kr:4433/new/brochure/money_confirm.php?sMenu=kor47" style="width: 20%;">
-                    <i class="bi bi-person-workspace" style="font-size: 22px;"></i>
-                    <div class="small">수강지원</div>
+                    <img src="/img/myinfo.png" alt="교육원 정보" style="width: 22px; height: 22px;">
+                    <div class="small pt-1" style="font-size: 0.8rem;">수강지원</div>
                 </a>
                 <a class="text-body text-decoration-none text-center opacity-75 p-0 mx-1" href="https://koreanle.hongik.ac.kr:4433/new/education/list.php?sMenu=kor24&db_code=edudata" style="width: 20%;">
-                    <i class="bi bi-download" style="font-size: 22px;"></i>
-                    <div class="small">양식 다운로드</div>
+                  <img src="/img/download.png" alt="교육원 정보" style="width: 22px; height: 22px;">
+                    <div class="small pt-1" style="font-size: 0.8rem;">양식 다운로드</div>
                 </a>
                 <a class="text-body text-decoration-none text-center opacity-75 p-0 mx-1" href="#" style="width: 20%;">
-                    <i class="bi bi-printer" style="font-size: 22px;"></i>
-                    <div class="small">증명서 신청</div>
+                    <img src="/img/printer.png" alt="교육원 정보" style="width: 22px; height: 22px;">
+                    <div class="small pt-1" style="font-size: 0.8rem;">증명서 신청</div>
                 </a>
             </div>
         </div>
 
         <div class="row my-3 mx-0">
             <div class="col-12">
-                <div class="table-responsive rounded-3 bg-white shadow-sm p-2">
+                <div class="table-responsive rounded-3 border bg-white shadow-sm p-2">
                     <div class="scrollable-container">
                         <table class="calendar-table">
                             <thead>
@@ -219,22 +219,22 @@
 
         <div class="row my-3 mx-0">
             <div class="col-12">
-                <div class="table-responsive rounded-3 bg-white shadow-sm p-3">
-                    <i class="bi bi-pen-fill text-info-emphasis"></i><p class="fw-bold ms-1 mb-2 d-inline-block">최신 글</p>
-                      <p class="small mb-1"><strong>[자유]</strong> 같이 밥 먹을 사람을 찾습니다.</p>
-                      <p class="small mb-1"><strong>[한국어질문]</strong> 이 문법이 뭐예요?</p>
-                      <p class="small mb-1"><strong>[문화]</strong> 한국 친구와 함께 한강에서 치맥을!</p>
+                <div class="table-responsive rounded-3 border bg-white shadow-sm p-3">
+                  <i class="bi bi-bookmark-star-fill text-danger"></i><p class="fw-bold ms-1 mb-2 d-inline-block">공지사항</p>
+                    <p class="small mb-1"><strong>[학사]</strong> 비자 연장 안내</p>
+                    <p class="small mb-1"><strong>[학사]</strong> 유학생 보험 증서 다운로드 안내</p>
+                    <p class="small mb-1"><strong>[문화]</strong> 한국 친구와 함께 한강에서 치맥을!</p>
                 </div>
             </div>
         </div>
 
         <div class="row my-3 mx-0">
             <div class="col-12">
-                <div class="table-responsive rounded-3 bg-white shadow-sm p-3">
-                  <i class="bi bi-fire text-danger"></i><p class="fw-bold ms-1 mb-2 d-inline-block">인기 글</p>
-                    <p class="small mb-1"><strong>[자유]</strong> 한국어 잘하는 방법</p>
-                    <p class="small mb-1"><strong>[홍익당근]</strong> 책상을 판매합니다.</p>
-                    <p class="small mb-1"><strong>[문화]</strong> 한국 친구와 함께 한강에서 치맥을!</p>
+                <div class="table-responsive rounded-3 border bg-white shadow-sm p-3">
+                    <i class="bi bi-pen-fill text-info-emphasis"></i><p class="fw-bold ms-1 mb-2 d-inline-block">최신 글</p>
+                      <p class="small mb-1"><strong>[자유]</strong> 같이 밥 먹을 사람을 찾습니다.</p>
+                      <p class="small mb-1"><strong>[한국어질문]</strong> 이 문법이 뭐예요?</p>
+                      <p class="small mb-1"><strong>[문화]</strong> 한국 친구와 함께 한강에서 치맥을!</p>
                 </div>
             </div>
         </div>
