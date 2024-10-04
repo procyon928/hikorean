@@ -63,7 +63,7 @@
             overflow: hidden; /* 넘치는 내용 숨기기 */
             position: relative;
             height: auto;
-            padding-top: 24px;
+            padding-top: 25px;
         }
         .swiper-slide img {
             display: block;
@@ -162,8 +162,8 @@
                                     <th class="p-0 pt-2 small align-top">수</th>
                                     <th class="p-0 pt-2 small align-top">목</th>
                                     <th class="p-0 pt-2 small align-top">금</th>
-                                    <th class="p-0 pt-2 small align-top text-danger">토</th>
-                                    <th class="p-0 pt-2 small align-top text-danger">일</th>
+                                    <th class="p-0 pt-2 small align-top text-body-tertiary">토</th>
+                                    <th class="p-0 pt-2 small align-top text-body-tertiary">일</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -198,7 +198,7 @@
                                 <% weekDays.forEach((day) => { %>
                                   <td class="p-1 small align-top 
                                       <%= (holidays.some(holiday => holiday.date === day.toISOString().split('T')[0]) ? 'text-danger' : '') || 
-                                      (day.getDay() === 6 || day.getDay() === 0 ? 'text-danger' : '') %>">
+                                      (day.getDay() === 6 || day.getDay() === 0 ? 'text-body-tertiary' : '') %>">
                                   <div style="<%= day.toDateString() === new Date(todayKST).toDateString() ? 'font-weight: bold;' : '' %>">
                                         <%= day.getDate() %>
                                         <% if (scheduleDates.some(date => date.toDateString() === day.toDateString())) { %>
@@ -219,8 +219,8 @@
 
         <div class="row my-3 mx-0">
             <div class="col-12">
-                <div class="table-responsive border rounded-3 shadow-sm p-3">
-                    <i class="bi bi-pen-fill text-primary"></i><p class="fw-bold ms-1 mb-2 d-inline-block">최신 글</p>
+                <div class="table-responsive border rounded-3 bg-white shadow-sm p-3">
+                    <i class="bi bi-pen-fill text-info-emphasis"></i><p class="fw-bold ms-1 mb-2 d-inline-block">최신 글</p>
                       <p class="small mb-1"><strong>[자유]</strong> 같이 밥 먹을 사람을 찾습니다.</p>
                       <p class="small mb-1"><strong>[한국어질문]</strong> 이 문법이 뭐예요?</p>
                       <p class="small mb-1"><strong>[문화]</strong> 한국 친구와 함께 한강에서 치맥을!</p>
@@ -230,7 +230,7 @@
 
         <div class="row my-3 mx-0">
             <div class="col-12">
-                <div class="table-responsive border rounded-3 shadow-sm p-3">
+                <div class="table-responsive border rounded-3 bg-white shadow-sm p-3">
                   <i class="bi bi-fire text-danger"></i><p class="fw-bold ms-1 mb-2 d-inline-block">인기 글</p>
                     <p class="small mb-1"><strong>[자유]</strong> 한국어 잘하는 방법</p>
                     <p class="small mb-1"><strong>[홍익당근]</strong> 책상을 판매합니다.</p>
