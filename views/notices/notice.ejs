@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#254B7A">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <title>공지사항</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+
+    <script>
+        const lang = '<%= lang %>'
+        
+        function confirmDelete() {
+            return confirm("게시글을 삭제하시겠습니까?");
+        }
+
+        async function checkPermission(postId) {
+            const response = await fetch(`/notices/${postId}`);
+            if (response.status === 403) {
+                alert('게시글 확인 권한이 없습니다.');
+            } else if (response.ok) {
+                window.location.href = `/notices/${postId}?lang=${lang}`; // 게시글 상세 페이지로 이동
+            } else {
+                alert('게시글을 불러오는 중 오류가 발생했습니다.');
+            }
+        }
+    </script>
+</head>
+<body>
+    <%- include('../partials/navbar') %> 
+    <%- include('../partials/bottom-navbar') %>
+
+    <div class="container-fluid p-0" style="max-width: 960px; margin-bottom: 100px;">
+        <div class="content-wrapper p-3">
+            <h2 class="fw-bold pb-2">공지사항</h2>
+            <p class="small">공지사항을 꼭 확인하세요.</p>
+
+            <div class="post-list border-2 border-top border-dark p-0">
+                <div class="border-1 border-top border-dark">
+                    <ul class="list-unstyled">
+                        <% if (notices.length === 0) { %>
+                            <li>등록된 게시글이 없습니다.</li>
+                        <% } else { %>
+                            <% notices.forEach(notice => { %>
+                                <li data-post-id="<%= notice._id %>" class="border-bottom py-1" onclick="checkPermission('<%= notice.shortId %>')" style="cursor: pointer;">
+                                    <div class="d-flex justify-content-between align-items-center w-100">
+                                        <span class="small text-reset text-decoration-none bold">
+                                            <%= notice.title %>
+                                        </span>
+                                        <div class="actions ms-3 d-flex align-items-center">
+                                            <% if (user && (user.role === 'superadmin' || (user.role === 'admin'))) { %>
+                                                <form action="/notices/delete/<%= notice._id %>" method="POST" style="display:inline;" onsubmit="return confirmDelete();">
+                                                    <button type="submit" class="btn btn-link text-danger p-0" title="삭제">
+                                                        <i class="bi bi-x-lg" style="font-size: 14px;"></i>
+                                                    </button>
+                                                </form>
+                                                <a href="/notices/edit/<%= notice._id %>" class="text-danger ms-2" title="수정">
+                                                    <i class="bi bi-arrow-repeat" style="font-size: 14px;"></i>
+                                                </a>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                    <div class="post-meta text-secondary d-flex align-items-center" style="font-size: 0.75rem;">
+                                        <span class="date"><%= notice.createdAt.toLocaleDateString() %></span>
+                                    </div>          
+                                </li>
+                            <% }) %>
+                        <% } %>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="mb-3 d-flex justify-content-end">
+                
+                <% if (user && canWrite) { %>
+                    <a href="/notices/new" class="btn btn-primary btn-sm">글쓰기</a>
+                <% } %>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <script>
+        document.documentElement.dataset.lang = '<%= lang %>';
+    </script>
+    <script src="/js/lang.js"></script> 
+</body>
+</html>

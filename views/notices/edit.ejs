@@ -33,6 +33,10 @@
     </div>
 
     <script>
+        document.documentElement.dataset.lang = '<%= lang %>';
+    </script>
+    <script src="/js/lang.js"></script> 
+    <script>
     $(document).ready(function() {
       $('#editor').summernote({
         placeholder: '내용을 입력하세요...',

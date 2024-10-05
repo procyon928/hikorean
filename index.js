@@ -46,6 +46,12 @@ app.use((req, res, next) => {
     next();
 });
 
+// 쿼리 파라미터에서 lang을 가져오고 기본값 설정
+app.use((req, res, next) => {
+  res.locals.lang = req.query.lang || 'ko';
+  next();
+});
+
 // body-parser 미들웨어 설정
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());

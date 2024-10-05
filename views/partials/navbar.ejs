@@ -1,39 +1,57 @@
 <!-- 상단 내비게이션바 (views/partials/navbar.ejs) -->
 <nav class="navbar" style="background-color: #254B7A;"> 
-  <div class="d-flex justify-content-between align-items-center w-100"> <!-- align-items-center 추가 -->
+  <div class="d-flex justify-content-between align-items-center w-100">
       <div class="nav-item text-start w-25 ms-3">
-          <% if (!user) { %> <!-- 로그인하지 않은 경우 -->
+          <% if (!user) { %>
               <a href="/login" class="nav-link p-0 me-2">
                   <i class="bi bi-person-fill-add" style="font-size: 22px; color: white; opacity: 0.75;"></i>
               </a>
-          <% } else { %> <!-- 로그인한 경우 -->
+          <% } else { %>
               <a href="/account" class="nav-link p-0 me-2">
                   <i class="bi bi-person-fill-check" style="font-size: 22px; color: white; opacity: 0.75;"></i>
               </a>
           <% } %>
       </div>
-      <div class="nav-item text-center d-flex justify-content-center"> <!-- flexbox 추가 -->
+      <div class="nav-item text-center d-flex justify-content-center">
           <a class="navbar-brand d-flex align-items-center m-0" href="/" style="font-size: 18px;">
             <img src="/img/logo-white.png" alt="" width="22" height="22" class="d-inline-block align-text-top"> 
             <span class="ms-2 text-white">HiKorean</span>
           </a>
       </div>
       <div class="nav-item text-end w-25 d-flex me-3 justify-content-end align-items-center position-relative"> 
-          <ul class="navbar-nav">
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle p-0" href="#" id="navbarScrollingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="color: white; opacity: 0.75;">
-                <i class="bi bi-translate" style="font-size: 22px;"></i>
-              </a>
-              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarScrollingDropdown" style="position: absolute; z-index: 1000; min-width: auto;">
-                <li><a class="dropdown-item" href="#">한국어</a></li>
-                <li><a class="dropdown-item" href="#">English</a></li>
-                <li><a class="dropdown-item" href="#">简体中文</a></li>
-                <li><a class="dropdown-item" href="#">繁體中文</a></li>
-                <li><a class="dropdown-item" href="#">日本語</a></li>
-                <li><a class="dropdown-item" href="#">Tiếng Việt</a></li>
-              </ul>
-            </li>
-          </ul>
-      </div>
-  </div>
+        <ul class="navbar-nav">
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle p-0" href="#" id="navbarScrollingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="color: white; opacity: 0.75;">
+              <i class="bi bi-translate" style="font-size: 22px;"></i>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarScrollingDropdown" style="position: absolute; z-index: 1000; min-width: auto;">
+                <li><a class="dropdown-item" href="javascript:void(0);" onclick="changeLanguage('ko')">한국어</a></li>
+                <li><a class="dropdown-item" href="javascript:void(0);" onclick="changeLanguage('en')">English</a></li>
+                <li><a class="dropdown-item" href="javascript:void(0);" onclick="changeLanguage('sc')">简体中文</a></li>
+                <li><a class="dropdown-item" href="javascript:void(0);" onclick="changeLanguage('tc')">繁體中文</a></li>
+                <li><a class="dropdown-item" href="javascript:void(0);" onclick="changeLanguage('jp')">日本語</a></li>
+                <li><a class="dropdown-item" href="javascript:void(0);" onclick="changeLanguage('vi')">Tiếng Việt</a></li>
+            </ul>
+          </li>
+        </ul>
+    </div>
+</div>
 </nav>
+
+<script>
+function changeLanguage(lang) {
+  const currentUrl = window.location.href;
+  const baseUrl = currentUrl.split('?')[0];
+  const params = new URLSearchParams(window.location.search);
+  params.set('lang', lang); // 언어 쿼리 업데이트
+
+  // 모든 링크에 쿼리 파라미터 추가
+  document.querySelectorAll('a').forEach(link => {
+    const linkUrl = new URL(link.href);
+    linkUrl.searchParams.set('lang', lang); // 언어 쿼리 추가
+    link.href = linkUrl.toString();
+  });
+
+  window.location.href = baseUrl + '?' + params.toString(); // 새로운 URL로 이동
+}
+</script>

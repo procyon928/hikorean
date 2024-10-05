@@ -95,6 +95,11 @@
   </div>
 
   <script>
+      document.documentElement.dataset.lang = '<%= lang %>';
+  </script>
+  <script src="/js/lang.js"></script> 
+
+  <script>
     function copyToClipboard(text) {
         if (text.trim().length > 0) {
             const textarea = document.createElement('textarea');

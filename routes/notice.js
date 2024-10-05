@@ -166,10 +166,29 @@ router.get('/notices/:shortId', async (req, res) => {
       }
   }
 
-  const translations = notice.translations[lang] || notice.content; // 기본값은 원문
-  const styledContent = applyStyles(translations.translatedContent || translations); // 스타일 적용
+  // 특정 언어 번역이 없을 경우 기본 한국어 내용 사용
+  let translatedContent;
   
+  if (notice.translations[lang] && notice.translations[lang].translatedContent) {
+      translatedContent = notice.translations[lang].translatedContent; // 번역된 내용이 있을 경우
+  } else {
+      translatedContent = notice.content; // 번역이 없을 경우 원문 사용
+  }
+
+  const styledContent = applyStyles(translatedContent); // 스타일 적용
+
   res.render('notices/content', { notice, styledContent, lang });
+});
+
+// 번역 게시글 목록 페이지
+router.get('/notice', async (req, res) => {
+  try {
+      const notices = await Notice.find().sort({ createdAt: -1 });
+      res.render('notices/notice', { notices, user: req.session.user, canWrite: true }); // canWrite은 필요에 따라 설정
+  } catch (error) {
+      console.error('번역 게시글 목록 조회 중 오류:', error);
+      res.status(500).send('서버 오류가 발생했습니다.');
+  }
 });
 
 module.exports = router;
