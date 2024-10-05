@@ -112,6 +112,7 @@ router.post('/posts/settings/:category', ensureAuthenticated, async (req, res) =
     const hideCommentAuthor = req.body.hideCommentAuthor === 'on'; 
     const hideViews = req.body.hideViews === 'on';
     const hideCommentCount = req.body.hideCommentCount === 'on';
+    const description = req.body.description;
 
     const writePermission = req.body.writePermission || [];
     const readPermission = req.body.readPermission || [];
@@ -119,7 +120,7 @@ router.post('/posts/settings/:category', ensureAuthenticated, async (req, res) =
 
     await BoardSetting.findOneAndUpdate(
         { category },
-        { hideAuthor, hideDate, hideComments, hideCommentAuthor, hideViews, hideCommentCount, writePermission, readPermission, commentPermission },
+        { hideAuthor, hideDate, hideComments, hideCommentAuthor, hideViews, hideCommentCount, description, writePermission, readPermission, commentPermission },
         { upsert: true }
     );
 

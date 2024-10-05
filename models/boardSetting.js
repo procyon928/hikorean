@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const boardSettingSchema = new mongoose.Schema({
   category: { type: String, required: true, unique: true },
+  description: { type: String },
   hideAuthor: { type: Boolean, default: false },
   hideDate: { type: Boolean, default: false },
   hideComments: { type: Boolean, default: false },

@@ -11,6 +11,12 @@
         <input type="hidden" name="category" value="<%= category %>" />
         
         <label>
+            게시판 설명:
+            <textarea name="description"><%= boardSetting && boardSetting.description ? boardSetting.description : '' %></textarea>
+        </label>
+        <br>
+      
+        <label>
             작성자 감추기:
             <input type="checkbox" name="hideAuthor" <%= boardSetting && boardSetting.hideAuthor ? 'checked' : '' %> />
         </label>

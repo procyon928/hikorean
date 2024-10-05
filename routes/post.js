@@ -9,6 +9,20 @@ const { allowedCategories, validateCategory, checkAuthor, checkWritePermission, 
 const moment = require('moment-timezone');
 const { convertToKST } = require('../utils/dateUtils');
 
+// 게시판 목록 페이지
+router.get('/boards', async (req, res) => {
+  const boards = await BoardSetting.find(); // 모든 게시판 정보 조회
+  const boardDetails = await Promise.all(boards.map(async (board) => {
+      const recentPosts = await Post.find({ category: board.category })
+                                      .sort({ createdAt: -1 })
+                                      .limit(3) // 최근 게시글 3개만 조회
+                                      .populate('author', 'username');
+      return { ...board.toObject(), recentPosts }; // 게시판 정보와 최근 게시글 포함
+  }));
+
+  res.render('posts/boards', { boardDetails, allowedCategories }); // 새로운 뷰로 전달
+});
+
 // 게시글 목록 페이지
 router.get('/posts', async (req, res) => {
   const user = req.session.user; // 로그인한 사용자 정보
