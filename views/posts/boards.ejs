@@ -15,22 +15,43 @@
     <%- include('../partials/navbar') %> 
     <%- include('../partials/bottom-navbar') %>
     <div class="container-fluid p-0" style="max-width: 960px; margin-bottom: 100px;">
-        <h1>게시판 목록</h1>
-        <div class="list-group">
+        <div class="content-wrapper p-3">
+          <div class="list-group">
             <% boardDetails.forEach(board => { %>
-                <div class="list-group-item">
-                    <h5><%= allowedCategories[board.category] || board.category %></h5>
-                    <p><%= board.description || '설명이 없습니다.' %></p>
-                    <h6>최근 게시글:</h6>
-                    <ul>
-                        <% board.recentPosts.forEach(post => { %>
-                            <li>
-                                <a href="/posts/<%= post._id %>"><%= post.title %></a> - <%= post.createdAt.toLocaleString() %>
-                            </li>
-                        <% }) %>
-                    </ul>
+                <div class="list-group-item rounded-3 border bg-white shadow-sm p-3 my-2">
+                    <a href="/posts?category=<%= board.category %>" class="text-decoration-none text-reset d-block"> <!-- 링크를 div 내부로 이동 -->
+                        <div class="d-flex justify-content-between align-items-start">
+                            <h5 class="fw-bold p-0 mb-1 d-inline-block">
+                                <%= allowedCategories[board.category] || board.category %>
+                            </h5>
+                            <i class="bi bi-chevron-right ms-2"></i>
+                        </div>
+                        <p class="small my-1 lh-sm"><%= board.description || '설명이 없습니다.' %></p>
+                        <ul class="list-unstyled m-0 pt-1">
+                            <% board.recentPosts.forEach(post => { %>
+                                <li style="font-size: 0.75rem;">
+                                    <i class="bi bi-dot"></i>
+                                    <span class="text-reset"><%= post.title %></span>
+                                    <% 
+                                        const postTime = new Date(post.createdAt);
+                                        const now = new Date();
+                                        const timeDiff = now - postTime; // 시간 차이 (밀리초 단위)
+                        
+                                        // 24시간 = 24 * 60 * 60 * 1000 밀리초
+                                        if (timeDiff < 24 * 60 * 60 * 1000) { 
+                                    %>
+                                        <span class="ms-1 small fw-bold text-danger">N</span>
+                                    <% } %>
+                                </li>
+                            <% }) %>
+                        </ul>
+                    </a>
                 </div>
             <% }) %>
+        </div>
+        
+        
+        
         </div>
     </div>
 </body>
