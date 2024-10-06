@@ -74,9 +74,15 @@ router.post('/login', async (req, res) => {
 });
 
 // Google 인증 요청
-router.get('/auth/google', passport.authenticate('google', {
-  scope: ['openid', 'profile', 'email'] // 요청할 범위
-}));
+router.get('/auth/google', (req, res, next) => {
+  const isLoggedIn = req.isAuthenticated(); // 사용자가 로그인했는지 확인
+
+  passport.authenticate('google', {
+      scope: ['openid', 'profile', 'email'],
+      ...(isLoggedIn ? { prompt: 'none' } : {}) // 로그인 상태에 따라 prompt 설정
+  })(req, res, next);
+});
+
 
 // Google 인증 후 리디렉션
 router.get('/auth/google/callback',

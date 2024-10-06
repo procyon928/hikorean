@@ -85,33 +85,32 @@ app.get('/login', (req, res) => {
 
 // Passport 설정
 passport.use(new GoogleStrategy({
-    clientID: process.env.GOOGLE_CLIENT_ID, // 클라이언트 ID
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET, // 클라이언트 비밀
-    callbackURL: "/auth/google/callback" // 리디렉션 URI
-}, async (accessToken, refreshToken, profile, done) => {
-    try {
-        let user = await User.findOne({ googleId: profile.id });
+  clientID: process.env.GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  callbackURL: "/auth/google/callback",
+  passReqToCallback: true
+}, async (req, accessToken, refreshToken, profile, done) => {
+  try {
+      let user = await User.findOne({ googleId: profile.id });
 
-        if (!user) {
-            user = new User({
-                username: profile.displayName,
-                email: profile.emails[0].value,
-                googleId: profile.id,
-                authProvider: 'google',
-                refreshToken: refreshToken // refreshToken 저장
-            });
-            await user.save();
-        } else {
-            // 이미 존재하는 사용자일 경우 refreshToken 업데이트 (선택 사항)
-            user.refreshToken = refreshToken;
-            await user.save();
-        }
+      if (!user) {
+          user = new User({
+              username: profile.displayName,
+              email: profile.emails[0].value,
+              googleId: profile.id,
+              authProvider: 'google',
+              refreshToken: refreshToken
+          });
+          await user.save();
+      } else {
+          user.refreshToken = refreshToken;
+          await user.save();
+      }
 
-        // 세션에 사용자 정보 저장
-        done(null, user);
-    } catch (error) {
-        done(error, null);
-    }
+      done(null, user);
+  } catch (error) {
+      done(error, null);
+  }
 }));
 
 // 세션에 사용자 정보를 저장하는 설정
