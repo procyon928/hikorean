@@ -33,7 +33,7 @@
             <button type="submit" class="btn btn-primary">가입하기</button>
         </form>
 
-        <% if (success) { %> <!-- success 변수가 true일 때 메시지 표시 -->
+        <% if (typeof success !== 'undefined' && success) { %> <!-- success 변수가 true일 때 메시지 표시 -->
             <div class="alert alert-success mt-3" id="successMessage">
                 회원가입 성공! 로그인 페이지로 이동합니다...
             </div>

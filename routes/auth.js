@@ -6,6 +6,11 @@ const Log = require('../models/Log');
 
 const router = express.Router();
 
+// 회원가입 페이지 라우터에서 GET 요청 처리
+router.get('/signup', (req, res) => {
+  res.render('signup', { success: false }); // 기본값으로 false 설정
+});
+
 // 회원가입 기능
 router.post('/signup', async (req, res) => {
   const { username, email, password } = req.body;
@@ -27,7 +32,7 @@ router.post('/signup', async (req, res) => {
 
 // 로그인 기능
 router.post('/login', async (req, res) => {
-  const { username, password, referer } = req.body; // referer 추가
+  const { username, password, referer } = req.body;
 
   try {
       const user = await User.findOne({ username });
@@ -38,30 +43,27 @@ router.post('/login', async (req, res) => {
       }
 
       // 비밀번호 확인
-      const isMatch = await bcrypt.compare(password, user.password); // 해싱된 비밀번호와 비교
+      const isMatch = await bcrypt.compare(password, user.password);
       if (!isMatch) {
           return res.status(401).send('아이디 또는 비밀번호가 잘못되었습니다.');
       }
 
-      // 사용자 정보를 세션에 저장
-      req.session.user = {
-          id: user._id,
-          role: user.role,
-          username: user.username,
-          email: user.email
-      };
+      // Passport에 사용자 정보 저장
+      req.login(user, async (err) => {
+          if (err) return res.status(500).send('로그인 중 오류가 발생했습니다.');
 
-      // 로그인 로그 추가
-      const logEntry = new Log({
-          action: 'login',
-          user: user.username,
-          details: '사용자가 로그인했습니다.',
-          timestamp: new Date()
+          // 로그인 로그 추가
+          const logEntry = new Log({
+              action: 'login',
+              user: user.username,
+              details: '사용자가 로그인했습니다.',
+              timestamp: new Date()
+          });
+          await logEntry.save();
+
+          console.log('로그인 후 세션 정보:', req.session); // 세션 정보 확인
+          res.redirect(referer || '/'); // referer가 있으면 해당 페이지로 리다이렉션
       });
-      await logEntry.save();
-
-      // referer가 있으면 해당 페이지로 리다이렉션, 없으면 기본 페이지로
-      res.redirect(referer || '/');
   } catch (error) {
       console.error('로그인 오류:', error);
       res.status(500).send('로그인 중 오류가 발생했습니다.');
@@ -79,7 +81,8 @@ router.get('/auth/google/callback',
       failureRedirect: '/login' // 인증 실패 시 리디렉션
   }),
   (req, res) => {
-      // 인증 성공 후 리디렉션
+      console.log('로그인 성공:', req.user);
+      console.log('세션 정보:', req.session);
       res.redirect('/');
   }
 );

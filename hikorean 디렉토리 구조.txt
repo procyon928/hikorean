@@ -43,8 +43,6 @@
 │   ├── js
 │   │   ├── schedule.js        // 스케줄 CRUD 관련 JavaScript
 │   │   └── createQuestion.js  // views/surveys/new.ejs의 문항 추가 스크립트 코드
-│   ├── login.html             // 로그인 페이지 HTML 파일
-│   ├── signup.html            // 회원가입 페이지 HTML 파일
 │   └── ...                    // 기타 정적 파일
 │
 ├── /views                      // 서버 사이드 렌더링을 위한 뷰 템플릿 폴더
@@ -52,7 +50,7 @@
 │   │   ├── nationality.ejs     // 메인 페이지
 │   │   ├── admissionguide1.ejs // 안내 페이지 1
 │   │   └── admissionguide2.ejs // 안내 페이지 2
-│   ├── accont.ejs              // 회원 정보 수정 페이지
+│   ├── acconnt.ejs              // 회원 정보 수정 페이지
 │   ├── home.ejs               // 메인 페이지
 │   ├── login.ejs               // 로그인 페이지
 │   ├── signup.ejs               // 회원가입 페이지

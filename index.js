@@ -24,6 +24,7 @@ const scheduleRoutes = require('./routes/schedule');
 const homeRoutes = require('./routes/home');
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const { User } = require('./models/User');
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -44,9 +45,13 @@ app.use(session({
     cookie: { secure: false } // HTTPS 사용 시 true로 설정
 }));
 
+// Passport 초기화
+app.use(passport.initialize());
+app.use(passport.session());
+
 // 사용자 세션 정보를 로컬 변수로 전달하는 미들웨어 추가
 app.use((req, res, next) => {
-    res.locals.user = req.session.user; // 사용자 세션 정보를 로컬 변수로 전달
+    res.locals.user = req.user || req.session.user; // 사용자 세션 정보를 로컬 변수로 전달
     next();
 });
 
@@ -77,10 +82,6 @@ app.get('/login', (req, res) => {
     res.render('login'); // login.ejs를 렌더링
 });
 
-// Passport 초기화
-app.use(passport.initialize());
-app.use(passport.session());
-
 // Passport 설정
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID, // 클라이언트 ID
@@ -96,7 +97,8 @@ passport.use(new GoogleStrategy({
             user = new User({
                 username: profile.displayName, // 사용자 이름
                 email: profile.emails[0].value, // 이메일
-                googleId: profile.id // Google ID 저장
+                googleId: profile.id, // Google ID 저장
+                authProvider: 'google'
             });
             await user.save();
         }
@@ -110,11 +112,12 @@ passport.use(new GoogleStrategy({
 
 // 세션에 사용자 정보를 저장하는 설정
 passport.serializeUser((user, done) => {
-    done(null, user.id);
+    done(null, user._id);
 });
 
 passport.deserializeUser(async (id, done) => {
     const user = await User.findById(id);
+    console.log('세션에서 가져온 사용자:', user);
     done(null, user);
 });
 
