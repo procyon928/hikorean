@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const path = require('path');
 const session = require('express-session');
+const MongoStore = require('connect-mongo');
 const ejs = require('ejs');
 const authRoutes = require('./routes/auth');
 const accountRoutes = require('./routes/account'); // account.js 라우터 추가
@@ -39,8 +40,16 @@ app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
+    store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
     cookie: { secure: false } // HTTPS 사용 시 true로 설정
 }));
+
+app.use((req, res, next) => {
+  console.log('Request URL:', req.originalUrl);
+  console.log('Session:', req.session);
+  next();
+});
+
 
 // 사용자 세션 정보를 로컬 변수로 전달하는 미들웨어 추가
 app.use((req, res, next) => {
