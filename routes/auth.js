@@ -1,4 +1,5 @@
 const express = require('express');
+const passport = require('passport'); // passport를 import합니다.
 const bcrypt = require('bcryptjs'); // bcrypt 추가
 const { User } = require('../models/User');
 const Log = require('../models/Log');
@@ -66,5 +67,21 @@ router.post('/login', async (req, res) => {
       res.status(500).send('로그인 중 오류가 발생했습니다.');
   }
 });
+
+// Google 인증 요청
+router.get('/auth/google', passport.authenticate('google', {
+  scope: ['openid', 'profile', 'email'] // 요청할 범위
+}));
+
+// Google 인증 후 리디렉션
+router.get('/auth/google/callback',
+  passport.authenticate('google', {
+      failureRedirect: '/login' // 인증 실패 시 리디렉션
+  }),
+  (req, res) => {
+      // 인증 성공 후 리디렉션
+      res.redirect('/');
+  }
+);
 
 module.exports = router;

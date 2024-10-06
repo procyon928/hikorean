@@ -16,7 +16,7 @@
     <% if (message) { %>
         <p><%= message %></p>
     <% } else { %>
-    <form action="/survey/<%= survey._id %>/respond" method="POST" onsubmit="return validateForm()">
+    <form action="/surveys/<%= survey._id %>/respond" method="POST" onsubmit="return validateForm()">
         <% survey.questions.forEach(function(question, index) { %>
             <div>
               <% if (question.questionType === 'info') { %>
@@ -141,7 +141,7 @@
                                           cell.style.backgroundColor = 'gray'; // 예약 불가 날짜 색상
                                           cell.style.color = 'white';
                                       } else {
-                                          fetch(`/survey/${surveyId}/countResponses?date=${dateString}`)
+                                          fetch(`/surveys/${surveyId}/countResponses?date=${dateString}`)
                                               .then(response => response.json())
                                               .then(data => {
                                                   cell.innerHTML = `
@@ -215,7 +215,7 @@
                 
                             // fetch 요청을 Promise 배열로 변환
                             const fetchPromises = timeSlots.map(time => {
-                                return fetch(`/survey/<%= survey._id %>/countResponses?date=${selectedDate}&time=${time}`)
+                                return fetch(`/surveys/<%= survey._id %>/countResponses?date=${selectedDate}&time=${time}`)
                                     .then(response => response.json())
                                     .then(data => {
                                         return { time, count: data.count }; // 시간과 응답 수를 객체로 반환

@@ -7,7 +7,7 @@
 </head>
 <body>
     <h1><%= survey.title %> 수정하기</h1>
-    <form action="/survey/<%= survey._id %>" method="POST">
+    <form action="/surveys/<%= survey._id %>" method="POST">
         <label for="title">설문조사 제목:</label>
         <input type="text" name="title" value="<%= survey.title %>" required>
         <label for="startDate">응답 시작 날짜:</label>

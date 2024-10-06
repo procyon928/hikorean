@@ -52,8 +52,7 @@
 │   │   ├── nationality.ejs     // 메인 페이지
 │   │   ├── admissionguide1.ejs // 안내 페이지 1
 │   │   └── admissionguide2.ejs // 안내 페이지 2
-│   ├── admin.ejs              // 회원 등급 관리 관리자 페이지
-│   ├── admin_email.ejs        // 관리자 이메일 발송 페이지
+│   ├── accont.ejs              // 회원 정보 수정 페이지
 │   ├── home.ejs               // 메인 페이지
 │   ├── login.ejs               // 로그인 페이지
 │   ├── signup.ejs               // 회원가입 페이지
@@ -61,6 +60,8 @@
 │   │   ├── logs.ejs           // 로그 기록 페이지
 │   │   ├── short-url.ejs      // url 단축 및 qr코드 생성 페이지
 │   │   ├── schedule.ejs       // 관리자 스케줄 관리 페이지
+│   │   ├── member.ejs              // 회원 등급 관리 관리자 페이지
+│   │   ├── sendEmail.ejs        // 관리자 이메일 발송 페이지
 │   │   └── translator.ejs      // 다중 언어 번역 페이지
 │   ├── /partials
 │   │   ├── header.ejs         // adminLTE의 header include 코드

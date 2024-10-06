@@ -11,7 +11,7 @@ router.get('/', isAdmin, async (req, res) => {
     try {
         const users = await User.find();
         console.log('사용자 목록:', users); // 사용자 목록을 콘솔에 출력
-        res.render('admin', { users: users || [], rolesMap: rolesMap }); // rolesMap을 전달
+        res.render('admin/member', { users: users || [], rolesMap: rolesMap }); // rolesMap을 전달
     } catch (error) {
         console.error('사용자 목록 조회 오류:', error.message);
         res.status(500).send('사용자 목록 조회 중 오류가 발생했습니다.');
@@ -57,7 +57,7 @@ router.get('/roles', isAdmin, (req, res) => {
 
 // 관리자 메일 발송 페이지
 router.get('/email', ensureAuthenticated, isAdmin, (req, res) => {
-  res.render('admin_email'); // admin_email.ejs를 렌더링
+  res.render('admin/sendEmail'); // admin_email.ejs를 렌더링
 });
 
 // 로그 기록 페이지

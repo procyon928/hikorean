@@ -3,6 +3,7 @@ const router = express.Router();
 const axios = require('axios');
 require('dotenv').config();
 const deepl = require('deepl-node');
+const { isAdmin } = require('../middleware/auth');
 
 // languageCodes 객체 추가
 const languageCodes = {
@@ -95,7 +96,7 @@ router.post('/', async (req, res) => {
 });
 
 // 번역기 페이지 라우터
-router.get('/translator', (req, res) => {
+router.get('/admin/translator', isAdmin, (req, res) => {
   res.render('admin/translator'); // admin 폴더의 translator.ejs 파일 렌더링
 });
 

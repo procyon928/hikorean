@@ -8,7 +8,7 @@ const app = express();
 app.use(express.json());
 
 // 안내문 목록 조회
-router.get('/notices', isAdmin, async (req, res) => {
+router.get('/admin/notices', isAdmin, async (req, res) => {
     const notices = await Notice.find().sort({ createdAt: -1 });
     res.render('notices/list', { notices });
 });

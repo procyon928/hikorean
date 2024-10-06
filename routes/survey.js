@@ -7,18 +7,18 @@ const { ensureAuthenticated, isAdmin } = require('../middleware/auth');
 const router = express.Router();
 
 // 설문조사 목록 페이지
-router.get('/list', ensureAuthenticated, async (req, res) => {
+router.get('/surveys/list', ensureAuthenticated, async (req, res) => {
     const surveys = await Survey.find().populate('createdBy', 'username');
     res.render('surveys/list', { surveys });
 });
 
 // 설문조사 생성 페이지
-router.get('/new', isAdmin, (req, res) => {
+router.get('/surveys/new', isAdmin, (req, res) => {
     res.render('surveys/new');
 });
 
 // 설문조사 생성 처리
-router.post('/', isAdmin, async (req, res) => {
+router.post('/surveys', isAdmin, async (req, res) => {
   console.log(req.body); // 요청 본문 출력
   const { title, questions, startDate, endDate } = req.body;
 
@@ -70,11 +70,11 @@ router.post('/', isAdmin, async (req, res) => {
       createdBy: req.session.user._id
   });
   await survey.save();
-  res.redirect('/survey/list');
+  res.redirect('/surveys/list');
 });
 
 // 이메일 검증 처리 라우터
-router.post('/verify-code', async (req, res) => {
+router.post('/surveys/verify-code', async (req, res) => {
   const { code } = req.body;
 
   // 세션에서 검증 코드 가져오기
@@ -91,7 +91,7 @@ router.post('/verify-code', async (req, res) => {
 });
 
 // 응답 처리
-router.post('/:id/respond', async (req, res) => {
+router.post('/surveys/:id/respond', async (req, res) => {
   const { answers, startedAt, email } = req.body;
   console.log('Answers received:', answers);
   const survey = await Survey.findById(req.params.id);
@@ -170,11 +170,11 @@ router.post('/:id/respond', async (req, res) => {
   await response.save();
   
   // 설문조사 목록 페이지로 리디렉션
-  res.redirect('/survey');
+  res.redirect('/surveys/survey');
 });
 
 // 설문조사 응답 페이지
-router.get('/:id/respond', ensureAuthenticated, async (req, res) => {
+router.get('/surveys/:id/respond', ensureAuthenticated, async (req, res) => {
   const survey = await Survey.findById(req.params.id);
   const now = new Date();
 
@@ -200,7 +200,7 @@ router.get('/:id/respond', ensureAuthenticated, async (req, res) => {
   res.render('surveys/respond', { survey, startedAt, message });
 });
 
-router.get('/:id/countResponses', async (req, res) => {
+router.get('/surveys/:id/countResponses', async (req, res) => {
   const { date, time } = req.query;
   const surveyId = req.params.id;
 
@@ -227,7 +227,7 @@ router.get('/:id/countResponses', async (req, res) => {
 
 
 // 설문조사 수정 페이지
-router.get('/:id/edit', isAdmin, async (req, res) => {
+router.get('/surveys/:id/edit', isAdmin, async (req, res) => {
   const survey = await Survey.findById(req.params.id);
   res.render('surveys/edit', { survey });
 });
@@ -276,24 +276,24 @@ router.post('/:id', isAdmin, async (req, res) => {
       endDate: endDate ? new Date(endDate) : null
   });
 
-  res.redirect('/survey/list');
+  res.redirect('/surveys/list');
 });
 
 
 // 설문조사 삭제 처리
-router.post('/:id/delete', isAdmin, async (req, res) => {
+router.post('/surveys/:id/delete', isAdmin, async (req, res) => {
   await Survey.findByIdAndDelete(req.params.id);
-  res.redirect('/survey/list');
+  res.redirect('/surveys/list');
 });
 
 // 사용자 설문조사 목록 페이지
-router.get('/', async (req, res) => {
+router.get('/surveys', async (req, res) => {
   const surveys = await Survey.find().populate('createdBy', 'username');
   res.render('surveys/survey', { surveys }); // 사용자 목록을 렌더링
 });
 
 // 설문조사 복제 처리
-router.post('/:id/clone', isAdmin, async (req, res) => {
+router.post('/surveys/:id/clone', isAdmin, async (req, res) => {
   const originalSurvey = await Survey.findById(req.params.id);
 
   if (!originalSurvey) {
@@ -324,11 +324,11 @@ router.post('/:id/clone', isAdmin, async (req, res) => {
   });
 
   await clonedSurvey.save();
-  res.redirect('/survey/list');
+  res.redirect('/surveys/list');
 });
 
 // 설문조사 결과 보기 페이지 (관리자용)
-router.get('/:id/results', isAdmin, async (req, res) => {
+router.get('/surveys/:id/results', isAdmin, async (req, res) => {
   const responses = await Response.find({ surveyId: req.params.id }).populate('userId', 'username');
   const survey = await Survey.findById(req.params.id);
   res.render('surveys/results', { responses, survey });

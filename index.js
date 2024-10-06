@@ -21,6 +21,8 @@ const shortUrlRoutes = require('./routes/shortUrl');
 const admissionRoutes = require('./routes/admission');
 const scheduleRoutes = require('./routes/schedule');
 const homeRoutes = require('./routes/home');
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -73,17 +75,59 @@ app.get('/login', (req, res) => {
     res.render('login'); // login.ejs를 렌더링
 });
 
+// Passport 초기화
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Passport 설정
+passport.use(new GoogleStrategy({
+    clientID: process.env.GOOGLE_CLIENT_ID, // 클라이언트 ID
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET, // 클라이언트 비밀
+    callbackURL: "/auth/google/callback" // 리디렉션 URI
+}, async (accessToken, refreshToken, profile, done) => {
+    try {
+        // 사용자 정보 저장 (DB에서 사용자 찾기 또는 생성)
+        let user = await User.findOne({ googleId: profile.id });
+
+        if (!user) {
+            // 사용자가 없으면 새로 생성
+            user = new User({
+                username: profile.displayName, // 사용자 이름
+                email: profile.emails[0].value, // 이메일
+                googleId: profile.id // Google ID 저장
+            });
+            await user.save();
+        }
+
+        // 세션에 사용자 정보 저장
+        done(null, user);
+    } catch (error) {
+        done(error, null);
+    }
+}));
+
+// 세션에 사용자 정보를 저장하는 설정
+passport.serializeUser((user, done) => {
+    done(null, user.id);
+});
+
+passport.deserializeUser(async (id, done) => {
+    const user = await User.findById(id);
+    done(null, user);
+});
+
+
 // 라우터 설정
 app.use(authRoutes); // auth.js 라우터를 사용
 app.use(accountRoutes); // account.js 라우터를 사용 (추가됨)
 app.use('/admin', adminRoutes);
-app.use('/email', emailRoutes);
+app.use(emailRoutes);
 app.use(postRoutes);
 app.use(commentRoutes);
 app.use(noticeRoutes);
 app.use(translationRoutes);
 app.use(translateRouter);
-app.use('/survey', surveyRoutes);
+app.use(surveyRoutes);
 app.use('/', boardSettingRoutes.router);
 app.use('/admission', admissionRoutes);
 app.use('/admin/schedule', scheduleRoutes);
