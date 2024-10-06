@@ -191,5 +191,10 @@ router.get('/notice', async (req, res) => {
   }
 });
 
+// 안내서 페이지
+router.get('/guidebook', async (req, res) => {
+  res.render('notices/guidebook');
+});
+
 module.exports = router;
 module.exports.applyStyles = applyStyles;
