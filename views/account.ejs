@@ -62,6 +62,15 @@
                   <button type="submit" class="btn btn-danger">로그아웃</button>
               </form>
           </div>
+
+          <div class="mt-4">
+              <h2>계정 삭제</h2>
+              <p>계정을 삭제하려면 아래 버튼을 클릭하세요.</p>
+              <form action="/account/delete" method="POST">
+                  <button type="submit" class="btn btn-danger">계정 삭제</button>
+              </form>
+          </div>
+        
       
           <% if (user.role === 'admin' || user.role === 'superadmin') { %>
               <div class="mt-4">
