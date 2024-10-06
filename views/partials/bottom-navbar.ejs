@@ -1,14 +1,14 @@
-<!-- <style>
+<style>
   /* PC 화면에서만 사이드바 너비를 고려한 본문의 왼쪽 여백 설정 */
-  @media (min-width: 992px) { /* 992px 이상 화면에서만 적용 */
+  @media (min-width: 768px) { /* 768px 이상 화면에서만 적용 */
       body {
-          margin-left: 250px; /* 사이드바의 너비 */
+          margin-left: 200px; /* 사이드바의 너비 */
       }
   }
-</style> -->
+</style>
 
 <!-- 하단 내비게이션바 (views/partials/bottom-navbar.ejs) 사이드바 필요 시 'd-lg-none' 속성 입력 -->
-<nav id="bottom-navbar" class="navbar navbar-expand-lg navbar-light border-top shadow py-1" style="background-color: rgba(255, 255, 255, 0.99); position: fixed; bottom: 0; width: 100%; z-index: 2000; transition: transform 0.3s;">
+<nav id="bottom-navbar" class="navbar navbar-expand-md navbar-light border-top d-md-none shadow py-1" style="background-color: rgba(255, 255, 255, 0.99); position: fixed; bottom: 0; width: 100%; z-index: 2000; transition: transform 0.3s;">
   <div class="container-fluid p-0 mb-1">
       <ul class="navbar-nav d-flex justify-content-between" style="width: 100%; flex-direction: row;">
           <li class="nav-item" style="width: 18%;">
@@ -65,31 +65,38 @@
 
 
 <!-- 사이드바 (PC 화면 전용) -->
-<!-- <div class="d-none d-lg-block shadow" style="position: fixed; left: 0; top: 0; height: 100%; width: 250px; background-color: rgba(255, 255, 255, 0.99); z-index: 1000;">
-  <ul class="navbar-nav flex-column">
+<!-- 사이드바 (PC 화면 전용) -->
+<div class="d-none d-md-block shadow" style="position: fixed; left: 0; top: 0; height: 100%; width: 200px; background-color: #343a40; color: white; z-index: 1000;"> <!-- 배경색을 어두운 색으로 변경 -->
+  <ul class="navbar-nav flex-column p-3">
       <li class="nav-item">
-          <a class="nav-link text-center" href="/home" style="opacity: 0.7;">
-              <img src="/img/home-icon.png" alt="홈" style="width: 44px; height: 44px; opacity: 0.7;">
-              <div style="opacity: 0.7;">홈</div>
+          <a class="nav-link d-flex align-items-center text-center" href="/" style="opacity: 0.9; color: white;"> <!-- 텍스트 색상 변경 -->
+              <i class="bi bi-house-door-fill" style="font-size: 22px; color: white;"></i>
+              <div class="ms-2 style="opacity: 0.9;">홈</div>
           </a>
       </li>
       <li class="nav-item">
-          <a class="nav-link text-center" href="/notices" style="opacity: 0.7;">
-              <img src="/img/notice-icon.png" alt="안내문" style="width: 44px; height: 44px; opacity: 0.7;">
-              <div style="opacity: 0.7;">안내문</div>
+          <a class="nav-link d-flex align-items-center text-center" href="/notice" style="opacity: 0.9; color: white;">
+              <i class="bi bi-bell-fill" style="font-size: 22px; color: white;"></i>
+              <div class="ms-2" style="opacity: 0.9;">안내문</div>
           </a>
       </li>
       <li class="nav-item">
-          <a class="nav-link text-center" href="/community" style="opacity: 0.7;">
-              <img src="/img/community-icon.png" alt="커뮤니티" style="width: 44px; height: 44px; opacity: 0.7;">
-              <div style="opacity: 0.7;">커뮤니티</div>
+          <a class="nav-link d-flex align-items-center text-center" href="/guidebook" style="opacity: 0.9; color: white;">
+              <i class="bi bi-book-fill" style="font-size: 22px; color: white;"></i>
+              <div class="ms-2" style="opacity: 0.9;">가이드북</div>
           </a>
       </li>
       <li class="nav-item">
-          <a class="nav-link text-center" href="/more" style="opacity: 0.7;">
-              <img src="/img/dots-icon.png" alt="더 보기" style="width: 44px; height: 44px; opacity: 0.7;">
-              <div style="opacity: 0.7;">더 보기</div>
+          <a class="nav-link d-flex align-items-center text-center" href="/boards" style="opacity: 0.9; color: white;">
+              <i class="bi bi-chat-left-text-fill" style="font-size: 22px; color: white;"></i>
+              <div class="ms-2" style="opacity: 0.9;">커뮤니티</div>
+          </a>
+      </li>
+      <li class="nav-item">
+          <a class="nav-link d-flex align-items-center text-center" href="/more" style="opacity: 0.9; color: white;">
+              <i class="bi bi-grid-3x3-gap-fill" style="font-size: 22px; color: white;"></i>
+              <div class="ms-2" style="opacity: 0.9;">더 보기</div>
           </a>
       </li>
   </ul>
-</div> -->
+</div>
