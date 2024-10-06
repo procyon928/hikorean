@@ -23,6 +23,7 @@ const admissionRoutes = require('./routes/admission');
 const scheduleRoutes = require('./routes/schedule');
 const homeRoutes = require('./routes/home');
 const passport = require('passport');
+const flash = require('connect-flash');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const { User } = require('./models/User');
 
@@ -89,17 +90,20 @@ passport.use(new GoogleStrategy({
     callbackURL: "/auth/google/callback" // 리디렉션 URI
 }, async (accessToken, refreshToken, profile, done) => {
     try {
-        // 사용자 정보 저장 (DB에서 사용자 찾기 또는 생성)
         let user = await User.findOne({ googleId: profile.id });
 
         if (!user) {
-            // 사용자가 없으면 새로 생성
             user = new User({
-                username: profile.displayName, // 사용자 이름
-                email: profile.emails[0].value, // 이메일
-                googleId: profile.id, // Google ID 저장
-                authProvider: 'google'
+                username: profile.displayName,
+                email: profile.emails[0].value,
+                googleId: profile.id,
+                authProvider: 'google',
+                refreshToken: refreshToken // refreshToken 저장
             });
+            await user.save();
+        } else {
+            // 이미 존재하는 사용자일 경우 refreshToken 업데이트 (선택 사항)
+            user.refreshToken = refreshToken;
             await user.save();
         }
 
@@ -121,6 +125,8 @@ passport.deserializeUser(async (id, done) => {
     done(null, user);
 });
 
+// Flash 미들웨어 설정
+app.use(flash());
 
 // 라우터 설정
 app.use(authRoutes); // auth.js 라우터를 사용

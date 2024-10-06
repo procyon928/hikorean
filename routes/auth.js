@@ -22,8 +22,11 @@ router.post('/signup', async (req, res) => {
       const newUser = new User({ username, email, password: hashedPassword }); // 해싱된 비밀번호 저장
       await newUser.save();
 
-      // 회원가입 성공 후 로그인 페이지로 리다이렉트
-      res.render('signup', { success: true }); // success 변수를 true로 설정하여 리다이렉션 메시지 표시
+      // 회원가입 후 자동 로그인
+      req.login(newUser, (err) => {
+        if (err) return res.status(500).send('로그인 중 오류가 발생했습니다.');
+        res.redirect('/'); // 로그인 후 메인 페이지로 리다이렉트
+    });
   } catch (error) {
       console.error('회원가입 오류:', error);
       res.status(500).send('회원가입 중 오류가 발생했습니다.');
@@ -81,8 +84,6 @@ router.get('/auth/google/callback',
       failureRedirect: '/login' // 인증 실패 시 리디렉션
   }),
   (req, res) => {
-      console.log('로그인 성공:', req.user);
-      console.log('세션 정보:', req.session);
       res.redirect('/');
   }
 );

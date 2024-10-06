@@ -5,7 +5,6 @@ document.addEventListener('DOMContentLoaded', () => {
   links.forEach(link => {
       const url = new URL(link.href);
       url.searchParams.set('lang', lang); // 언어 쿼리를 추가합니다.
-      console.log('Updated URL:', url.toString()); // 수정된 URL 확인
       link.href = url.toString(); // 수정된 URL로 링크를 업데이트합니다.
   });
 });
