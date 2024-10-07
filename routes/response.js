@@ -9,7 +9,7 @@ router.post('/responses', ensureAuthenticated, async (req, res) => {
     try {
         const response = new Response({
             ...req.body,
-            userId: req.session.user._id, // 세션에서 사용자 ID 가져오기
+            userId: req.user._id, // 세션에서 사용자 ID 가져오기
         });
         await response.save();
         res.status(201).json(response);

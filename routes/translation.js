@@ -186,7 +186,7 @@ const parseAndReplaceText = (htmlContent, translations) => {
 router.post('/notices/translate/save/:id', isAdmin, async (req, res) => {
   const { id } = req.params;
   const { title, content, finalTranslations, lang } = req.body;
-  const username = req.session.user.username;
+  const username = req.user.username;
 
   try {
       console.log('요청된 ID:', id);
@@ -256,7 +256,7 @@ router.post('/notices/translate/save/:id', isAdmin, async (req, res) => {
 // 임시 저장 API
 router.post('/notices/temporary-save', isAdmin, async (req, res) => {
   const { noticeId, language, translations } = req.body;
-  const userId = req.session.user ? req.session.user.id : null; // 현재 로그인한 사용자 ID
+  const userId = req.user ? req.user._id : null; // 현재 로그인한 사용자 ID
 
   if (!userId) {
     return res.status(400).json({ message: '로그인 상태가 아닙니다.' });
@@ -301,7 +301,7 @@ router.post('/notices/temporary-save', isAdmin, async (req, res) => {
 // 임시 저장된 번역 내용 로드 API
 router.get('/notices/temporary/:noticeId/:language', isAdmin, async (req, res) => {
   const { noticeId, language } = req.params;
-  const userId = req.session.user.id; // 현재 로그인한 사용자 ID
+  const userId = req.user._id; // 현재 로그인한 사용자 ID
 
   try {
     const tempTranslation = await TemporaryTranslation.findOne({ userId, noticeId, language });

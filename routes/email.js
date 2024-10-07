@@ -8,7 +8,7 @@ const router = express.Router();
 // 메일 발송 기능
 router.post('/send-email', ensureAuthenticated, async (req, res) => { // 미들웨어 추가
   const { recipient, subject, message } = req.body;
-  const user = req.session.user; // 세션에서 사용자 정보 가져오기
+  const user = req.user; // 세션에서 사용자 정보 가져오기
 
   const transporter = nodemailer.createTransport({
       host: 'smtp.daum.net',

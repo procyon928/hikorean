@@ -21,7 +21,7 @@ router.get('/notices/new', isAdmin, (req, res) => {
 // 안내문 작성
 router.post('/notices', isAdmin, async (req, res) => {
     const { title, content, shortId } = req.body;
-    const username = req.session.user.username;
+    const username = req.user.username;
 
     const notice = new Notice({ title, content, shortId, createdBy: username });
     await notice.save();
@@ -58,7 +58,7 @@ function parseContentToLines(content) {
 router.post('/notices/edit/:id', isAdmin, async (req, res) => {
   const { id } = req.params;
   const { title, content, shortId } = req.body;
-  const username = req.session.user.username;
+  const username = req.user.username;
 
   try {
       const notice = await Notice.findById(id);
@@ -184,7 +184,7 @@ router.get('/notices/:shortId', async (req, res) => {
 router.get('/notice', async (req, res) => {
   try {
       const notices = await Notice.find().sort({ createdAt: -1 });
-      res.render('notices/notice', { notices, user: req.session.user, canWrite: true }); // canWrite은 필요에 따라 설정
+      res.render('notices/notice', { notices, user: req.user, canWrite: true }); // canWrite은 필요에 따라 설정
   } catch (error) {
       console.error('번역 게시글 목록 조회 중 오류:', error);
       res.status(500).send('서버 오류가 발생했습니다.');

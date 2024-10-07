@@ -25,7 +25,7 @@ router.get('/boards', async (req, res) => {
 
 // 게시글 목록 페이지
 router.get('/posts', async (req, res) => {
-  const user = req.session.user; // 로그인한 사용자 정보
+  const user = req.user; // 로그인한 사용자 정보
   const category = req.query.category;
 
   // 카테고리 검증을 비회원도 가능하도록 수정
@@ -68,7 +68,7 @@ router.get('/posts/new', ensureAuthenticated, (req, res) => {
 // 게시글 작성 처리
 router.post('/posts', ensureAuthenticated, async (req, res) => {
   const category = req.body.category;
-  const user = req.session.user;
+  const user = req.user;
 
   const boardSetting = await BoardSetting.findOne({ category });
 
@@ -113,7 +113,7 @@ router.get('/posts/:id', async (req, res) => {
 
     const category = req.query.category;
     const boardSetting = await BoardSetting.findOne({ category });
-    const user = req.session.user;
+    const user = req.user;
 
     // 읽기 권한 체크
     if (!checkReadPermission(boardSetting, user)) {
@@ -160,7 +160,7 @@ router.post('/posts/:id/incrementViews', async (req, res) => {
 router.route('/posts/edit/:id')
   .get(ensureAuthenticated, async (req, res) => {
     const post = await Post.findById(req.params.id);
-    if (!post || !checkAuthor(post, req.session.user)) {
+    if (!post || !checkAuthor(post, req.user)) {
       return res.status(403).json({ message: '접근 권한이 없습니다.' });
     }
     const category = req.query.category;
@@ -168,7 +168,7 @@ router.route('/posts/edit/:id')
   })
   .post(ensureAuthenticated, async (req, res) => {
     const post = await Post.findById(req.params.id);
-    if (!post || !checkAuthor(post, req.session.user)) {
+    if (!post || !checkAuthor(post, req.user)) {
       return res.status(403).json({ message: '접근 권한이 없습니다.' });
     }
     await Post.findByIdAndUpdate(req.params.id, {
@@ -182,7 +182,7 @@ router.route('/posts/edit/:id')
 // 게시글 삭제 처리
 router.post('/posts/delete/:id', ensureAuthenticated, async (req, res) => {
   const post = await Post.findById(req.params.id);
-  if (!post || !checkAuthor(post, req.session.user)) {
+  if (!post || !checkAuthor(post, req.user)) {
     return res.status(403).json({ message: '접근 권한이 없습니다.' });
   }
 

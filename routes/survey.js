@@ -7,7 +7,7 @@ const { ensureAuthenticated, isAdmin } = require('../middleware/auth');
 const router = express.Router();
 
 // 설문조사 목록 페이지
-router.get('/surveys/list', ensureAuthenticated, async (req, res) => {
+router.get('/admin/surveys', ensureAuthenticated, async (req, res) => {
     const surveys = await Survey.find().populate('createdBy', 'username');
     res.render('surveys/list', { surveys });
 });
@@ -67,10 +67,10 @@ router.post('/surveys', isAdmin, async (req, res) => {
       questions: formattedQuestions,
       startDate: startDate ? new Date(startDate) : null, // 비어있으면 null로 설정
       endDate: endDate ? new Date(endDate) : null, // 비어있으면 null로 설정
-      createdBy: req.session.user._id
+      createdBy: req.user._id
   });
   await survey.save();
-  res.redirect('/surveys/list');
+  res.redirect('/admin/surveys');
 });
 
 // 이메일 검증 처리 라우터
@@ -162,7 +162,7 @@ router.post('/surveys/:id/respond', async (req, res) => {
 
   const response = new Response({
       surveyId: req.params.id,
-      userId: req.session.user ? req.session.user._id : null, // 로그인한 경우 userId 설정
+      userId: req.user ? req.user._id : null, // 로그인한 경우 userId 설정
       answers: formattedAnswers, // 포맷팅된 answers 사용
       startedAt: new Date(startedAt),
       email
@@ -276,14 +276,14 @@ router.post('/:id', isAdmin, async (req, res) => {
       endDate: endDate ? new Date(endDate) : null
   });
 
-  res.redirect('/surveys/list');
+  res.redirect('/admin/surveys');
 });
 
 
 // 설문조사 삭제 처리
 router.post('/surveys/:id/delete', isAdmin, async (req, res) => {
   await Survey.findByIdAndDelete(req.params.id);
-  res.redirect('/surveys/list');
+  res.redirect('/admin/surveys');
 });
 
 // 사용자 설문조사 목록 페이지
@@ -320,11 +320,11 @@ router.post('/surveys/:id/clone', isAdmin, async (req, res) => {
       })),
       startDate: originalSurvey.startDate,
       endDate: originalSurvey.endDate,
-      createdBy: req.session.user._id
+      createdBy: req.user._id
   });
 
   await clonedSurvey.save();
-  res.redirect('/surveys/list');
+  res.redirect('/admin/surveys');
 });
 
 // 설문조사 결과 보기 페이지 (관리자용)

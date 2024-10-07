@@ -13,7 +13,7 @@ router.post('/posts/:id/comments', ensureAuthenticated, async (req, res) => {
     
     // 해당 게시판의 설정 가져오기
     const boardSetting = await BoardSetting.findOne({ category: req.query.category });
-    const user = req.session.user; // user 변수 정의
+    const user = req.user; // user 변수 정의
 
     // 댓글 작성 권한 확인
     if (!checkCommentWritePermission(boardSetting, user)) {
@@ -22,7 +22,7 @@ router.post('/posts/:id/comments', ensureAuthenticated, async (req, res) => {
 
     const comment = new Comment({
         post: postId,
-        author: req.session.user.id,
+        author: req.user._id,
         content: req.body.content,
         parentId: req.body.parentId || null
     });
@@ -53,7 +53,7 @@ router.post('/posts/:postId/comments/:commentId/delete', ensureAuthenticated, as
         return res.status(404).send('Comment not found');
     }
 
-    if (!checkCommentAuthor(comment, req.session.user)) {
+    if (!checkCommentAuthor(comment, req.user)) {
         return res.status(403).send("<script>alert('접근 권한이 없습니다.'); window.location.href='/';</script>");
     }
 
@@ -73,7 +73,7 @@ router.post('/posts/:postId/comments/:commentId/edit', ensureAuthenticated, asyn
       return res.status(404).send('Comment not found');
   }
 
-  const user = req.session.user; // user 변수 정의
+  const user = req.user; // user 변수 정의
 
   if (!checkCommentAuthor(comment, user)) {
       return res.status(403).send("<script>alert('접근 권한이 없습니다.'); window.location.href='/';</script>");

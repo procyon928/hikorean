@@ -18,8 +18,8 @@ router.post('/account/update', async (req, res) => {
     const { username, email } = req.body;
     try {
         await User.updateOne({ _id: req.user._id }, { username, email }); // req.user로 수정
-        req.session.user.username = username; // 세션 정보 업데이트
-        req.session.user.email = email;
+        req.user.username = username; // 세션 정보 업데이트
+        req.user.email = email;
         res.redirect('/account'); // 수정 후 회원 페이지로 리다이렉트
     } catch (error) {
         console.error('회원 정보 수정 오류:', error);

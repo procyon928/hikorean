@@ -7,7 +7,7 @@ const Log = require('../models/Log');
 const router = express.Router();
 
 // 관리자 페이지를 렌더링하는 API
-router.get('/', isAdmin, async (req, res) => {
+router.get('/member', isAdmin, async (req, res) => {
     try {
         const users = await User.find();
         console.log('사용자 목록:', users); // 사용자 목록을 콘솔에 출력

@@ -72,10 +72,10 @@ router.get('/posts/settings/:category', ensureAuthenticated, async (req, res) =>
         return res.status(404).send('게시판 설정을 찾을 수 없습니다.');
     }
 
-    const canWrite = checkWritePermission(boardSetting, req.session.user);
-    const commentPermission = checkCommentWritePermission(boardSetting, req.session.user);
+    const canWrite = checkWritePermission(boardSetting, req.user);
+    const commentPermission = checkCommentWritePermission(boardSetting, req.user);
    
-    res.render('posts/settings', { user: req.session.user, category, boardSetting, allowedCategories, canWrite, commentPermission, roles, rolesMap });
+    res.render('posts/settings', { user: req.user, category, boardSetting, allowedCategories, canWrite, commentPermission, roles, rolesMap });
 });
 
 // 설정 수정 (모든 카테고리)

@@ -52,7 +52,7 @@ app.use(passport.session());
 
 // 사용자 세션 정보를 로컬 변수로 전달하는 미들웨어 추가
 app.use((req, res, next) => {
-    res.locals.user = req.user || req.session.user; // 사용자 세션 정보를 로컬 변수로 전달
+    res.locals.user = req.user; // 사용자 세션 정보를 로컬 변수로 전달
     next();
 });
 
