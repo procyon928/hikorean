@@ -170,7 +170,7 @@ router.post('/surveys/:id/respond', async (req, res) => {
   await response.save();
   
   // 설문조사 목록 페이지로 리디렉션
-  res.redirect('/surveys/survey');
+  res.redirect('/admin/surveys');
 });
 
 // 설문조사 응답 페이지
@@ -233,7 +233,7 @@ router.get('/surveys/:id/edit', isAdmin, async (req, res) => {
 });
 
 // 설문조사 수정 처리
-router.post('/:id', isAdmin, async (req, res) => {
+router.post('/surveys/:id', isAdmin, async (req, res) => {
   const { title, questions, startDate, endDate } = req.body;
 
   // 비어있는 필드 확인

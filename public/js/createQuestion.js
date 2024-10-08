@@ -2,118 +2,141 @@ let questionCount = 0; // 문항 개수 카운트
 
 // 문항 HTML 구조를 반환하는 함수
 function createQuestionHTML(index) {
-    return `
-        <div class="question">
-            <button type="button" onclick="moveQuestion(this, 'up')">↑</button>
-            <button type="button" onclick="moveQuestion(this, 'down')">↓</button>
-            <input type="text" name="questions[${index}][questionText]" placeholder="문항 내용" required>
-            <input type="text" name="questions[${index}][questionDescription]" placeholder="문항 설명">
-            <label>
-                <input type="checkbox" name="questions[${index}][isRequired]" value="true"> 필수
-            </label>
-            <select name="questions[${index}][questionType]" onchange="updateQuestionFields(this)">
-                <option value="short_answer">단답형</option>
-                <option value="long_answer">장문형</option>
-                <option value="single_choice">단일 선택</option>
-                <option value="multiple_choice">다중 선택</option>
-                <option value="date">날짜 입력</option>
-                <option value="dropdown">드롭다운 선택</option>
-                <option value="preference">선호도</option>
-                <option value="reservation">날짜 예약</option>
-                <option value="time_reservation">시간 예약</option>
-                <option value="info">안내문</option>
-                <option value="email">이메일 검증</option>
-            </select>
-            <div class="options" style="display: none;">
-                <div class="option">
-                    <input type="text" name="questions[${index}][options][]" placeholder="선택지 입력">
-                    <button type="button" onclick="removeOption(this)">삭제</button>
-                </div>
-                <button type="button" onclick="addOption(this)">선택지 추가</button>
+  return `
+      <div class="question mb-3 p-3 border rounded">
+          <div class="d-flex mb-2">
+              <button type="button" class="btn btn-secondary btn-sm py-0 me-2" onclick="moveQuestion(this, 'up')"><i class="bi bi-caret-up-fill"></i></button>
+              <button type="button" class="btn btn-secondary btn-sm py-0" onclick="moveQuestion(this, 'down')"><i class="bi bi-caret-down-fill"></i></button>
+              <button type="button" class="btn ms-auto" onclick="removeQuestion(this)"><i class="bi bi-x-lg"></i></button>
+          </div>
+          <div class="mb-2">
+              <input type="text" class="form-control" name="questions[${index}][questionText]" placeholder="문항 내용" required>
+          </div>
+          <div class="mb-2">
+              <input type="text" class="form-control" name="questions[${index}][questionDescription]" placeholder="문항 설명">
+          </div>
+          <div class="mb-3 d-flex align-items-center">
+              <div class="form-check me-2 flex-grow-1">
+                  <input type="checkbox" class="form-check-input" name="questions[${index}][isRequired]" value="true">
+                  <label class="form-check-label text-nowrap">필수</label>
+              </div>
+              <select class="form-select" name="questions[${index}][questionType]" onchange="updateQuestionFields(this)">
+                  <option value="short_answer">단답형</option>
+                  <option value="long_answer">장문형</option>
+                  <option value="single_choice">단일 선택</option>
+                  <option value="multiple_choice">다중 선택</option>
+                  <option value="date">날짜 입력</option>
+                  <option value="dropdown">드롭다운 선택</option>
+                  <option value="preference">선호도</option>
+                  <option value="reservation">날짜 예약</option>
+                  <option value="time_reservation">시간 예약</option>
+                  <option value="info">안내문</option>
+                  <option value="email">이메일 검증</option>
+              </select>
+          </div>
+          <div class="options" style="display: none;">
+              <div class="option mb-2 d-flex align-items-center">
+                  <i class="bi bi-check-square-fill me-2"></i>
+                  <input type="text" class="form-control me-2 flex-grow-1" name="questions[${index}][options][]" placeholder="선택지 입력">
+                  <button type="button" class="btn px-0" onclick="removeOption(this)"><i class="bi bi-x-lg"></i></button>
+              </div>
+              <div class="d-flex justify-content-start">
+                  <button type="button" class="btn btn-primary" onclick="addOption(this)">선택지 추가</button>
+              </div>
+          </div>
+          <div class="allow-other" style="display: none;">
+              <div class="form-check my-2">
+                  <input type="checkbox" class="form-check-input" name="questions[${index}][allowOther]" value="true">
+                  <label class="form-check-label">기타 응답 수집</label>
+              </div>
+          </div>
+          <div class="textarea" style="display: none;">
+            <div class="mt-2">
+              <textarea class="form-control" name="questions[${index}][answer]" rows="4" placeholder="답변 입력" disabled></textarea>
             </div>
-            <div class="allow-other" style="display: none;">
-                <label>
-                    <input type="checkbox" name="questions[${index}][allowOther]" value="true"> 기타 응답 수집
-                </label>
+          </div>
+          <div class="date" style="display: none;">
+              <label class="form-label">날짜 입력:</label>
+              <input type="date" class="form-control" name="questions[${index}][date]" disabled>
+          </div>
+          <div class="short-answer" style="display: none;">
+              <div class="d-flex my-2">
+                  <input type="text" class="form-control me-2 flex-grow-1" name="questions[${index}][prefixText]" placeholder="접두사">
+                  <input type="text" class="form-control me-2 flex-grow-1" name="questions[${index}][shortAnswer]" placeholder="단답형 답변 입력" disabled>
+                  <input type="text" class="form-control flex-grow-1" name="questions[${index}][suffixText]" placeholder="접미사">
+              </div>
+              <select class="form-select mb-2" name="questions[${index}][inputType]" onchange="updateInputType(this)">
+                  <option value="all">모든 값</option>
+                  <option value="letters">영문자만 입력</option>
+                  <option value="integer">정수만 입력</option>
+              </select>
+              <div class="integer-range" style="display: none;">
+                  <input type="number" class="form-control mb-2" name="questions[${index}][minValue]" placeholder="최소값">
+                  <input type="number" class="form-control" name="questions[${index}][maxValue]" placeholder="최대값">
+              </div>
+          </div>
+          <div class="rank-limit" style="display: none;">
+            <div class="mt-2">
+              <label class="form-label">최대 순위:</label>
+              <input type="number" class="form-control" name="questions[${index}][rankLimit]" min="1" placeholder="정수로만 입력, 생략 시 1">
             </div>
-            <div class="textarea" style="display: none;">
-                <label>답변:</label>
-                <textarea name="questions[${index}][answer]" rows="4" placeholder="답변 입력"></textarea>
-            </div>
-            <div class="date" style="display: none;">
-                <label>날짜 입력:</label>
-                <input type="date" name="questions[${index}][date]" placeholder="날짜 입력">
-            </div>
-            <div class="short-answer" style="display: none;">
-                <label>단답형 답변:</label>
-                <input type="text" name="questions[${index}][prefixText]" placeholder="앞에 붙일 텍스트">
-                <input type="text" name="questions[${index}][shortAnswer]" placeholder="단답형 답변 입력">
-                <input type="text" name="questions[${index}][suffixText]" placeholder="뒤에 붙일 텍스트">
-                <select name="questions[${index}][inputType]" onchange="updateInputType(this)">
-                    <option value="all">모든 값</option>
-                    <option value="letters">영문자만 입력</option>
-                    <option value="integer">정수만 입력</option>
-                </select>
-                <div class="integer-range" style="display: none;">
-                    <input type="number" name="questions[${index}][minValue]" placeholder="최소값">
-                    <input type="number" name="questions[${index}][maxValue]" placeholder="최대값">
-                </div>
-            </div>
-            <div class="rank-limit" style="display: none;">
-                <label>최대 순위:</label>
-                <input type="number" name="questions[${index}][rankLimit]" min="1" placeholder="최대 순위 입력">
-            </div>
-            <div class="reservation" style="display: none;">
-                <label for="dateRange${index}">날짜 범위 선택:</label>
-                <input type="text" id="dateRange${index}" placeholder="시작 날짜와 마감 날짜 선택" readonly>
-                <label for="excludeDates${index}">제외할 날짜 선택:</label>
-                <input type="text" id="excludeDates${index}" placeholder="제외할 날짜 선택" readonly>
-                
-                <label for="maxParticipants${index}">일일 최대 예약 가능 인원:</label>
-                <input type="number" id="maxParticipants${index}" name="questions[${index}][reservation][maxParticipants]" min="1">
-                
-                <input type="hidden" name="questions[${index}][reservation][startDate]" id="startDate${index}">
-                <input type="hidden" name="questions[${index}][reservation][endDate]" id="endDate${index}">
-                <input type="hidden" name="questions[${index}][reservation][exceptionDates]" id="exceptionDates${index}">
-            </div>
-            <div class="time-reservation" style="display: none;">
-                <label for="timeRange${index}">예약 가능 날짜 선택:</label>
-                <input type="text" id="timeRange${index}" placeholder="예약 날짜 선택" readonly>
-                
-                <label for="startTime${index}">첫번째 예약 시간:</label>
-                <input type="text" id="startTime${index}" placeholder="14:00">
-                
-                <label for="endTime${index}">마지막 예약 시간:</label>
-                <input type="text" id="endTime${index}" placeholder="16:00">
-                
-                <label for="interval${index}">예약 시간 간격:</label>
-                <select name="questions[${index}][time_reservation][interval]" id="interval${index}">
-                    <option value="10">10분</option>
-                    <option value="15">15분</option>
-                    <option value="20">20분</option>
-                    <option value="30" selected>30분</option>
-                    <option value="60">60분</option>
-                </select>
+          </div>
+          <div class="reservation" style="display: none;">
+            <div class="mt-2">
+              <label for="dateRange${index}" class="form-label mt-2">날짜 범위 선택:</label>
+              <input type="text" class="form-control" id="dateRange${index}" placeholder="시작 날짜와 마감 날짜 선택" readonly>
+              <label for="excludeDates${index}" class="form-label mt-2">제외할 날짜 선택:</label>
+              <input type="text" class="form-control" id="excludeDates${index}" placeholder="제외할 날짜 선택" readonly>
+              <label for="maxParticipants${index}" class="form-label mt-2">일일 최대 예약 가능 인원:</label>
+              <input type="number" class="form-control" id="maxParticipants${index}" name="questions[${index}][reservation][maxParticipants]" min="1" placeholder="정수로만 입력, 생략 시 1">
 
-                <label>시간당 최대 예약 가능 인원:</label>
-                <input type="number" id="maxParticipants${index}" name="questions[${index}][time_reservation][maxParticipants]" min="1">
+              <input type="hidden" name="questions[${index}][reservation][startDate]" id="startDate${index}">
+              <input type="hidden" name="questions[${index}][reservation][endDate]" id="endDate${index}">
+              <input type="hidden" name="questions[${index}][reservation][exceptionDates]" id="exceptionDates${index}">
+            </div>
+          </div>
+          <div class="time-reservation" style="display: none;">
+              <div class="mt-2">
+                  <label for="timeRange${index}" class="form-label mt-2">예약 가능 날짜 선택:</label>
+                  <input type="text" class="form-control" id="timeRange${index}" placeholder="예약 날짜 선택" readonly>
+                  <div class="d-flex align-items-center mt-3">
+                      <div class="me-2 flex-grow-1">
+                          <label for="startTime${index}" class="form-label">첫번째 예약 시간:</label>
+                          <input type="text" class="form-control" id="startTime${index}" placeholder="14:00">
+                      </div>
+                      <div class="flex-grow-1">
+                          <label for="endTime${index}" class="form-label">마지막 예약 시간:</label>
+                          <input type="text" class="form-control" id="endTime${index}" placeholder="16:00">
+                      </div>
+                  </div>
+                  <label for="interval${index}">예약 시간 간격:</label>
+                  <select name="questions[${index}][time_reservation][interval]" id="interval${index}">
+                      <option value="10">10분</option>
+                      <option value="15">15분</option>
+                      <option value="20">20분</option>
+                      <option value="30" selected>30분</option>
+                      <option value="60">60분</option>
+                  </select>
+                  <label>시간당 최대 예약 가능 인원:</label>
+                  <input type="number" id="maxParticipants${index}" name="questions[${index}][time_reservation][maxParticipants]" min="1">
 
-                <input type="hidden" name="questions[${index}][time_reservation][availableDates]" id="availableDates${index}">
-                <input type="hidden" name="questions[${index}][time_reservation][startTime]" id="startTimeHidden${index}">
-                <input type="hidden" name="questions[${index}][time_reservation][endTime]" id="endTimeHidden${index}">
-            </div>
-            <div class="info" style="display: none;">
-                <label>안내문:</label>
-                <textarea name="questions[${index}][infoText]" rows="4" placeholder="안내문 입력"></textarea>
-            </div>
-            <div class="email-verification" style="display: none;">
-                <label>이메일 주소:</label>
-                <input type="email" name="questions[${index}][email]" placeholder="이메일 입력">
-            </div>
-            <button type="button" onclick="removeQuestion(this)">문항 삭제</button>
-        </div>
-    `;
+                  <input type="hidden" name="questions[${index}][time_reservation][availableDates]" id="availableDates${index}">
+                  <input type="hidden" name="questions[${index}][time_reservation][startTime]" id="startTimeHidden${index}">
+                  <input type="hidden" name="questions[${index}][time_reservation][endTime]" id="endTimeHidden${index}">
+              </div>
+          </div>
+          <div class="info" style="display: none;">
+              <label class="form-label">안내문:</label>
+              <textarea class="form-control" name="questions[${index}][infoText]" rows="4" placeholder="안내문 입력"></textarea>
+          </div>
+          <div class="email-verification" style="display: none;">
+              <label class="form-label">이메일 주소:</label>
+              <input type="email" class="form-control" name="questions[${index}][email]" placeholder="이메일 입력" disabled>
+          </div>
+      </div>
+  `;
 }
+
 
 // 문항 추가 함수
 function addQuestion() {
@@ -139,6 +162,8 @@ function updateQuestionFields(select) {
     questionDiv.querySelector('.time-reservation').style.display = 'none';
     questionDiv.querySelector('.info').style.display = 'none';
     questionDiv.querySelector('.email-verification').style.display = 'none';
+    questionDiv.querySelector('.allow-other').style.display = 'none';
+    questionDiv.querySelector('.rank-limit').style.display = 'none';
 
     // 선택한 유형에 따라 필드 보이기
     const displayFields = {
@@ -162,17 +187,20 @@ function updateQuestionFields(select) {
 }
 
 function addOption(button) {
-    const optionsDiv = button.parentElement;
-    const questionDiv = optionsDiv.closest('.question'); // 현재 문항 div
-    const questionIndex = Array.from(document.getElementById('questions').children).indexOf(questionDiv); // 질문 인덱스 추출
-    const newOptionDiv = document.createElement('div');
-    newOptionDiv.className = 'option';
-    newOptionDiv.innerHTML = `
-        <input type="text" name="questions[${questionIndex}][options][]" placeholder="선택지 입력">
-        <button type="button" onclick="removeOption(this)">삭제</button>
-    `;
-    optionsDiv.insertBefore(newOptionDiv, button);
+  const optionsDiv = button.closest('.options'); // optionsDiv를 가져옵니다.
+  const questionDiv = optionsDiv.closest('.question'); // 현재 문항 div
+  const questionIndex = Array.from(document.getElementById('questions').children).indexOf(questionDiv); // 질문 인덱스 추출
+  const newOptionDiv = document.createElement('div');
+  newOptionDiv.className = 'option mb-2 d-flex align-items-center';
+  newOptionDiv.innerHTML = `
+      <i class="bi bi-check-square-fill me-2"></i>
+      <input type="text" class="form-control me-2 flex-grow-1" name="questions[${questionIndex}][options][]" placeholder="선택지 입력">
+      <button type="button" class="btn px-0" onclick="removeOption(this)"><i class="bi bi-x-lg"></i></button>
+  `;
+  optionsDiv.insertBefore(newOptionDiv, button.parentElement); // '선택지 추가' 버튼의 부모 요소 앞에 추가
 }
+
+
 
 function updateInputType(select) {
     const questionDiv = select.closest('.question'); // 가장 가까운 질문 div 찾기

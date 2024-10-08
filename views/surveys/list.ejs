@@ -27,11 +27,11 @@
               <div>
                 <a href="/surveys/<%= survey._id %>/respond" class="list-group-item-action"><%= survey.title %></a>
                 <a href="/surveys/<%= survey._id %>/results" class="btn btn-link">결과 보기</a>
-                <a href="/surveys/<%= survey._id %>/edit" class="btn btn-warning btn-sm">수정</a>
               </div>
               <div>
+                <a href="/surveys/<%= survey._id %>/edit" class="btn btn-outline-secondary btn-sm">수정</a>
                 <form action="/surveys/<%= survey._id %>/clone" method="POST" style="display:inline;">
-                    <button type="submit" class="btn btn-info btn-sm">복제</button>
+                    <button type="submit" class="btn btn-outline-primary btn-sm">복제</button>
                 </form>
                 <form action="/surveys/<%= survey._id %>/delete" method="POST" style="display:inline;">
                     <button type="submit" class="btn btn-danger btn-sm">삭제</button>

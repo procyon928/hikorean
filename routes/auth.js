@@ -65,6 +65,7 @@ router.post('/login', async (req, res) => {
           await logEntry.save();
 
           console.log('로그인 후 세션 정보:', req.session); // 세션 정보 확인
+          console.log('로그인 후 사용자 정보:', req.user);
           res.redirect(referer || '/'); // referer가 있으면 해당 페이지로 리다이렉션
       });
   } catch (error) {

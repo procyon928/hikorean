@@ -3,103 +3,139 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= survey.title %> 수정하기</title>
+    <title>제목</title>
+    <meta name="theme-color" content="#254B7A"> <!-- Android Chrome -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"> <!-- iOS Safari -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css"> <!-- CSS 파일 경로 -->
 </head>
 <body>
-    <h1><%= survey.title %> 수정하기</h1>
-    <form action="/surveys/<%= survey._id %>" method="POST">
-        <label for="title">설문조사 제목:</label>
-        <input type="text" name="title" value="<%= survey.title %>" required>
-        <label for="startDate">응답 시작 날짜:</label>
-        <input type="datetime-local" name="startDate" value="<%= survey.startDate ? new Date(survey.startDate.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 16) : '' %>">
-        <label for="endDate">응답 종료 날짜:</label>
-        <input type="datetime-local" name="endDate" value="<%= survey.endDate ? new Date(survey.endDate.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 16) : '' %>">     
-        
-        <h2>문항 수정</h2>
-        <div id="questions">
-            <% survey.questions.forEach((question, index) => { %>
-                <div class="question">
-                    <input type="text" name="questions[<%= index %>][questionText]" value="<%= question.questionText %>" placeholder="문항 내용" required>
-                    <input type="text" name="questions[<%= index %>][questionDescription]" value="<%= question.questionDescription %>" placeholder="문항 설명">
-                    <label>
-                        <input type="checkbox" name="questions[<%= index %>][isRequired]" value="true" <%= question.isRequired ? 'checked' : '' %>> 필수
-                    </label>
-                    <select name="questions[<%= index %>][questionType]" onchange="updateQuestionFields(this)">
-                        <option value="short_answer" <%= question.questionType === 'short_answer' ? 'selected' : '' %>>단답형</option>
-                        <option value="long_answer" <%= question.questionType === 'long_answer' ? 'selected' : '' %>>장문형</option>
-                        <option value="single_choice" <%= question.questionType === 'single_choice' ? 'selected' : '' %>>단일 선택</option>
-                        <option value="multiple_choice" <%= question.questionType === 'multiple_choice' ? 'selected' : '' %>>다중 선택</option>
-                        <option value="date" <%= question.questionType === 'date' ? 'selected' : '' %>>날짜 입력</option>
-                        <option value="dropdown" <%= question.questionType === 'dropdown' ? 'selected' : '' %>>드롭다운 선택</option>
-                        <option value="preference" <%= question.questionType === 'preference' ? 'selected' : '' %>>선호도</option>
-                        <option value="reservation" <%= question.questionType === 'reservation' ? 'selected' : '' %>>날짜 예약</option>
-                        <option value="time_reservation" <%= question.questionType === 'time_reservation' ? 'selected' : '' %>>시간 예약</option>
-                        <option value="info" <%= question.questionType === 'info' ? 'selected' : '' %>>안내문</option>
-                        <option value="email" <%= question.questionType === 'email' ? 'selected' : '' %>>이메일 검증</option>
-                    </select>
+    <%- include('../partials/navbar') %> 
+    <%- include('../partials/bottom-navbar') %>
+    <%- include('../partials/managebar') %>
 
-                    <!-- allow-other 옵션 추가 -->
-                    <div class="allow-other" style="<%= ['single_choice', 'multiple_choice'].includes(question.questionType) ? 'block' : 'none' %>">
-                      <label>
-                          <input type="checkbox" name="questions[<%= index %>][allowOther]" value="true" <%= question.allowOther ? 'checked' : '' %>> 기타 응답 수집
-                      </label>
+    <div class="container-fluid p-0" style="max-width: 960px; margin-bottom: 100px;">
+        <div class="content-wrapper p-3">
+            <h1 class="mb-4"><%= survey.title %> 수정하기</h1>
+            <form action="/surveys/<%= survey._id %>" method="POST">
+                <div class="mb-3">
+                    <label for="title" class="form-label">설문조사 제목:</label>
+                    <input type="text" name="title" class="form-control" value="<%= survey.title %>" required>
+                </div>
+                <div class="mb-3 row">
+                    <div class="col">
+                        <label for="startDate" class="form-label">응답 시작 날짜:</label>
+                        <input type="datetime-local" name="startDate" class="form-control" value="<%= survey.startDate ? new Date(survey.startDate.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 16) : '' %>">
                     </div>
-
-                    <!-- 선택지 옵션 -->
-                    <div class="options" style="<%= ['single_choice', 'multiple_choice', 'dropdown', 'preference'].includes(question.questionType) ? 'block' : 'none' %>">
-                        <% question.options.forEach((option, optionIndex) => { %>
-                            <div class="option">
-                                <input type="text" name="questions[<%= index %>][options][]" value="<%= option %>" placeholder="선택지 입력">
-                                <button type="button" onclick="removeOption(this)">삭제</button>
-                            </div>
-                        <% }); %>
-                        <button type="button" onclick="addOption(this)">선택지 추가</button>
-                    </div>
-
-                    <div class="short-answer" style="<%= question.questionType === 'short_answer' ? 'block' : 'none' %>">
-                        <label>단답형 답변:</label>
-                        <input type="text" name="questions[<%= index %>][prefixText]" value="<%= question.prefixText || '' %>" placeholder="앞에 붙일 텍스트">
-                        <input type="text" name="questions[<%= index %>][shortAnswer]" value="<%= question.shortAnswer || '' %>" placeholder="단답형 답변 입력">
-                        <input type="text" name="questions[<%= index %>][suffixText]" value="<%= question.suffixText || '' %>" placeholder="뒤에 붙일 텍스트">
-                        <select name="questions[<%= index %>][inputType]" onchange="updateInputType(this)">
-                            <option value="all" <%= question.inputType === 'all' ? 'selected' : '' %>>모든 값</option>
-                            <option value="letters" <%= question.inputType === 'letters' ? 'selected' : '' %>>영문자만 입력</option>
-                            <option value="integer" <%= question.inputType === 'integer' ? 'selected' : '' %>>정수만 입력</option>
-                        </select>
-                        <div class="integer-range" style="display: <%= question.inputType === 'integer' ? 'block' : 'none' %>;">
-                            <input type="number" name="questions[<%= index %>][minValue]" value="<%= question.minValue || '' %>" placeholder="최소값">
-                            <input type="number" name="questions[<%= index %>][maxValue]" value="<%= question.maxValue || '' %>" placeholder="최대값">
-                        </div>
-                    </div>
-
-                    <div class="rank-limit" style="<%= question.questionType === 'preference' ? 'block' : 'none' %>">
-                        <label>최대 순위:</label>
-                        <input type="number" name="questions[<%= index %>][rankLimit]" value="<%= question.rankLimit || '' %>" min="1" placeholder="최대 순위 입력">
-                    </div>
-
-                    <!-- 날짜 예약 필드 -->
-                    <div class="reservation" style="<%= question.questionType === 'reservation' ? 'block' : 'none' %>">
-                        <label for="dateRange<%= index %>">날짜 범위 선택:</label>
-                        <input type="text" id="dateRange<%= index %>" name="questions[<%= index %>][reservation][dateRange]" value="<%= question.reservation.startDate && question.reservation.endDate ? question.reservation.startDate + ' ~ ' + question.reservation.endDate : '' %>" placeholder="시작 날짜와 마감 날짜 선택" readonly>
-                        <label for="excludeDates<%= index %>">제외할 날짜 선택:</label>
-                        <input type="text" id="excludeDates<%= index %>" name="questions[<%= index %>][reservation][exceptionDates]" value="<%= question.reservation.exceptionDates.join(', ') %>" placeholder="제외할 날짜 선택">
-                        <label for="maxParticipants<%= index %>">일일 최대 예약 가능 인원:</label>
-                        <input type="number" id="maxParticipants<%= index %>" name="questions[<%= index %>][reservation][maxParticipants]" value="<%= question.reservation.maxParticipants || '' %>" min="1">
-                    </div>
-
-                    <!-- 시간 예약 필드 -->
-                    <div class="time-reservation" style="<%= question.questionType === 'time_reservation' ? 'block' : 'none' %>">
-                        <label for="timeRange<%= index %>">예약 가능 날짜 선택:</label>
-                        <input type="text" id="timeRange<%= index %>" name="questions[<%= index %>][time_reservation][availableDates]" value="<%= question.time_reservation.availableDates.join(', ') %>" placeholder="예약 날짜 선택" readonly>
-                        <label for="maxParticipants<%= index %>">시간당 최대 예약 가능 인원:</label>
-                        <input type="number" id="maxParticipants<%= index %>" name="questions[<%= index %>][time_reservation][maxParticipants]" value="<%= question.time_reservation.maxParticipants || '' %>" min="1">
+                    <div class="col">
+                        <label for="endDate" class="form-label">응답 종료 날짜:</label>
+                        <input type="datetime-local" name="endDate" class="form-control" value="<%= survey.endDate ? new Date(survey.endDate.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 16) : '' %>">
                     </div>
                 </div>
-            <% }); %>
-        </div>
-        <button type="submit">설문조사 수정하기</button>
-    </form>
 
+                <h2 class="mb-3">문항 수정</h2>
+                <div id="questions">
+                    <% survey.questions.forEach((question, index) => { %>
+                    <div class="question mb-3 p-3 border rounded">
+                        <input type="text" name="questions[<%= index %>][questionText]" class="form-control mb-2" value="<%= question.questionText %>" placeholder="문항 내용" required>
+                        <input type="text" name="questions[<%= index %>][questionDescription]" class="form-control mb-2" value="<%= question.questionDescription %>" placeholder="문항 설명">
+                        <div class="mb-3 d-flex align-items-center">
+                            <div class="form-check me-2 ps-0 flex-grow-1 text-nowrap">
+                                <input type="checkbox" name="questions[<%= index %>][isRequired]" value="true" <%= question.isRequired ? 'checked' : '' %>>
+                                <label class="form-check-label text-nowrap">필수</label>
+                            </div>
+                            <select name="questions[<%= index %>][questionType]" class="form-select mb-2" onchange="updateQuestionFields(this)">
+                                <option value="short_answer" <%= question.questionType === 'short_answer' ? 'selected' : '' %>>단답형</option>
+                                <option value="long_answer" <%= question.questionType === 'long_answer' ? 'selected' : '' %>>장문형</option>
+                                <option value="single_choice" <%= question.questionType === 'single_choice' ? 'selected' : '' %>>단일 선택</option>
+                                <option value="multiple_choice" <%= question.questionType === 'multiple_choice' ? 'selected' : '' %>>다중 선택</option>
+                                <option value="date" <%= question.questionType === 'date' ? 'selected' : '' %>>날짜 입력</option>
+                                <option value="dropdown" <%= question.questionType === 'dropdown' ? 'selected' : '' %>>드롭다운 선택</option>
+                                <option value="preference" <%= question.questionType === 'preference' ? 'selected' : '' %>>선호도</option>
+                                <option value="reservation" <%= question.questionType === 'reservation' ? 'selected' : '' %>>날짜 예약</option>
+                                <option value="time_reservation" <%= question.questionType === 'time_reservation' ? 'selected' : '' %>>시간 예약</option>
+                                <option value="info" <%= question.questionType === 'info' ? 'selected' : '' %>>안내문</option>
+                                <option value="email" <%= question.questionType === 'email' ? 'selected' : '' %>>이메일 검증</option>
+                            </select>
+                        </div>
+
+                        <!-- allow-other 옵션 추가 -->
+                        <div class="allow-other" style="<%= ['single_choice', 'multiple_choice'].includes(question.questionType) ? 'block' : 'none' %>">
+                            <label>
+                                <input type="checkbox" name="questions[<%= index %>][allowOther]" value="true" <%= question.allowOther ? 'checked' : '' %>> 기타 응답 수집
+                            </label>
+                        </div>
+
+                        <!-- 선택지 옵션 -->
+                        <div class="options" style="<%= ['single_choice', 'multiple_choice', 'dropdown', 'preference'].includes(question.questionType) ? 'block' : 'none' %>">
+                            <% question.options.forEach((option, optionIndex) => { %>
+                            <div class="option mb-2 d-flex align-items-center">
+                                <input type="text" name="questions[<%= index %>][options][]" class="form-control me-2" value="<%= option %>" placeholder="선택지 입력">
+                                <!-- <button type="button" class="btn px-0" onclick="removeOption(this)"><i class="bi bi-x-lg"></i></button> -->
+                            </div>
+                            <% }); %>
+                            <!-- <button type="button" class="btn btn-primary" onclick="addOption(this)">선택지 추가</button> -->
+                        </div>
+
+                        <!-- 기타 필드 -->
+                        <div class="short-answer" style="<%= question.questionType === 'short_answer' ? 'block' : 'none' %>">
+                            <label>단답형 답변:</label>
+                            <div class="d-flex my-2">
+                                <input type="text" name="questions[<%= index %>][prefixText]" class="form-control me-2 flex-grow-1" value="<%= question.prefixText || '' %>" placeholder="접두사">
+                                <input type="text" name="questions[<%= index %>][shortAnswer]" class="form-control me-2 flex-grow-1" value="<%= question.shortAnswer || '' %>" placeholder="단답형 답변 입력" disabled>
+                                <input type="text" name="questions[<%= index %>][suffixText]" class="form-control me-2 flex-grow-1" value="<%= question.suffixText || '' %>" placeholder="접미사">
+                            </div>
+                            <select name="questions[<%= index %>][inputType]" class="form-select mb-2" onchange="updateInputType(this)">
+                                <option value="all" <%= question.inputType === 'all' ? 'selected' : '' %>>모든 값</option>
+                                <option value="letters" <%= question.inputType === 'letters' ? 'selected' : '' %>>영문자만 입력</option>
+                                <option value="integer" <%= question.inputType === 'integer' ? 'selected' : '' %>>정수만 입력</option>
+                            </select>
+                            <div class="integer-range" style="display: <%= question.inputType === 'integer' ? 'block' : 'none' %>;">
+                                <input type="number" name="questions[<%= index %>][minValue]" class="form-control mb-2" value="<%= question.minValue || '' %>" placeholder="최소값">
+                                <input type="number" name="questions[<%= index %>][maxValue]" class="form-control" value="<%= question.maxValue || '' %>" placeholder="최대값">
+                            </div>
+                        </div>
+
+                        <div class="rank-limit" style="<%= question.questionType === 'preference' ? 'block' : 'none' %>">
+                            <label>최대 순위:</label>
+                            <input type="number" name="questions[<%= index %>][rankLimit]" class="form-control mb-2" value="<%= question.rankLimit || '' %>" min="1" placeholder="최대 순위 입력">
+                        </div>
+
+                        <!-- 날짜 예약 필드 -->
+                        <div class="reservation" style="<%= question.questionType === 'reservation' ? 'block' : 'none' %>">
+                            <label for="dateRange<%= index %>">날짜 범위 선택:</label>
+                            <input type="text" id="dateRange<%= index %>" name="questions[<%= index %>][reservation][dateRange]" class="form-control" value="<%= question.reservation.startDate && question.reservation.endDate ? question.reservation.startDate + ' ~ ' + question.reservation.endDate : '' %>" placeholder="시작 날짜와 마감 날짜 선택" readonly>
+                            <label for="excludeDates<%= index %>">제외할 날짜 선택:</label>
+                            <input type="text" id="excludeDates<%= index %>" name="questions[<%= index %>][reservation][exceptionDates]" class="form-control" value="<%= question.reservation.exceptionDates.join(', ') %>" placeholder="제외할 날짜 선택">
+                            <label for="maxParticipants<%= index %>">일일 최대 예약 가능 인원:</label>
+                            <input type="number" id="maxParticipants<%= index %>" name="questions[<%= index %>][reservation][maxParticipants]" class="form-control" value="<%= question.reservation.maxParticipants || '' %>" min="1">
+                        </div>
+
+                        <!-- 시간 예약 필드 -->
+                        <div class="time-reservation" style="<%= question.questionType === 'time_reservation' ? 'block' : 'none' %>">
+                            <label for="timeRange<%= index %>">예약 가능 날짜 선택:</label>
+                            <input type="text" id="timeRange<%= index %>" name="questions[<%= index %>][time_reservation][availableDates]" class="form-control" value="<%= question.time_reservation.availableDates.join(', ') %>" placeholder="예약 날짜 선택" readonly>
+                            <label for="maxParticipants<%= index %>">시간당 최대 예약 가능 인원:</label>
+                            <input type="number" id="maxParticipants<%= index %>" name="questions[<%= index %>][time_reservation][maxParticipants]" class="form-control" value="<%= question.time_reservation.maxParticipants || '' %>" min="1">
+                        </div>
+                    </div>
+                    <% }); %>
+                </div>
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-success">설문조사 수정하기</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script>
+        document.documentElement.dataset.lang = '<%= lang %>';
+    </script>
+    <script src="/js/lang.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
         // 페이지 로드 시 각 질문의 유형에 따라 선택지 옵션 표시 여부 결정
         document.addEventListener('DOMContentLoaded', () => {
@@ -110,6 +146,7 @@
                 const reservationDiv = question.querySelector('.reservation');
                 const timeReservationDiv = question.querySelector('.time-reservation');
                 const shortAnswerDiv = question.querySelector('.short-answer');
+                const rankLimitDiv = question.querySelector('.rank-limit'); 
                 const questionType = typeSelect.value;
 
                 // 조건에 따라 allow-other 표시
@@ -125,6 +162,9 @@
 
                 // 단답형 필드 표시
                 shortAnswerDiv.style.display = questionType === 'short_answer' ? 'block' : 'none';
+
+                // 최대 순위 필드 표시
+                rankLimitDiv.style.display = questionType === 'preference' ? 'block' : 'none';
             });
         });
 
@@ -136,12 +176,14 @@
             const reservationDiv = questionDiv.querySelector('.reservation');
             const timeReservationDiv = questionDiv.querySelector('.time-reservation');
             const shortAnswerDiv = questionDiv.querySelector('.short-answer');
+            const rankLimitDiv = questionDiv.querySelector('.rank-limit');
 
             // 모든 추가 입력 필드 숨기기
             optionsDiv.style.display = ['single_choice', 'multiple_choice', 'dropdown', 'preference'].includes(selectedValue) ? 'block' : 'none';
             reservationDiv.style.display = selectedValue === 'reservation' ? 'block' : 'none';
             timeReservationDiv.style.display = selectedValue === 'time_reservation' ? 'block' : 'none';
             shortAnswerDiv.style.display = selectedValue === 'short_answer' ? 'block' : 'none';
+            rankLimitDiv.style.display = selectedValue === 'preference' ? 'block' : 'none';
         }
 
         // updateInputType 함수 추가
