@@ -27,11 +27,17 @@
                 <div class="mb-3 row">
                     <div class="col">
                         <label for="startDate" class="form-label">응답 시작 날짜:</label>
-                        <input type="datetime-local" name="startDate" class="form-control" value="<%= survey.startDate ? new Date(survey.startDate.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 16) : '' %>">
+                        <div class="input-group">
+                          <input type="datetime-local" name="startDate" class="form-control" value="<%= survey.startDate ? new Date(survey.startDate.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 16) : '' %>">
+                          <button type="button" class="btn btn-danger" onclick="clearStartDate()">제거</button>
+                      </div>
                     </div>
                     <div class="col">
                         <label for="endDate" class="form-label">응답 종료 날짜:</label>
-                        <input type="datetime-local" name="endDate" class="form-control" value="<%= survey.endDate ? new Date(survey.endDate.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 16) : '' %>">
+                        <div class="input-group">
+                          <input type="datetime-local" name="endDate" class="form-control" value="<%= survey.endDate ? new Date(survey.endDate.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 16) : '' %>">
+                          <button type="button" class="btn btn-danger" onclick="clearEndDate()">제거</button>
+                      </div>
                     </div>
                 </div>
 
@@ -153,6 +159,7 @@
                 const timeReservationDiv = question.querySelector('.time-reservation');
                 const shortAnswerDiv = question.querySelector('.short-answer');
                 const rankLimitDiv = question.querySelector('.rank-limit'); 
+                const infoDiv = question.querySelector('.info'); 
                 const questionType = typeSelect.value;
 
                 // 조건에 따라 allow-other 표시
@@ -171,6 +178,9 @@
 
                 // 최대 순위 필드 표시
                 rankLimitDiv.style.display = questionType === 'preference' ? 'block' : 'none';
+
+                // 안내문 필드 표시
+                infoDiv.style.display = questionType === 'info' ? 'block' : 'none';
             });
         });
 
@@ -183,6 +193,7 @@
             const timeReservationDiv = questionDiv.querySelector('.time-reservation');
             const shortAnswerDiv = questionDiv.querySelector('.short-answer');
             const rankLimitDiv = questionDiv.querySelector('.rank-limit');
+            const infoDiv = questionDiv.querySelector('.info');
 
             // 모든 추가 입력 필드 숨기기
             optionsDiv.style.display = ['single_choice', 'multiple_choice', 'dropdown', 'preference'].includes(selectedValue) ? 'block' : 'none';
@@ -190,6 +201,7 @@
             timeReservationDiv.style.display = selectedValue === 'time_reservation' ? 'block' : 'none';
             shortAnswerDiv.style.display = selectedValue === 'short_answer' ? 'block' : 'none';
             rankLimitDiv.style.display = selectedValue === 'preference' ? 'block' : 'none';
+            infoDiv.style.display = selectedValue === 'info' ? 'block' : 'none';
         }
 
         // updateInputType 함수 추가
@@ -206,6 +218,15 @@
             if (selectedValue === 'integer') {
                 integerRangeDiv.style.display = 'block'; // 정수 범위 입력 필드 보이기
             }
+        }
+
+        // 입력도니 시작 날짜, 종료 날짜 삭제
+        function clearStartDate() {
+            document.querySelector('input[name="startDate"]').value = ''; // 시작 날짜 입력값 삭제
+        }
+
+        function clearEndDate() {
+            document.querySelector('input[name="endDate"]').value = ''; // 종료 날짜 입력값 삭제
         }
     </script>
 </body>

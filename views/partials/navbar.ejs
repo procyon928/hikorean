@@ -40,22 +40,36 @@
 </nav>
 
 <script>
-function changeLanguage(lang) {
-  const currentUrl = window.location.href;
-  const baseUrl = currentUrl.split('?')[0];
-  const params = new URLSearchParams(window.location.search);
-  params.set('lang', lang); // 언어 쿼리 업데이트
-
-  // 모든 링크에 쿼리 파라미터 추가
-  document.querySelectorAll('a').forEach(link => {
-    const linkUrl = new URL(link.href);
-    linkUrl.searchParams.set('lang', lang); // 언어 쿼리 추가
-    link.href = linkUrl.toString();
-  });
-
-  window.location.href = baseUrl + '?' + params.toString(); // 새로운 URL로 이동
-}
-</script>
+  function changeLanguage(lang) {
+    const currentUrl = window.location.href;
+    const baseUrl = currentUrl.split('?')[0];
+    const params = new URLSearchParams(window.location.search);
+    params.set('lang', lang); // 언어 쿼리 업데이트
+  
+    // 모든 링크에 쿼리 파라미터 추가
+    document.querySelectorAll('a').forEach(link => {
+      if (!link.href || link.href === 'javascript:void(0);') {
+        // 유효하지 않은 링크는 건너뜁니다.
+        console.warn('Skipping invalid link:', link.href);
+        return;
+      }
+  
+      let linkUrl;
+      try {
+        linkUrl = new URL(link.href); // URL 객체 생성
+      } catch (e) {
+        console.error('Invalid URL:', link.href);
+        return; // 유효하지 않은 URL인 경우 건너뜁니다.
+      }
+  
+      linkUrl.searchParams.set('lang', lang); // 언어 쿼리 추가
+      link.href = linkUrl.toString(); // 수정된 URL로 링크를 업데이트
+    });
+  
+    window.location.href = baseUrl + '?' + params.toString(); // 새로운 URL로 이동
+  }
+  </script>
+  
 
 
 <script>

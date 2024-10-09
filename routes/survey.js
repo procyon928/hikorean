@@ -181,9 +181,6 @@ router.get('/surveys/:id/respond', async (req, res) => {
 
   // 현재 시간을 시작 시간으로 설정
   const startedAt = new Date();
-  
-  // startedAt 값을 콘솔에 출력
-  console.log("Started At:", startedAt.toISOString()); // ISO 형식으로 출력
 
   // 시작 날짜와 종료 날짜 확인
   if (survey.startDate || survey.endDate) {
@@ -198,9 +195,30 @@ router.get('/surveys/:id/respond', async (req, res) => {
     }
   }
 
+  // 쿼리 파라미터에서 언어 가져오기
+  const lang = req.query.lang || 'ko'; // 기본값 한국어
+  let formattedStartDate, formattedEndDate;
+
+  // 언어에 따른 locale 설정
+  const localeMap = {
+      ko: 'ko-KR',
+      en: 'en-US',
+      sc: 'zh-CN',
+      tc: 'zh-TW',
+      jp: 'ja-JP',
+      vi: 'vi-VN'
+  };
+
+  // 날짜 형식 결정 (모두 Asia/Seoul로 통일)
+  const locale = localeMap[lang] || 'ko-KR'; // 기본값 한국어
+
+  formattedStartDate = survey.startDate ? new Date(survey.startDate).toLocaleString(locale, { timeZone: 'Asia/Seoul' }) : null;
+  formattedEndDate = survey.endDate ? new Date(survey.endDate).toLocaleString(locale, { timeZone: 'Asia/Seoul' }) : null;
+
   // 설문조사 응답 페이지 렌더링
-  res.render('surveys/respond', { survey, startedAt, message });
+  res.render('surveys/respond', { survey, startedAt, message, formattedStartDate, formattedEndDate });
 });
+
 
 router.get('/surveys/:id/countResponses', async (req, res) => {
   const { date, time } = req.query;
@@ -272,7 +290,8 @@ router.post('/surveys/:id', isAdmin, async (req, res) => {
               endTime: question.time_reservation ? question.time_reservation.endTime : null,
               interval: question.time_reservation ? question.time_reservation.interval : null,
               maxParticipants: question.time_reservation ? question.time_reservation.maxParticipants : null
-          }
+          },
+          infoText: question.infoText
       })),
       startDate: startDate ? new Date(startDate) : null,
       endDate: endDate ? new Date(endDate) : null
@@ -318,7 +337,8 @@ router.post('/surveys/:id/clone', isAdmin, async (req, res) => {
           maxValue: question.maxValue,
           rankLimit: question.rankLimit,
           reservation: question.reservation,
-          time_reservation: question.time_reservation
+          time_reservation: question.time_reservation,
+          infoText: question.infoText
       })),
       startDate: originalSurvey.startDate,
       endDate: originalSurvey.endDate,
