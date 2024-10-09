@@ -246,7 +246,7 @@ router.post('/notices/translate/save/:id', isAdmin, async (req, res) => {
       await TemporaryTranslation.deleteMany({ noticeId: id, language: lang });
 
       console.log('업데이트된 안내문:', updatedNotice);
-      res.json({ message: '저장이 완료되었습니다.' });
+      res.send('저장이 완료되었습니다.');
   } catch (error) {
       console.error('데이터베이스 업데이트 오류:', error);
       res.status(500).send('서버 오류가 발생했습니다.');

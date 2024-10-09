@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/styles.css"> <!-- CSS 파일 경로 -->
+
 </head>
 <body>
     <%- include('../partials/navbar') %> 
@@ -18,100 +19,110 @@
     
     <div class="container-fluid p-0" style="max-width: 960px; margin-bottom: 100px;">
         <div class="content-wrapper p-3">
-    <h1 class="mt-4 text-center">안내문 목록</h1>
-    <div class="mb-4 text-end">
-      <a href="/notices/new" class="btn btn-primary">새 안내문 작성</a>
-    </div>
-    <div class="card">
-      <div class="card-body">
-        <table class="table table-bordered">
-          <thead class="table-light">
-            <tr>
-              <th>제목</th>
-              <th>작성일</th>
-              <th>수정일</th>
-              <th>중국어 간체</th>
-              <th>중국어 번체</th>
-              <th>일본어</th>
-              <th>영어</th>
-              <th>베트남어</th>
-              <th>수정 및 삭제</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% 
-            const getStatus = (finalSavedAt, updatedAt) => {
-                if (!finalSavedAt) return '🔴'; // 조건 1: finalSavedAt이 빈값
-                if (updatedAt && finalSavedAt < updatedAt) return '🟡'; // 조건 2: finalSavedAt < updatedAt
-                return '🟢'; // 조건 3: finalSavedAt > updatedAt 또는 updatedAt이 빈값
-            };
-            %>
-            <% notices.forEach(notice => { %>
-              <tr>
-                <td>
-                  <a href="/notices/translate/<%= notice._id %>"><%= notice.title %></a>
-                  <a href="/notices/<%= notice.shortId %>?lang=ko" class="link-secondary">🔗</a>
-                </td>
-                <td><%= notice.createdAt.toLocaleDateString() %><br><%= notice.createdBy ? notice.createdBy : '' %></td>
-                <td><%= notice.updatedAt ? notice.updatedAt.toLocaleDateString() : '' %><br><%= notice.updatedBy ? notice.updatedBy : '' %></td>
-                <td>
-                    <a href="/notices/<%= notice.shortId %>?lang=sc" class="link-secondary"><%= getStatus(notice.translations.sc?.finalSavedAt, notice.updatedAt) %></a>
-                    <a href="#" onclick="copyToClipboard('<%= notice.translations.sc?.final.join(' ') %>')">📋</a><br>
-                    <%= notice.translations.sc?.finalSavedBy ? notice.translations.sc.finalSavedBy : '' %>
-                </td>
-                <td>
-                    <a href="/notices/<%= notice.shortId %>?lang=tc" class="link-secondary"><%= getStatus(notice.translations.tc?.finalSavedAt, notice.updatedAt) %></a>
-                    <a href="#" onclick="copyToClipboard('<%= notice.translations.tc?.final.join(' ') %>')">📋</a><br>
-                    <%= notice.translations.tc?.finalSavedBy ? notice.translations.tc.finalSavedBy : '' %>
-                </td>
-                <td>
-                    <a href="/notices/<%= notice.shortId %>?lang=jp" class="link-secondary"><%= getStatus(notice.translations.jp?.finalSavedAt, notice.updatedAt) %></a>
-                    <a href="#" onclick="copyToClipboard('<%= notice.translations.jp?.final.join(' ') %>')">📋</a><br>
-                    <%= notice.translations.jp?.finalSavedBy ? notice.translations.jp.finalSavedBy : '' %>
-                </td>
-                <td>
-                    <a href="/notices/<%= notice.shortId %>?lang=en" class="link-secondary"><%= getStatus(notice.translations.en?.finalSavedAt, notice.updatedAt) %></a>
-                    <a href="#" onclick="copyToClipboard('<%= notice.translations.en?.final.join(' ') %>')">📋</a><br>
-                    <%= notice.translations.en?.finalSavedBy ? notice.translations.en.finalSavedBy : '' %>
-                </td>
-                <td>
-                    <a href="/notices/<%= notice.shortId %>?lang=vi" class="link-secondary"><%= getStatus(notice.translations.vi?.finalSavedAt, notice.updatedAt) %></a>
-                    <a href="#" onclick="copyToClipboard('<%= notice.translations.vi?.final.join(' ') %>')">📋</a><br>
-                    <%= notice.translations.vi?.finalSavedBy ? notice.translations.vi.finalSavedBy : '' %>
-                </td>
-                <td>
-                    <a href="/notices/edit/<%= notice._id %>" class="btn btn-warning btn-sm">수정</a>
-                    <form action="/notices/delete/<%= notice._id %>" method="POST" style="display:inline;">
-                        <button type="submit" class="btn btn-danger btn-sm">삭제</button>
-                    </form>
-                </td>
-              </tr>
-            <% }) %>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</div>
+            <h1 class="mt-4 text-center">안내문 목록</h1>
+            <div class="mb-4 text-end">
+                <a href="/notices/new" class="btn btn-primary">새 안내문 작성</a>
+            </div>
+                <% 
+                const getStatus = (finalSavedAt, updatedAt) => {
+                    if (!finalSavedAt) return '<i class="bi bi-dash-circle-fill text-danger"></i>'; // 조건 1: finalSavedAt이 빈값
+                    if (updatedAt && finalSavedAt < updatedAt) return '<i class="bi bi-clock-fill text-warning"></i>'; // 조건 2: finalSavedAt < updatedAt
+                    return '<i class="bi bi-check-circle-fill text-success"></i>'; // 조건 3: finalSavedAt > updatedAt 또는 updatedAt이 빈값
+                };
+                %>
+                <% notices.forEach((notice, index) => { %>
+                  <div class="border p-3 rounded-2 mb-3">
+                        <div class="row">
+                            <div class="col-12 col-md-6"> <!-- PC에서는 왼쪽, 모바일에서는 위쪽 -->
+                                <h5 class="mb-3">
+                                    <a href="/notices/translate/<%= notice._id %>" class="text-decoration-none"><%= notice.title %></a>
+                                    <a href="/notices/<%= notice.shortId %>?lang=ko" class="text-decoration-none">🔗</a>
+                                </h5>
+                                <div class="mb-3">
+                                    <div class="small">작성 : <strong><%= notice.createdBy ? notice.createdBy : '' %></strong>(<%= notice.createdAt.toLocaleString() %>)</div>
+                                    
+                                    <% if (notice.updatedAt) { %>
+                                        <div class="small mt-1">수정 : <strong><%= notice.updatedBy ? notice.updatedBy : '' %></strong>(<%= notice.updatedAt.toLocaleString() %>)</div>
+                                    <% } %>
+                                </div>
+                              
+                                <% 
+                                const languages = [
+                                    { lang: 'sc', name: '중국어 간체' },
+                                    { lang: 'tc', name: '중국어 번체' },
+                                    { lang: 'jp', name: '일본어' },
+                                    { lang: 'en', name: '영어' },
+                                    { lang: 'vi', name: '베트남어' }
+                                ];
+                                %>
+                                <% languages.forEach(language => { %>
+                                    <div class="my-1 p-0">
+                                        <a href="#" onclick="copyToClipboard('<%= notice.translations[language.lang]?.final.join(' ') %>')" class="text-decoration-none small">
+                                            <%- getStatus(notice.translations[language.lang]?.finalSavedAt, notice.updatedAt) %>
+                                        </a>
+                                        <span></span>
+                                        <span class="small fw-bold" style="width: 70px;"><%= language.name %></span>
+                                        <% if (notice.translations[language.lang]?.finalSavedAt) { %>
+                                            <span class="small">
+                                                <%= notice.translations[language.lang]?.finalSavedBy ? notice.translations[language.lang].finalSavedBy : '' %>
+                                                (<%= notice.translations[language.lang]?.finalSavedAt ? notice.translations[language.lang].finalSavedAt.toLocaleString() : '' %>)
+                                            </span>
+                                        <% } %>
+                                    </div>
+                                <% }) %>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-<script>
-    document.documentElement.dataset.lang = '<%= lang %>';
-</script>
-<script src="/js/lang.js"></script> 
+                                <div class="col-12 text-end">
+                                    <a href="/notices/edit/<%= notice._id %>" class="btn btn-outline-secondary btn-sm">수정</a>
+                                    <form action="/notices/delete/<%= notice._id %>" method="POST" style="display:inline;">
+                                        <button type="submit" class="btn btn-danger btn-sm">삭제</button>
+                                    </form>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6 d-flex flex-column align-items-start"> <!-- PC에서는 오른쪽, 모바일에서는 아래쪽 -->
+                              <a href="#" class="text-decoration-none toggle-link d-md-none w-100 text-center" id="toggleContentLink<%= index %>" onclick="toggleContent(event, <%= index %>)"><i class="bi bi-caret-down-fill text-black"></i></a>
+                              <div id="content<%= index %>" class="small bg-white border rounded-2 content d-none d-md-block p-2 w-100 overflow-auto" style="max-height: 240px;"> <!-- 고유한 ID 사용 -->
+                                  <%- notice.content %>
+                              </div>
+                          </div>
+                        </div>
+                      </div>
+                <% }) %>
+        </div>
+    </div>
 
-  <script>
-    function copyToClipboard(text) {
-        if (text.trim().length > 0) {
-            const textarea = document.createElement('textarea');
-            textarea.value = text;
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textarea);
-            alert('클립보드에 복사되었습니다!');
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script>
+        document.documentElement.dataset.lang = '<%= lang %>';
+    </script>
+    <script src="/js/lang.js"></script> 
+
+    <script>
+        function copyToClipboard(text) {
+            if (text.trim().length > 0) {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                alert('클립보드에 복사되었습니다!');
+            }
         }
-    }
-  </script>
+
+        // 모바일 화면에서 미리보기 토글 처리
+        function toggleContent(event, index) {
+            event.preventDefault(); // 링크 클릭 시 기본 동작 방지
+            const contentDiv = document.getElementById(`content${index}`); // 인덱스를 사용하여 고유한 ID 선택
+            const link = document.getElementById(`toggleContentLink${index}`); // 인덱스를 사용하여 고유한 ID 선택
+
+            if (contentDiv.classList.contains('d-none')) {
+                contentDiv.classList.remove('d-none'); // 내용 보이기
+                link.innerHTML = '<i class="bi bi-caret-up-fill text-black"></i>'; // 링크 텍스트 변경
+            } else {
+                contentDiv.classList.add('d-none'); // 내용 숨기기
+                link.innerHTML = '<i class="bi bi-caret-down-fill text-black"></i>'; // 링크 텍스트 원래대로
+            }
+        }
+        </script>
 </body>
 </html>

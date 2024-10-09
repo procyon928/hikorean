@@ -7,6 +7,24 @@ const { Parser } = require('htmlparser2');
 const app = express();
 app.use(express.json());
 
+async function generateRandomShortId() {
+  const characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  let result;
+  let exists = true;
+
+  while (exists) {
+      result = '';
+      for (let i = 0; i < 3; i++) {
+          result += characters.charAt(Math.floor(Math.random() * characters.length));
+      }
+      // 짧은 ID가 이미 존재하는지 확인
+      const existingNotice = await Notice.findOne({ shortId: result });
+      exists = !!existingNotice; // 존재하면 true, 존재하지 않으면 false
+  }
+  
+  return result; // 고유한 짧은 ID 반환
+}
+
 // 안내문 목록 조회
 router.get('/admin/notices', isAdmin, async (req, res) => {
     const notices = await Notice.find().sort({ createdAt: -1 });
@@ -20,8 +38,11 @@ router.get('/notices/new', isAdmin, (req, res) => {
 
 // 안내문 작성
 router.post('/notices', isAdmin, async (req, res) => {
-    const { title, content, shortId } = req.body;
+    const { title, content } = req.body; // shortId는 여기서 제거
     const username = req.user.username;
+
+    // 짧은 ID 생성
+    const shortId = await generateRandomShortId();
 
     const notice = new Notice({ title, content, shortId, createdBy: username });
     await notice.save();
@@ -134,9 +155,20 @@ router.post('/notices/edit/:id', isAdmin, async (req, res) => {
 // 안내문 삭제
 router.post('/notices/delete/:id', isAdmin, async (req, res) => {
   const { id } = req.params;
-  await Notice.findByIdAndDelete(id);
-  res.redirect('/notices');
+
+  try {
+      const notice = await Notice.findByIdAndDelete(id);
+      if (!notice) {
+          return res.status(404).send('안내문을 찾을 수 없습니다.');
+      }
+
+      res.redirect('/notices');
+  } catch (error) {
+      console.error('안내문 삭제 중 오류 발생:', error.message);
+      res.status(500).send('안내문 삭제 중 오류가 발생했습니다.');
+  }
 });
+
 
 // 스타일 적용 함수 (서버 측)
 function applyStyles(text) {
