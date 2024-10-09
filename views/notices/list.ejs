@@ -19,7 +19,7 @@
     
     <div class="container-fluid p-0" style="max-width: 960px; margin-bottom: 100px;">
         <div class="content-wrapper p-3">
-            <h1 class="mt-4 text-center">안내문 목록</h1>
+            <h2 class="mt-4 text-left">안내문 목록</h2>
             <div class="mb-4 text-end">
                 <a href="/notices/new" class="btn btn-primary">새 안내문 작성</a>
             </div>
@@ -71,8 +71,8 @@
                                     </div>
                                 <% }) %>
 
-                                <div class="col-12 text-end">
-                                    <a href="/notices/edit/<%= notice._id %>" class="btn btn-outline-secondary btn-sm">수정</a>
+                                <div class="col-12 text-end mt-2">
+                                    <a href="/notices/edit/<%= notice._id %>" class="btn btn-outline-secondary btn-sm me-1">수정</a>
                                     <form action="/notices/delete/<%= notice._id %>" method="POST" style="display:inline;">
                                         <button type="submit" class="btn btn-danger btn-sm">삭제</button>
                                     </form>

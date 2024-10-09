@@ -186,7 +186,7 @@ router.post('/notices/delete/:id', isAdmin, async (req, res) => {
 
 // 스타일 적용 함수 (서버 측)
 function applyStyles(text) {
-    text = text.replace(/\*(.*?)\*/g, '<strong>$1</strong>');
+    text = text.replace(/\$(.*?)\$/g, '<strong>$1</strong>');
     text = text.replace(/_(.*?)_/g, '<u>$1</u>');
     text = text.replace(/\`(.*?)\`/g, '<span style="color: #FF1744;">$1</span>');
     text = text.replace(/\[(.*?)\]/g, '<span style="background-color: #FBF595;">&nbsp;$1&nbsp;</span>');

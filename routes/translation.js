@@ -49,7 +49,7 @@ router.get('/notices/translate/:id', isAdmin, async (req, res) => {
   const microsoftTranslations = [];
   const deeplTranslations = [];
   const targetLang = req.query.lang || ''; // 선택된 언어를 쿼리에서 가져오기
-  const finalTranslations = notice.translations[targetLang]?.final || [];
+  const finalTranslations = [];
 
   // styledContent 생성
   const styledContent = applyStyles(notice.translations[targetLang]?.translatedContent || notice.content);
@@ -212,14 +212,26 @@ router.post('/notices/translate/save/:id', isAdmin, async (req, res) => {
       const finalTranslationString = parseAndReplaceText(notice.content, finalTranslations);
       console.log('최종 번역 문자열:', finalTranslationString);
 
-      // 조건 확인: 'sc' 언어와 'tc'의 translatedContent가 비어있을 때
-      if (lang === 'sc' && !notice.translations.tc.translatedContent) {
-          const tcTranslations = await Promise.all(finalTranslations.map(line => translateWithGoogle(line, 'zh-TW'))); // 번체로 변환
-          const tcFinalTranslationString = parseAndReplaceText(notice.content, tcTranslations);
+      // 조건 확인: 'sc' 언어와 'tc'의 번체 번역을 업데이트
+      if (lang === 'sc') {
+        const finalSavedAt = notice.translations.tc?.finalSavedAt; // 번체 번역 저장 시간
+        const noticeUpdatedAt = notice.updatedAt; // 한국어 내용 수정 시간
 
-          // 'tc' 번체 DB 업데이트
-          notice.translations.tc.translatedContent = tcFinalTranslationString;
+        // 간체 번역 저장 후, 번체 번역도 업데이트할 조건
+        if (!finalSavedAt || noticeUpdatedAt > finalSavedAt) {
+            const tcTranslations = await Promise.all(finalTranslations.map(line => translateWithGoogle(line, 'zh-TW'))); // 번체로 변환
+            const tcFinalTranslationString = parseAndReplaceText(notice.content, tcTranslations);
+
+            // 'tc' 번체 DB 업데이트
+            notice.translations.tc = {
+                ...notice.translations.tc,
+                translatedContent: tcFinalTranslationString,
+                finalSavedAt: new Date(), // 현재 시간 저장
+                finalSavedBy: username // 저장한 사용자
+            };
+        }
       }
+
 
       // Notice 업데이트
       notice.title = title;
