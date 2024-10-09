@@ -104,8 +104,8 @@
           const endDate = new Date(endDateInput.value);
 
           // 한국 시간(KST)을 UTC로 변환
-          startDateInput.value = new Date(startDate.getTime() - (9 * 60 * 60 * 1000)).toISOString();
-          endDateInput.value = new Date(endDate.getTime() - (9 * 60 * 60 * 1000)).toISOString();
+          startDateInput.value = new Date(startDate.getTime() + (9 * 60 * 60 * 1000)).toISOString();
+          endDateInput.value = new Date(endDate.getTime() + (9 * 60 * 60 * 1000)).toISOString();
       });
 
       function removeOption(button) {
