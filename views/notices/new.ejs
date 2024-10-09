@@ -127,15 +127,38 @@ $(document).ready(function() {
         }
     });
 
-    $('form').on('submit', function(e) {
-        const content = $('#content');
-        content.val($('#editor').summernote('code')); // 에디터 내용을 hidden input에 저장
-        
-        const shortIdInput = $(this).find('input[name="shortId"]');
-        if (!shortIdInput.val()) {
-            shortIdInput.val(generateRandomShortId()); // 비어있으면 랜덤 ID 생성
+    $('form').on('submit', async function(e) {
+        e.preventDefault(); // 기본 제출 방지
+        const formData = $(this).serialize(); // 폼 데이터 직렬화
+
+        // 짧은 ID 생성 요청
+        try {
+            const response = await fetch('/notices/generate-short-id', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({}) // 필요에 따라 추가 데이터 전송
+            });
+            
+            const data = await response.json();
+            if (response.ok) {
+                // 짧은 ID 생성 성공
+                const shortIdInput = $(this).find('input[name="shortId"]');
+                shortIdInput.val(data.shortId); // 생성된 짧은 ID 입력
+                const content = $('#content');
+                content.val($('#editor').summernote('code')); // 에디터 내용을 hidden input에 저장
+                this.submit(); // 폼 제출
+            } else {
+                // 짧은 ID 생성 실패
+                alert(data.message || '짧은 ID 생성 중 오류가 발생했습니다.'); // 메시지 표시
+            }
+        } catch (error) {
+            console.error('AJAX 요청 오류:', error);
+            alert('서버 오류가 발생했습니다.');
         }
     });
+  });
   </script>
 </body>
 </html>

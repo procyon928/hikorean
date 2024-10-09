@@ -8,7 +8,7 @@ const app = express();
 app.use(express.json());
 
 async function generateRandomShortId() {
-  const characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  const characters = 'abcdefghijklmnopqrstuvwxyz';
   let result;
   let exists = true;
 
@@ -21,9 +21,20 @@ async function generateRandomShortId() {
       const existingNotice = await Notice.findOne({ shortId: result });
       exists = !!existingNotice; // 존재하면 true, 존재하지 않으면 false
   }
-  
+
   return result; // 고유한 짧은 ID 반환
 }
+
+// 짧은 ID 생성 요청 처리
+router.post('/notices/generate-short-id', isAdmin, async (req, res) => {
+  try {
+      const shortId = await generateRandomShortId();
+      res.json({ shortId }); // 생성된 짧은 ID 반환
+  } catch (error) {
+      console.error('짧은 ID 생성 중 오류 발생:', error);
+      res.status(500).json({ message: '짧은 ID 생성 중 오류가 발생했습니다.' });
+  }
+});
 
 // 안내문 목록 조회
 router.get('/admin/notices', isAdmin, async (req, res) => {
@@ -38,15 +49,18 @@ router.get('/notices/new', isAdmin, (req, res) => {
 
 // 안내문 작성
 router.post('/notices', isAdmin, async (req, res) => {
-    const { title, content } = req.body; // shortId는 여기서 제거
-    const username = req.user.username;
+  const { title, content } = req.body;
+  const username = req.user.username;
 
-    // 짧은 ID 생성
-    const shortId = await generateRandomShortId();
+  // 짧은 ID 생성 요청
+  const shortId = await generateRandomShortId();
+  if (!shortId) {
+      return res.status(400).json({ message: '짧은 ID 생성 중 오류가 발생했습니다.' });
+  }
 
-    const notice = new Notice({ title, content, shortId, createdBy: username });
-    await notice.save();
-    res.redirect('/notices');
+  const notice = new Notice({ title, content, shortId, createdBy: username });
+  await notice.save();
+  res.redirect('/admin/notices');
 });
 
 // 안내문 수정 페이지
@@ -144,7 +158,7 @@ router.post('/notices/edit/:id', isAdmin, async (req, res) => {
           return res.status(500).send('안내문 업데이트에 실패했습니다.');
       }
 
-      res.redirect('/notices');
+      res.redirect('/admin/notices');
   } catch (error) {
       console.error('안내문 수정 중 오류:', error);
       res.status(500).send('서버 오류가 발생했습니다.');
@@ -162,7 +176,7 @@ router.post('/notices/delete/:id', isAdmin, async (req, res) => {
           return res.status(404).send('안내문을 찾을 수 없습니다.');
       }
 
-      res.redirect('/notices');
+      res.redirect('/admin/notices');
   } catch (error) {
       console.error('안내문 삭제 중 오류 발생:', error.message);
       res.status(500).send('안내문 삭제 중 오류가 발생했습니다.');

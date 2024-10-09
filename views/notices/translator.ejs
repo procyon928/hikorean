@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>번역</title>
+    <title>번역기</title>
     <meta name="theme-color" content="#254B7A"> <!-- Android Chrome -->
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"> <!-- iOS Safari -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
@@ -15,17 +15,16 @@
       .popup {
           display: none;
           position: fixed;
-          left: calc(50% + 150px); /* 중앙에서 왼쪽으로 200px 이동 */
-          top: 50%;
-          transform: translate(-50%, -50%);
+          left: 100px;
+          bottom: 0px;
+          transform: translate(0, 0); /* 변환 제거 */
           background: white;
           border: 1px solid #ccc;
           padding: 20px;
           z-index: 1000;
-          width: 80%; /* 모바일 화면에서 80% */
+          width: 20%; /* PC 화면에서 20% */
           max-height: 80%;
           overflow-y: auto;
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
       }
       .popup-overlay {
           display: none;
@@ -44,7 +43,7 @@
       /* 브라우저 이미지 스타일 */
       .browser-icon {
           position: fixed;
-          left: 280px;
+          left: 30px;
           bottom: 30px;
           cursor: pointer;
           z-index: 998; /* 팝업보다 위에 표시 */
@@ -55,102 +54,120 @@
     <%- include('../partials/navbar') %> 
     <%- include('../partials/bottom-navbar') %>
     <%- include('../partials/managebar') %>
+    
+    <div class="container-fluid p-0" style="max-width: 960px; margin-bottom: 100px;">
+        <div class="content-wrapper p-3">
 
-    <div class="container-fluid p-0" style="max-width: 960px; margin: 0 auto; margin-bottom: 100px;">
-      <div class="content-wrapper p-3">
-        <h3 class="mb-4"><%= notice.title %> 번역</h3>
+    <h1><%= notice.title %> 번역</h1>
+    
+    <a href="/notices">리스트로 돌아가기</a>
 
-        <div class="browser-icon" id="browserIcon">
-            <img src="/browser.png" alt="브라우저 아이콘" style="width: 50px; height: 50px;">
-        </div>
-
-        <div class="popup-overlay" id="popupOverlay"></div>
-        <div class="popup" id="popup">
-            <span class="close-btn" id="closePopup">닫기</span>
-            <h2 class="mt-2"><%= notice.title %></h2>
-            <div><%- styledContent %></div>
-        </div>
-
-        <form action="/notices/translate/<%= notice._id %>" method="POST" class="mb-4">
-            <label for="targetLang">목표 언어 선택:</label>
-            <select id="targetLang" name="targetLang" class="form-select" required>
-              <option value="" disabled selected>언어 선택</option>
-              <% const lang = typeof targetLang !== 'undefined' ? targetLang : ''; %>
-              <option value="en" <%= targetLang === 'en' ? 'selected' : '' %>>영어</option>
-              <option value="jp" <%= targetLang === 'jp' ? 'selected' : '' %>>일본어</option>
-              <option value="tc" <%= targetLang === 'tc' ? 'selected' : '' %>>중국어(번체)</option>
-              <option value="sc" <%= targetLang === 'sc' ? 'selected' : '' %>>중국어(간체)</option>
-              <option value="vi" <%= targetLang === 'vi' ? 'selected' : '' %>>베트남어</option>
-            </select>
-            <button type="submit" class="btn btn-primary mt-2">번역</button>
-        </form>
-        
-        <% if (lines && lines.length > 0) { %>
-          <form action="/notices/translate/save/<%= notice._id %>" method="POST">
-              <input type="hidden" name="title" value="<%= notice.title %>">
-              <input type="hidden" name="content" value="<%= notice.content %>">
-              <input type="hidden" name="lang" value="<%= targetLang %>">
-
-              <div class="button-container mb-3">
-                  <button type="submit" class="btn btn-success">저장</button>
-                  <button type="button" class="btn btn-secondary" onclick="resetInputs()">입력 초기화</button>
-                  <button type="button" class="btn btn-info" onclick="loadFinalTranslations()">최종 번역 불러오기</button>
-              </div>
-
-              <% for (let i = 0; i < lines.length; i++) { %>
-                  <div class="translation-pair mb-3">
-                      <div class="original p-2" style="<%= finalTranslations[i] === '' ? 'background-color: #FFCCCC;' : '' %>">
-                          <img src="/korean.png" alt="한국어 원문" style="width: 20px; height: 20px;"> <%= lines[i] %>
-                      </div>
-                      <div class="google-translation" onclick="setFinalTranslation(<%= i %>, '<%= googleTranslations[i] %>', event)">
-                          <img src="/google.png" alt="구글 번역" style="width: 20px; height: 20px;">
-                          <span onclick="event.stopPropagation();"><%= googleTranslations[i] %></span>
-                      </div>
-                      <div class="microsoft-translation" onclick="setFinalTranslation(<%= i %>, '<%= microsoftTranslations[i] %>', event)">
-                          <img src="/microsoft.png" alt="마이크로소프트 번역" style="width: 20px; height: 20px;">
-                          <span onclick="event.stopPropagation();"><%= microsoftTranslations[i] %></span>
-                      </div>
-                      <div class="deepl-translation" onclick="setFinalTranslation(<%= i %>, '<%= deeplTranslations[i] %>', event)">
-                          <img src="/deepl.png" alt="DeepL 번역" style="width: 20px; height: 20px;">
-                          <span onclick="event.stopPropagation();"><%= deeplTranslations[i] || ' ' %></span>
-                      </div>                 
-                      <div class="final-translation">
-                        <label for="finalTranslation<%= i %>">최종 번역:</label>
-                        <textarea id="finalTranslation<%= i %>" name="finalTranslations[<%= i %>]" required class="form-control" style="width: 100%; box-sizing: border-box;"><%= finalTranslations[i] || '' %></textarea>
-                      </div>                
-                  </div>
-                  <hr>
-              <% } %>
-          </form>
-        <% } else { %>
-          <p class="text-danger">번역할 내용이 없습니다.</p>
-        <% } %>
-      </div>
+    <div class="browser-icon" id="browserIcon">
+        <img src="/browser.png" alt="브라우저 아이콘" style="width: 50px; height: 50px;">
     </div>
 
-    <!-- 모달 HTML 추가 -->
-    <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-          <div class="modal-content">
-              <div class="modal-header">
-                  <h5 class="modal-title" id="successModalLabel">저장 완료</h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-              </div>
-              <div class="modal-body">
-                  저장이 완료되었습니다.
-              </div>
-              <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-              </div>
+    <div class="popup-overlay" id="popupOverlay"></div>
+    <div class="popup" id="popup">
+        <span class="close-btn" id="closePopup">닫기</span>
+        <h2><%= notice.title %></h2>
+        <div><%- styledContent %></div>
+    </div>
+
+    <form action="/notices/translate/<%= notice._id %>" method="POST">
+        <label for="targetLang">목표 언어 선택:</label>
+        <select id="targetLang" name="targetLang" required>
+          <option value="" disabled selected>언어 선택</option>
+          <% const lang = typeof targetLang !== 'undefined' ? targetLang : ''; %>
+          <option value="en" <%= targetLang === 'en' ? 'selected' : '' %>>영어</option>
+          <option value="jp" <%= targetLang === 'jp' ? 'selected' : '' %>>일본어</option>
+          <option value="tc" <%= targetLang === 'tc' ? 'selected' : '' %>>중국어(번체)</option>
+          <option value="sc" <%= targetLang === 'sc' ? 'selected' : '' %>>중국어(간체)</option>
+          <option value="vi" <%= targetLang === 'vi' ? 'selected' : '' %>>베트남어</option>
+        </select>
+        <button type="submit">번역</button>
+    </form>
+    
+    <% if (lines && lines.length > 0) { %>
+      <form action="/notices/translate/save/<%= notice._id %>" method="POST">
+          <input type="hidden" name="title" value="<%= notice.title %>">
+          <input type="hidden" name="content" value="<%= notice.content %>">
+          <input type="hidden" name="lang" value="<%= targetLang %>">
+          
+          <div class="button-container">
+              <button type="submit">저장</button>
+              <button type="button" onclick="resetInputs()">입력 초기화</button>
+              <button type="button" onclick="loadFinalTranslations()">최종 번역 불러오기</button>
           </div>
+
+          <% for (let i = 0; i < lines.length; i++) { %>
+              <div class="translation-pair">
+                  <div class="original" style="<%= finalTranslations[i] === '' ? 'background-color: #FFCCCC;' : '' %>">
+                      <img src="/korean.png" alt="한국어 원문" style="width: 20px; height: 20px;"> <%= lines[i] %>
+                  </div>
+                  <div class="google-translation" onclick="setFinalTranslation(<%= i %>, '<%= googleTranslations[i] %>', event)">
+                      <img src="/google.png" alt="구글 번역" style="width: 20px; height: 20px;">
+                      <span onclick="event.stopPropagation();"><%= googleTranslations[i] %></span>
+                  </div>
+                  <div class="microsoft-translation" onclick="setFinalTranslation(<%= i %>, '<%= microsoftTranslations[i] %>', event)">
+                      <img src="/microsoft.png" alt="마이크로소프트 번역" style="width: 20px; height: 20px;">
+                      <span onclick="event.stopPropagation();"><%= microsoftTranslations[i] %></span>
+                  </div>
+                  <div class="deepl-translation" onclick="setFinalTranslation(<%= i %>, '<%= deeplTranslations[i] %>', event)">
+                      <img src="/deepl.png" alt="DeepL 번역" style="width: 20px; height: 20px;">
+                      <span onclick="event.stopPropagation();"><%= deeplTranslations[i] || ' ' %></span>
+                  </div>                 
+                  <div class="final-translation">
+                    <label for="finalTranslation<%= i %>">최종 번역:</label>
+                    <textarea id="finalTranslation<%= i %>" name="finalTranslations[<%= i %>]" required style="width: 100%; box-sizing: border-box;"><%= finalTranslations[i] || '' %></textarea>
+                  </div>                
+              </div>
+              <hr>
+          <% } %>
+      </form>
+    <% } else { %>
+      <p>번역할 내용이 없습니다.</p>
+    <% } %>
+
+  </div>
+</div>
+
+<!-- 모달 HTML 추가 -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="successModalLabel">성공</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p id="modalMessage"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
       </div>
     </div>
+  </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-    <script>
-      document.documentElement.dataset.lang = '<%= lang %>';
-    </script>
-    <script src="/js/lang.js"></script> 
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // 서버에서 보낸 메시지가 있을 때 모달을 띄움
+    const message = '<%= success_msg ? success_msg : "" %>'; // success_msg로 변경
+    if (message) {
+      document.getElementById('modalMessage').textContent = message;
+      const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+      successModal.show();
+    }
+  });
+</script>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<script>
+    document.documentElement.dataset.lang = '<%= lang %>';
+</script>
+<script src="/js/lang.js"></script> 
 <script>
     function togglePopup(show) {
         const displayValue = show ? 'block' : 'none';
@@ -259,30 +276,6 @@
             textarea.value = finalTranslations[index] || ''; // 최종 번역 값 설정
         });
     }
-
-    // 저장 버튼 클릭 시 AJAX 요청
-    document.querySelector('form[action="/notices/translate/save/<%= notice._id %>"]').addEventListener('submit', async function(e) {
-        e.preventDefault(); // 기본 제출 방지
-        const formData = new FormData(this);
-        
-        try {
-            const response = await fetch(this.action, {
-                method: 'POST',
-                body: formData
-            });
-            
-            if (response.ok) {
-                // 모달 표시
-                const modal = new bootstrap.Modal(document.getElementById('successModal'));
-                modal.show();
-            } else {
-                const errorText = await response.text();
-                alert('오류 발생: ' + errorText);
-            }
-        } catch (error) {
-            console.error('저장 오류:', error);
-        }
-    });
   </script>
   
 </body>

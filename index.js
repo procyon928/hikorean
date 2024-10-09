@@ -127,6 +127,13 @@ passport.deserializeUser(async (id, done) => {
 // Flash 미들웨어 설정
 app.use(flash());
 
+// 플래시 메시지를 EJS로 전달하기 위한 미들웨어
+app.use((req, res, next) => {
+  res.locals.success_msg = req.flash('success_msg');
+  res.locals.error_msg = req.flash('error_msg');
+  next();
+});
+
 // 라우터 설정
 app.use(authRoutes); // auth.js 라우터를 사용
 app.use(accountRoutes); // account.js 라우터를 사용 (추가됨)
