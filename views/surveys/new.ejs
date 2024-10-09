@@ -95,6 +95,19 @@
           dateFormat: "Y-m-d H:i",
       });
 
+      // KST로 저장되는 값에서 9시간을 뺀 UTC로 db에 저장하는 과정
+      document.querySelector('form').addEventListener('submit', function(event) {
+          const startDateInput = document.getElementById('startDate');
+          const endDateInput = document.getElementById('endDate');
+
+          const startDate = new Date(startDateInput.value);
+          const endDate = new Date(endDateInput.value);
+
+          // 한국 시간(KST)을 UTC로 변환
+          startDateInput.value = new Date(startDate.getTime() - (9 * 60 * 60 * 1000)).toISOString();
+          endDateInput.value = new Date(endDate.getTime() - (9 * 60 * 60 * 1000)).toISOString();
+      });
+
       function removeOption(button) {
           const optionDiv = button.parentElement;
           optionDiv.remove(); // 해당 선택지 삭제
