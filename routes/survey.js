@@ -1,7 +1,6 @@
 const express = require('express');
 const Survey = require('../models/Survey');
 const Response = require('../models/Response');
-const { convertToKST } = require('../utils/dateUtils');
 const { ensureAuthenticated, isAdmin } = require('../middleware/auth');
 
 const router = express.Router();
@@ -180,6 +179,12 @@ router.get('/surveys/:id/respond', async (req, res) => {
 
   let message = null;
 
+  // 현재 시간을 시작 시간으로 설정
+  const startedAt = new Date();
+  
+  // startedAt 값을 콘솔에 출력
+  console.log("Started At:", startedAt.toISOString()); // ISO 형식으로 출력
+
   // 시작 날짜와 종료 날짜 확인
   if (survey.startDate || survey.endDate) {
     const startDate = survey.startDate ? new Date(survey.startDate) : null;
@@ -193,11 +198,8 @@ router.get('/surveys/:id/respond', async (req, res) => {
     }
   }
 
-  // 현재 시간을 시작 시간으로 설정
-  const startedAt = new Date();
-
   // 설문조사 응답 페이지 렌더링
-  res.render('surveys/respond', { survey, startedAt, message, convertToKST });
+  res.render('surveys/respond', { survey, startedAt, message });
 });
 
 router.get('/surveys/:id/countResponses', async (req, res) => {
