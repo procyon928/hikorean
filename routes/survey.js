@@ -65,8 +65,8 @@ router.post('/surveys', isAdmin, async (req, res) => {
   const survey = new Survey({
       title,
       questions: formattedQuestions,
-      startDate: startDate ? convertToKST(startDate, 'YYYY-MM-DDTHH:mm:ssZ') : null, // 비어있으면 null로 설정
-      endDate: endDate ? convertToKST(endDate, 'YYYY-MM-DDTHH:mm:ssZ') : null, // 비어있으면 null로 설정
+      startDate: startDate ? new Date(startDate) : null, // 비어있으면 null로 설정
+      endDate: endDate ? new Date(endDate) : null, // 비어있으면 null로 설정
       createdBy: req.user._id
   });
   await survey.save();
