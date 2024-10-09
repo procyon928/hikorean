@@ -120,6 +120,12 @@
                             <label for="maxParticipants<%= index %>">시간당 최대 예약 가능 인원:</label>
                             <input type="number" id="maxParticipants<%= index %>" name="questions[<%= index %>][time_reservation][maxParticipants]" class="form-control" value="<%= question.time_reservation.maxParticipants || '' %>" min="1">
                         </div>
+
+                        <!-- infoText 수정 필드 추가 -->
+                        <div class="info" style="<%= question.questionType === 'info' ? 'block' : 'none' %>">
+                            <label class="form-label">안내문:</label>
+                            <textarea class="form-control mb-2" name="questions[<%= index %>][infoText]" rows="4" placeholder="안내문 입력"><%= question.infoText %></textarea>
+                        </div>
                     </div>
                     <% }); %>
                 </div>

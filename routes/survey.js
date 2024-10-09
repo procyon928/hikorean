@@ -8,7 +8,7 @@ const router = express.Router();
 
 // 설문조사 목록 페이지
 router.get('/admin/surveys', ensureAuthenticated, async (req, res) => {
-    const surveys = await Survey.find().populate('createdBy', 'username');
+    const surveys = await Survey.find().populate('createdBy', 'username').sort({ createdAt: -1 });
     res.render('surveys/list', { surveys });
 });
 
@@ -65,8 +65,8 @@ router.post('/surveys', isAdmin, async (req, res) => {
   const survey = new Survey({
       title,
       questions: formattedQuestions,
-      startDate: startDate ? new Date(startDate) : null, // 비어있으면 null로 설정
-      endDate: endDate ? new Date(endDate) : null, // 비어있으면 null로 설정
+      startDate: startDate ? convertToKST(startDate, 'YYYY-MM-DDTHH:mm:ssZ') : null, // 비어있으면 null로 설정
+      endDate: endDate ? convertToKST(endDate, 'YYYY-MM-DDTHH:mm:ssZ') : null, // 비어있으면 null로 설정
       createdBy: req.user._id
   });
   await survey.save();
@@ -174,7 +174,7 @@ router.post('/surveys/:id/respond', async (req, res) => {
 });
 
 // 설문조사 응답 페이지
-router.get('/surveys/:id/respond', ensureAuthenticated, async (req, res) => {
+router.get('/surveys/:id/respond', async (req, res) => {
   const survey = await Survey.findById(req.params.id);
   const now = new Date();
 
@@ -197,7 +197,7 @@ router.get('/surveys/:id/respond', ensureAuthenticated, async (req, res) => {
   const startedAt = new Date();
 
   // 설문조사 응답 페이지 렌더링
-  res.render('surveys/respond', { survey, startedAt, message });
+  res.render('surveys/respond', { survey, startedAt, message, convertToKST });
 });
 
 router.get('/surveys/:id/countResponses', async (req, res) => {

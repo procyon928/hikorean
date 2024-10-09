@@ -23,26 +23,50 @@
       <div class="card-body">
         <ul class="list-group">
           <% surveys.forEach(function(survey) { %>
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-              <div>
-                <a href="/surveys/<%= survey._id %>/respond" class="list-group-item-action"><%= survey.title %></a>
-                <a href="/surveys/<%= survey._id %>/results" class="btn btn-link">결과 보기</a>
+            <li class="list-group-item d-flex flex-column flex-sm-row">
+              <div class="me-auto d-flex align-items-center my-1"> <!-- 왼쪽 정렬 -->
+                <a href="/surveys/<%= survey._id %>/respond" class="list-group-item-action fw-bold"><%= survey.title %></a>
+                <a href="/surveys/<%= survey._id %>/results" class="ms-2 text-nowrap text-decoration-none small">결과 보기</a>
               </div>
-              <div>
-                <a href="/surveys/<%= survey._id %>/edit" class="btn btn-outline-secondary btn-sm">수정</a>
-                <form action="/surveys/<%= survey._id %>/clone" method="POST" style="display:inline;">
-                    <button type="submit" class="btn btn-outline-primary btn-sm">복제</button>
-                </form>
-                <form action="/surveys/<%= survey._id %>/delete" method="POST" style="display:inline;">
-                    <button type="submit" class="btn btn-danger btn-sm">삭제</button>
-                </form>
+              <div class="text-end"> <!-- 오른쪽 정렬 -->
+                <div class="d-flex justify-content-end"> <!-- 버튼들을 오른쪽 정렬 -->
+                  <a href="/surveys/<%= survey._id %>/edit" class="btn btn-outline-secondary btn-sm mx-1">수정</a>
+                  <form action="/surveys/<%= survey._id %>/clone" method="POST" style="display:inline;">
+                      <button type="submit" class="btn btn-outline-secondary btn-sm mx-1">복제</button>
+                  </form>
+                  <form action="/surveys/<%= survey._id %>/delete" method="POST" style="display:inline;">
+                      <button type="submit" class="btn btn-danger btn-sm mx-1">삭제</button>
+                  </form>
+                </div>
               </div>
             </li>
+            
+            
           <% }); %>
         </ul>
-        <a href="/surveys/new" class="btn btn-primary mt-3">새 설문조사 만들기</a>
+        <div class="text-start">
+            <a href="/surveys/new" class="btn btn-primary mt-3">새 설문조사 만들기</a>
+        </div>
       </div>
     </div>
+  </div>
+</div>
+
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="deleteModalLabel">삭제 확인</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              정말 삭제하시겠습니까?
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+              <button type="button" class="btn btn-danger" id="confirmDelete">삭제</button>
+          </div>
+      </div>
   </div>
 </div>
 
@@ -51,5 +75,30 @@
     document.documentElement.dataset.lang = '<%= lang %>';
 </script>
 <script src="/js/lang.js"></script> 
+<script>
+  let surveyIdToDelete;
+
+  // 삭제 버튼 클릭 시 모달 표시
+  document.querySelectorAll('.btn-danger').forEach(button => {
+      button.addEventListener('click', function (event) {
+          event.preventDefault(); // 기본 동작 방지
+          surveyIdToDelete = this.closest('form').action; // 삭제할 설문 ID 저장
+          const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+          deleteModal.show(); // 모달 보여주기
+      });
+  });
+
+  // 삭제 확인 버튼 클릭 시
+  document.getElementById('confirmDelete').addEventListener('click', function () {
+      if (surveyIdToDelete) {
+          // 폼 제출
+          const form = document.createElement('form');
+          form.action = surveyIdToDelete;
+          form.method = 'POST';
+          document.body.appendChild(form);
+          form.submit();
+      }
+  });
+</script>
 </body>
 </html>
