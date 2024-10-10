@@ -55,12 +55,12 @@ opacity: 1;
 
 blockquote {
   text-align: center; /* 가운데 정렬 */
-  border-radius: 10px; /* 둥근 사각형 */
+  border-radius: 6px; /* 둥근 사각형 */
   background-color: #007bff; /* 배경색 (예: 파란색) */
   color: white; /* 글자색 */
   font-weight: bold; /* 글자 굵게 */
-  padding: 10px;
-  margin: 20px 0; /* 상하 여백 */
+  padding: 6px;
+  margin: 10px 0 20px 0; /* 상하 여백 */
 }
 
 blockquote a {
@@ -113,3 +113,76 @@ blockquote a:hover {
   margin: 10px 0; /* 제목 간격 */
 }
 
+
+/* 제목 스타일 */
+.note-editable h1 {
+  font-size: 1.5rem; /* 40px */
+  margin: 20px 0; /* 위아래 여백 */
+}
+
+.note-editable h2 {
+  font-size: 1.25rem; /* 32px */
+  margin: 18px 0; /* 위아래 여백 */
+}
+
+.note-editable h3 {
+  margin: 0.5rem 0; /* 위아래 여백 */
+  line-height: 1.5; /* 줄 간격 */
+  margin-left: 1rem; /* 왼쪽 여백 */
+  font-size: 1rem; /* 28px */
+}
+
+.note-editable h4 {
+  margin: 0.5rem 0; /* 위아래 여백 */
+  line-height: 1.5; /* 줄 간격 */
+  margin-left: 1rem; /* 왼쪽 여백 */
+  font-size: 0.875rem; /* 작은 글씨 크기 */
+  font-weight: bold;
+}
+
+.note-editable h5 {
+  font-size: 0.75rem; /* 20px */
+  margin: 12px 0; /* 위아래 여백 */
+}
+
+/* 문단 스타일 */
+.note-editable p {
+  margin: 0.5rem 0; /* 위아래 여백 */
+  line-height: 1.5; /* 줄 간격 */
+  margin-left: 1rem; /* 왼쪽 여백 */
+  font-size: 0.875rem; /* 작은 글씨 크기 */
+}
+
+/* 리스트 스타일 */
+.note-editable ul {
+  margin: 0.5rem 0; /* 리스트 위아래 여백 */
+  padding-left: 1rem; /* 왼쪽 여백 */
+  list-style-type: square; /* 리스트 아이콘 모양 */
+}
+
+.note-editable li {
+  margin: 0.5rem 0; /* 리스트 항목의 위아래 여백 */
+  line-height: 1.5; /* 줄 간격 */
+  font-size: 0.875rem; /* 작은 글씨 크기 */
+}
+
+.note-editable ol {
+  margin: 0.5rem 0; /* 리스트 항목의 위아래 여백 */
+  line-height: 1.5; /* 줄 간격 */
+  font-size: 0.875rem; /* 작은 글씨 크기 */
+}
+
+/* 테이블 스타일 */
+.note-editable table {
+  width: 100%; /* 테이블 너비 */
+  border-collapse: collapse; /* 테이블 경계 합치기 */
+}
+
+.note-editable table, .note-editable th, .note-editable td {
+  border: 1px solid #dee2e6; /* 경계 색상 */
+}
+
+.note-editable th, .note-editable td {
+  padding: 0.3rem; /* 패딩 */
+  font-size: 0.875rem; /* 작은 글씨 크기 */
+}

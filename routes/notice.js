@@ -25,6 +25,11 @@ async function generateRandomShortId() {
   return result; // 고유한 짧은 ID 반환
 }
 
+// 본문 위험한 기호 제거
+function removeSpecialCharacters(content) {
+  return content.replace(/[\$`{}]/g, ''); // $, `, {, }를 제거
+}
+
 // 짧은 ID 생성 요청 처리
 router.post('/notices/generate-short-id', isAdmin, async (req, res) => {
   try {
@@ -52,13 +57,15 @@ router.post('/notices', isAdmin, async (req, res) => {
   const { title, content } = req.body;
   const username = req.user.username;
 
+  const sanitizedContent = removeSpecialCharacters(content);
+
   // 짧은 ID 생성 요청
   const shortId = await generateRandomShortId();
   if (!shortId) {
       return res.status(400).json({ message: '짧은 ID 생성 중 오류가 발생했습니다.' });
   }
 
-  const notice = new Notice({ title, content, shortId, createdBy: username });
+  const notice = new Notice({ title, content: sanitizedContent, shortId, createdBy: username });
   await notice.save();
   res.redirect('/admin/notices');
 });
@@ -100,6 +107,8 @@ router.post('/notices/edit/:id', isAdmin, async (req, res) => {
       if (!notice) {
           return res.status(404).send('안내문을 찾을 수 없습니다.');
       }
+
+      const sanitizedContent = removeSpecialCharacters(content);
       
       const originalLines = parseContentToLines(notice.content);
       const newLines = parseContentToLines(content);
@@ -147,7 +156,7 @@ router.post('/notices/edit/:id', isAdmin, async (req, res) => {
 
       // 업데이트
       notice.title = title;
-      notice.content = content;
+      notice.content = sanitizedContent;
       notice.shortId = shortId;
       notice.updatedAt = new Date();
       notice.updatedBy = username;
@@ -186,10 +195,27 @@ router.post('/notices/delete/:id', isAdmin, async (req, res) => {
 
 // 스타일 적용 함수 (서버 측)
 function applyStyles(text) {
-    text = text.replace(/\$(.*?)\$/g, '<strong>$1</strong>');
-    text = text.replace(/_(.*?)_/g, '<u>$1</u>');
-    text = text.replace(/\`(.*?)\`/g, '<span style="color: #FF1744;">$1</span>');
-    text = text.replace(/\[(.*?)\]/g, '<span style="background-color: #FBF595;">&nbsp;$1&nbsp;</span>');
+    text = text.replace(/\*\*(.*?)\*\*/g, '<span class="fw-bold">$1</span>');
+    text = text.replace(/__(.*?)__/g, '<span class="text-decoration-underline">$1</span>');
+    text = text.replace(/\#(.*?)\#/g, '<span class="text-danger">$1</span>'); //style="color: #FF1744;"
+    text = text.replace(/\[(.*?)\]/g, '<span class="bg-warning-subtle">&nbsp;$1&nbsp;</span>'); //style="background-color: #FBF595;"
+
+    // Bootstrap 클래스 추가
+    text = text.replace(/<h1\s*/g, '<h1 class="fs-3 fw-bold py-3 mt-3 mb-2 border-bottom" '); // 제목
+    text = text.replace(/<h2\s*/g, '<h2 class="fs-4 fw-bold py-2 mt-2 mb-1 border-bottom" '); // 부제목
+    text = text.replace(/<h3\s*/g, '<h3 class="fs-5 my-2" '); // 강조
+    text = text.replace(/<h4\s*/g, '<h4 class="fs-6 fw-bold pt-2 my-2" '); // 굵은 p
+    text = text.replace(/<h5\s*/g, '<h5 class="fs-6 small my-2" '); // 부연설명
+    text = text.replace(/<p\s*/g, '<p class="my-3 lh-base" '); // 기본 여백 추가
+    text = text.replace(/<ul\s*/g, '<ul class="my-2 ps-3 pt-1 ms-1" style="list-style-type:square;" ');
+    text = text.replace(/<li\s*/g, '<li class="my-2 lh-base" ');
+    text = text.replace(/<ol\s*/g, '<ol class="my-2 ps-4 pt-1 ms-2" ');
+    text = text.replace(/<table class="table table-bordered">/g, '<div class="ps-3"><table class="table table-bordered table-hover table-responsive table-sm">');
+    text = text.replace(/<\/table>/g, '</table></div>');
+    text = text.replace(/<td>/g, '<td class="lh-base small">');
+    text = text.replace(/margin-left: 41px/g, 'margin-left: 10px');
+
+
     return text;
 }
 
