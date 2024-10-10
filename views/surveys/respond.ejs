@@ -94,28 +94,37 @@
                                     <% if (question.prefixText) { %>
                                         <span class="input-group-text"><%= question.prefixText %></span>
                                     <% } %>
-                                    <input type="text" name="answers[<%= index %>][answer]" class="form-control" 
-                                    <% if (question.isRequired) { %> required <% } %>
-                                    <% if (question.inputType === 'letters') { %> 
-                                        pattern="[a-zA-Z\s]+" title="영문자만 입력 가능합니다." 
-                                        oninput="this.value = this.value.toUpperCase();" 
-                                    <% } %>
+                            
                                     <% if (question.inputType === 'integer') { %> 
-                                        pattern="\d+" title="정수만 입력 가능합니다." 
-                                        onblur="validateIntegerInput(<%= index %>)"
+                                        <input type="number" name="answers[<%= index %>][answer]" class="form-control"
+                                            <% if (question.isRequired) { %> required <% } %>
+                                            min="<%= question.minValue %>" 
+                                            max="<%= question.maxValue %>" 
+                                            pattern="\d+" title="정수만 입력 가능합니다." 
+                                            oninput="this.value = this.value.replace(/[^0-9]/g, '');" 
+                                        >
+                                    <% } else { %>
+                                        <input type="text" name="answers[<%= index %>][answer]" class="form-control"
+                                            <% if (question.isRequired) { %> required <% } %>
+                                            <% if (question.inputType === 'letters') { %> 
+                                                pattern="[a-zA-Z\s]+" title="영문자만 입력 가능합니다." 
+                                                oninput="this.value = this.value.toUpperCase();" 
+                                            <% } %>
+                                        >
                                     <% } %>
-                                    >
+                            
                                     <% if (question.suffixText) { %>
                                         <span class="input-group-text"><%= question.suffixText %></span>
                                     <% } %>
-                                  </div>
-                                  <div>
+                                </div>
+                                <div>
                                     <input type="hidden" name="answers[<%= index %>][questionId]" value="<%= question._id %>">
                                     <% if (question.inputType === 'integer') { %>
                                         <input type="hidden" name="answers[<%= index %>][minValue]" value="<%= question.minValue %>">
                                         <input type="hidden" name="answers[<%= index %>][maxValue]" value="<%= question.maxValue %>">
                                     <% } %>
-                                  </div>
+                                </div>
+                                
                             <% } else if (question.questionType === 'long_answer') { %>
                                 <textarea name="answers[<%= index %>][answer]" class="form-control" 
                                 <% if (question.isRequired) { %> required <% } %>
@@ -336,14 +345,14 @@
                                       <div class="d-flex align-items-center">
                                           <input type="email" id="email" name="answers[<%= index %>][answer]" class="form-control me-2" required style="flex-grow: 1;">
                                           <input type="hidden" name="answers[<%= index %>][questionId]" value="<%= question._id %>">
-                                          <button type="button" class="btn btn-primary text-nowrap" onclick="sendVerificationCode()">검증</button>
+                                          <button type="button" class="btn btn-primary text-nowrap" onclick="sendVerificationCode()"><i class="bi bi-send-fill"></i></button>
                                       </div>
                                   </div>                                
                                   <div class="mb-3">
                                       <label for="verificationCode" class="form-label">검증 코드:</label>
                                       <div class="d-flex align-items-center">
                                           <input type="text" id="verificationCode" name="verificationCode" class="form-control me-2" required>
-                                          <button type="button" class="btn btn-outline-primary text-nowrap" onclick="verifyCode()">확인</button>
+                                          <button type="button" class="btn btn-outline-primary text-nowrap" onclick="verifyCode()"><i class="bi bi-check-lg"></i></button>
                                         </div>
                                   </div>
                                   <input type="hidden" name="answers[<%= index %>][answer]" id="emailAnswer<%= index %>" value="">
@@ -363,7 +372,7 @@
                                           // 4자리 랜덤 검증 코드 생성
                                           generatedCode = Math.floor(1000 + Math.random() * 9000).toString();
                               
-                                          fetch('/email/send-email', {
+                                          fetch('/send-VerifyEmail', {
                                               method: 'POST',
                                               headers: {
                                                   'Content-Type': 'application/json'

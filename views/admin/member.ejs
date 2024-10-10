@@ -19,20 +19,14 @@
     <div class="container-fluid p-0" style="max-width: 960px; margin-bottom: 100px;">
         <div class="content-wrapper p-3">
             <h1 class="mb-4">회원 목록</h1>
-            <div class="table-responsive">
-                <table id="userTable" class="table table-striped table-bordered">
-                    <thead class="table-light">
-                        <tr>
-                            <th>아이디</th>
-                            <th>이메일</th>
-                            <th>등급</th>
-                            <th>가입일</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- 사용자 목록이 여기에 추가됩니다 -->
-                    </tbody>
-                </table>
+            <div class="row border-bottom mb-2">
+                <div class="col-3 fw-bold">아이디</div>
+                <div class="col-4 fw-bold">이메일</div>
+                <div class="col-3 fw-bold">등급</div>
+                <div class="col-2 fw-bold">가입일</div>
+            </div>
+            <div id="userList">
+                <!-- 사용자 목록이 여기에 추가됩니다 -->
             </div>
             <button id="saveButton" class="btn btn-primary mt-3">저장</button>
         </div>
@@ -96,24 +90,25 @@
             }
 
             const users = await response.json();
-            const tbody = document.querySelector('#userTable tbody');
-            tbody.innerHTML = '';
+            const userList = document.getElementById('userList');
+            userList.innerHTML = '';
 
             users.forEach(user => {
-                const row = document.createElement('tr');
                 const userRole = rolesMap[user.role] || user.role;
                 const userCreatedAt = new Date(user.createdAt).toLocaleDateString();
-                row.innerHTML = `
-                    <td>${user.username}</td>
-                    <td>${user.email}</td>
-                    <td>
-                        <select class="form-select" onchange="updateUserRole('${user._id}', this.value, '${user.role}')">
+                const userDiv = document.createElement('div');
+                userDiv.className = 'row mb-2';
+                userDiv.innerHTML = `
+                    <div class="col-3 small">${user.username}</div>
+                    <div class="col-4 small">${user.email}</div>
+                    <div class="col-3">
+                        <select class="form-select form-select-sm" onchange="updateUserRole('${user._id}', this.value, '${user.role}')">
                         </select>
-                    </td>
-                    <td>${userCreatedAt}</td>
+                    </div>
+                    <div class="col-2 small">${userCreatedAt}</div>
                 `;
-                tbody.appendChild(row);
-                fetchRolesForSelect(row.querySelector('select'), user.role);
+                userList.appendChild(userDiv);
+                fetchRolesForSelect(userDiv.querySelector('select'), user.role);
             });
         }
 
@@ -132,7 +127,6 @@
             if (currentRole === 'superadmin' && newRole !== 'superadmin') {
                 const confirmChange = confirm('최고관리자의 등급을 바꾸겠습니까?');
                 if (!confirmChange) {
-                    // '아니오'를 선택한 경우, 기존 등급으로 복원
                     const selectElement = document.querySelector(`select[onchange*="${userId}"]`);
                     selectElement.value = currentRole; // 기존 등급으로 복원
                     return; // 함수 종료
@@ -166,7 +160,6 @@
         }
 
         document.getElementById('saveButton').addEventListener('click', saveRoles);
-
         window.onload = checkAdminAccess;
     </script>
 </body>
