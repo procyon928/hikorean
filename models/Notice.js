@@ -16,7 +16,9 @@ const noticeSchema = new mongoose.Schema({
   updatedAt: { type: Date },
   updatedBy: { type: String },
   shortId: { type: String, required: true, unique: true },
-  readStudents: { type: [String], default: [] }
+  readStudents: { type: [String], default: [] },
+  category: { type: String, enum: ['일반', '안내문', '가이드북'], default: '일반' },
+  sticky: { type: Boolean, default: false }
 });
 
 const Notice = mongoose.model('Notice', noticeSchema);

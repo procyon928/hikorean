@@ -29,8 +29,23 @@
                 <input type="text" name="title" class="form-control" placeholder="제목" required>
             </div>
             <div class="mb-3">
-              <input type="text" name="shortId" class="form-control" placeholder="소문자 및 숫자 조합만 가능, 비워둘 시 임의 문자 생성" pattern="[a-z0-9]+" title="영문 소문자와 숫자만 입력할 수 있습니다.">
+                <label for="category" class="form-label">카테고리</label>
+                <select name="category" class="form-select" id="category-select" required>
+                    <option value="일반">일반</option>
+                    <option value="안내문">안내문</option>
+                    <option value="가이드북">가이드북</option>
+                </select>
             </div>
+            
+            <div id="sticky-checkbox" style="display: none;" class="mb-3">
+                <input type="checkbox" id="sticky" name="sticky">
+                <label for="sticky">게시판 상단 고정</label>
+            </div>
+          
+            <div class="mb-3">
+                <input type="text" name="shortId" class="form-control" placeholder="소문자 및 숫자 조합만 가능" pattern="[a-z0-9]+" title="영문 소문자와 숫자만 입력할 수 있습니다." required>
+                <button type="button" id="generate-short-id" class="btn btn-secondary">임의 문자 생성</button> <!-- 버튼 추가 -->
+            </div>     
             <div>
               <p class="small">**굵은 글씨** __밑줄__ #빨간색 글씨# [형광펜]</p>
             </div>
@@ -130,28 +145,21 @@ $(document).ready(function() {
         }
     });
 
-    $('form').on('submit', async function(e) {
-        e.preventDefault(); // 기본 제출 방지
-        const formData = $(this).serialize(); // 폼 데이터 직렬화
-
-        // 짧은 ID 생성 요청
+    // 임의 문자 생성 버튼 클릭 이벤트
+    $('#generate-short-id').on('click', async function() {
         try {
             const response = await fetch('/notices/generate-short-id', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({}) // 필요에 따라 추가 데이터 전송
+                }
             });
             
             const data = await response.json();
             if (response.ok) {
                 // 짧은 ID 생성 성공
-                const shortIdInput = $(this).find('input[name="shortId"]');
+                const shortIdInput = $('input[name="shortId"]');
                 shortIdInput.val(data.shortId); // 생성된 짧은 ID 입력
-                const content = $('#content');
-                content.val($('#editor').summernote('code')); // 에디터 내용을 hidden input에 저장
-                this.submit(); // 폼 제출
             } else {
                 // 짧은 ID 생성 실패
                 alert(data.message || '짧은 ID 생성 중 오류가 발생했습니다.'); // 메시지 표시
@@ -161,7 +169,25 @@ $(document).ready(function() {
             alert('서버 오류가 발생했습니다.');
         }
     });
-  });
+
+    // 카테고리 선택 변경 이벤트
+    $('#category-select').on('change', function() {
+        if ($(this).val() === '안내문') {
+            $('#sticky-checkbox').show(); // '안내문'이 선택되면 체크박스 표시
+        } else {
+            $('#sticky-checkbox').hide(); // 다른 카테고리를 선택하면 체크박스 숨김
+            $('#sticky').prop('checked', false); // 체크박스 상태 초기화
+        }
+    });
+
+    // 폼 제출 처리
+    $('form').on('submit', async function(e) {
+        e.preventDefault(); // 기본 제출 방지
+        const content = $('#content');
+        content.val($('#editor').summernote('code')); // 에디터 내용을 hidden input에 저장
+        this.submit(); // 폼 제출
+    });
+});
   </script>
 </body>
 </html>

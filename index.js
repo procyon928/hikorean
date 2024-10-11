@@ -26,6 +26,8 @@ const passport = require('passport');
 const flash = require('connect-flash');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const { User } = require('./models/User');
+const Notice = require('./models/Notice'); // 모델 파일 경로에 맞게 수정
+
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -134,9 +136,27 @@ app.use((req, res, next) => {
   next();
 });
 
+// 모든 요청에 대해 sticky 글 확인 미들웨어
+app.use(async (req, res, next) => {
+  try {
+    const hasStickyNotice = await Notice.findOne({ sticky: true }); // findOne 사용
+    res.locals.hasStickyNotice = hasStickyNotice !== null; // 문서가 존재하면 true
+    console.log("hasStickyNotice:", res.locals.hasStickyNotice); // true 또는 false로 로그 출력
+  } catch (error) {
+    console.error('오류:', error);
+    res.locals.hasStickyNotice = false; // 오류 발생 시 기본값 설정
+  }
+  next(); // 다음 미들웨어 또는 라우트로 이동
+});
+
+app.get('/test', (req, res) => {
+  res.render('test'); // test.ejs를 렌더링
+});
+
+
 // 라우터 설정
-app.use(authRoutes); // auth.js 라우터를 사용
-app.use(accountRoutes); // account.js 라우터를 사용 (추가됨)
+app.use(authRoutes);
+app.use(accountRoutes);
 app.use('/admin', adminRoutes);
 app.use(emailRoutes);
 app.use(postRoutes);

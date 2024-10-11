@@ -3,6 +3,7 @@ const router = express.Router();
 const Notice = require('../models/Notice');
 const { isAdmin } = require('../middleware/auth');
 const { Parser } = require('htmlparser2');
+const cron = require('node-cron');
 
 const app = express();
 app.use(express.json());
@@ -24,6 +25,26 @@ async function generateRandomShortId() {
 
   return result; // 고유한 짧은 ID 반환
 }
+
+// 매일 자정에 sticky 상태 확인
+cron.schedule('0 0 * * *', async () => {
+  const now = new Date();
+  const oneWeek = 1 * 24 * 60 * 60 * 1000; // 날짜를 밀리초로 변환 (앞에 있는 숫자가 날짜, ex: 7은 1주일)
+
+  // sticky 상태가 true인 모든 안내문을 찾음
+  const notices = await Notice.find({ sticky: true });
+
+  notices.forEach(async (notice) => {
+      const effectiveDate = new Date(notice.updatedAt || notice.createdAt); // updatedAt가 없을 경우 createdAt 사용
+
+      // sticky 상태 해제 조건
+      if (now - effectiveDate > oneWeek) {
+          // 1주일이 지난 경우 sticky 해제
+          notice.sticky = false;
+          await notice.save();
+      }
+  });
+});
 
 // 본문 위험한 기호 제거
 function removeSpecialCharacters(content) {
@@ -54,18 +75,20 @@ router.get('/notices/new', isAdmin, (req, res) => {
 
 // 안내문 작성
 router.post('/notices', isAdmin, async (req, res) => {
-  const { title, content } = req.body;
+  const { title, content, category, sticky } = req.body;
   const username = req.user.username;
 
   const sanitizedContent = removeSpecialCharacters(content);
 
-  // 짧은 ID 생성 요청
-  const shortId = await generateRandomShortId();
-  if (!shortId) {
-      return res.status(400).json({ message: '짧은 ID 생성 중 오류가 발생했습니다.' });
-  }
-
-  const notice = new Notice({ title, content: sanitizedContent, shortId, createdBy: username });
+  const notice = new Notice({
+    title,
+    content: sanitizedContent,
+    shortId,
+    createdBy: username,
+    category,
+    sticky: !!sticky // 체크박스가 체크된 경우 true, 그렇지 않으면 false
+  });
+  
   await notice.save();
   res.redirect('/admin/notices');
 });
@@ -99,7 +122,7 @@ function parseContentToLines(content) {
 // 안내문 수정 처리
 router.post('/notices/edit/:id', isAdmin, async (req, res) => {
   const { id } = req.params;
-  const { title, content, shortId } = req.body;
+  const { title, content, shortId, category, sticky } = req.body;
   const username = req.user.username;
 
   try {
@@ -109,6 +132,9 @@ router.post('/notices/edit/:id', isAdmin, async (req, res) => {
       }
 
       const sanitizedContent = removeSpecialCharacters(content);
+
+      // sticky 값을 체크박스에 따라 설정
+      notice.sticky = sticky === 'on';
       
       const originalLines = parseContentToLines(notice.content);
       const newLines = parseContentToLines(content);
@@ -158,6 +184,7 @@ router.post('/notices/edit/:id', isAdmin, async (req, res) => {
       notice.title = title;
       notice.content = sanitizedContent;
       notice.shortId = shortId;
+      notice.category = category;
       notice.updatedAt = new Date();
       notice.updatedBy = username;
 
@@ -204,7 +231,8 @@ function applyStyles(text) {
     text = text.replace(/<h1\s*/g, '<h1 class="fs-3 fw-bold py-3 mt-3 mb-2 border-bottom" '); // 제목
     text = text.replace(/<h2\s*/g, '<h2 class="fs-4 fw-bold py-2 mt-2 mb-1 border-bottom" '); // 부제목
     text = text.replace(/<h3\s*/g, '<h3 class="fs-5 my-2" '); // 강조
-    text = text.replace(/<h4\s*/g, '<h4 class="fs-6 fw-bold pt-2 my-2" '); // 굵은 p
+    text = text.replace(/<h4\s*/g, '<div class="d-flex align-items-start pt-2 my-2"><i class="bi bi-square-fill mt-1 pt-1 me-2" style="line-height: 1; font-size: 6px;"></i><h4 class="fs-6 m-0" '); // 굵은 p
+    text = text.replace(/<\/h4>*/g, '</div></h4>'); // 굵은 p
     text = text.replace(/<h5\s*/g, '<h5 class="fs-6 small my-2" '); // 부연설명
     text = text.replace(/<p\s*/g, '<p class="my-3 lh-base" '); // 기본 여백 추가
     text = text.replace(/<ul\s*/g, '<ul class="my-2 ps-3 pt-1 ms-1" style="list-style-type:square;" ');
@@ -255,8 +283,8 @@ router.get('/notices/:shortId', async (req, res) => {
 // 번역 게시글 목록 페이지
 router.get('/notice', async (req, res) => {
   try {
-      const notices = await Notice.find().sort({ createdAt: -1 });
-      res.render('notices/notice', { notices, user: req.user, canWrite: true }); // canWrite은 필요에 따라 설정
+      const notices = await Notice.find({ category: '안내문' }).sort({ sticky: -1, createdAt: -1 }); // sticky 기준으로 정렬
+      res.render('notices/notice', { notices, user: req.user, canWrite: true });
   } catch (error) {
       console.error('번역 게시글 목록 조회 중 오류:', error);
       res.status(500).send('서버 오류가 발생했습니다.');

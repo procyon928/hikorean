@@ -48,7 +48,7 @@
                             <li>등록된 게시글이 없습니다.</li>
                         <% } else { %>
                             <% notices.forEach(notice => { %>
-                                <li data-post-id="<%= notice._id %>" class="border-bottom py-1" onclick="checkPermission('<%= notice.shortId %>')" style="cursor: pointer;">
+                              <li data-post-id="<%= notice._id %>" class="border-bottom py-1 <%= notice.sticky ? 'bg-dark fw-bold text-white' : '' %>" onclick="checkPermission('<%= notice.shortId %>')" style="cursor: pointer;">
                                     <div class="d-flex justify-content-between align-items-center w-100">
                                         <span class="small text-reset text-decoration-none bold">
                                             <%= notice.title %>
