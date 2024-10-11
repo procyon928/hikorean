@@ -102,7 +102,11 @@
     <%- include('partials/bottom-navbar') %>
     <div class="container-fluid p-0" style="max-width: 960px; margin-bottom: 100px;">
         <div class="content-box text-white text-center p-2 position-relative" style="background-color: #91AD09;">
-            <span class="small text-decoration-underline">다음 학기 학비 납부 안내(10/8~10/10)</span>
+            <span class="small text-decoration-underline">
+              <a href="/notices/<%= latestNotice._id %>" class="text-white">
+                  <%= latestNotice.title %>
+              </a>
+            </span>
             <i class="bi bi-x position-absolute top-0 end-0 m-2" style="color: white; cursor: pointer;" aria-label="Close"></i>
         </div>
         

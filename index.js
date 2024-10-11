@@ -75,16 +75,6 @@ app.set('views', path.join(__dirname, 'views')); // views 폴더 설정
 // 정적 파일 제공
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 회원가입 페이지 라우터
-app.get('/signup', (req, res) => {
-    res.render('signup'); // signup.ejs를 렌더링
-});
-
-// 로그인 페이지
-app.get('/login', (req, res) => {
-    res.render('login'); // login.ejs를 렌더링
-});
-
 // Passport 설정
 passport.use(new GoogleStrategy({
   clientID: process.env.GOOGLE_CLIENT_ID,
@@ -149,10 +139,15 @@ app.use(async (req, res, next) => {
   next(); // 다음 미들웨어 또는 라우트로 이동
 });
 
-app.get('/test', (req, res) => {
-  res.render('test'); // test.ejs를 렌더링
+// 회원가입 페이지 라우터
+app.get('/signup', (req, res) => {
+    res.render('signup'); // signup.ejs를 렌더링
 });
 
+// 로그인 페이지
+app.get('/login', (req, res) => {
+    res.render('login'); // login.ejs를 렌더링
+});
 
 // 라우터 설정
 app.use(authRoutes);
