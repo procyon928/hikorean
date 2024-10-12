@@ -28,6 +28,7 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const { User } = require('./models/User');
 const Notice = require('./models/Notice'); // 모델 파일 경로에 맞게 수정
 
+const setLanguageTexts = require('./middleware/locales');
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -63,6 +64,9 @@ app.use((req, res, next) => {
   res.locals.lang = req.query.lang || 'ko';
   next();
 });
+
+// 언어 텍스트 설정 미들웨어 추가
+app.use(setLanguageTexts);
 
 // body-parser 미들웨어 설정
 app.use(bodyParser.urlencoded({ extended: true }));

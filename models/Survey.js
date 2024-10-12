@@ -1,10 +1,10 @@
 const mongoose = require('mongoose');
 
 const SurveySchema = new mongoose.Schema({
-    title: { type: String, required: true },
+    title: { type: Object, required: true }, // 다국어 지원을 위한 객체
     questions: [{
-        questionText: { type: String, required: true },
-        questionDescription: { type: String },
+        questionText: { type: Object, required: true }, // 다국어 지원을 위한 객체
+        questionDescription: { type: Object }, // 다국어 지원을 위한 객체
         questionType: { 
             type: String,
             enum: ['short_answer', 'long_answer', 'single_choice', 'multiple_choice', 'date', 'dropdown', 'preference', 'reservation', 'time_reservation', 'info', 'email'],
@@ -23,24 +23,24 @@ const SurveySchema = new mongoose.Schema({
             exceptionDates: [{ type: String }]
         },
         time_reservation: {
-            availableDates: [{ type: String }], // 선택된 예약 날짜들
-            startTime: { type: String }, // 첫 번째 예약 가능 시간
-            endTime: { type: String }, // 마지막 예약 가능 시간
-            interval: { type: Number }, // 예약 시간 간격
-            maxParticipants: { type: Number } // 시간당 최대 예약 인원
+            availableDates: [{ type: String }],
+            startTime: { type: String },
+            endTime: { type: String },
+            interval: { type: Number },
+            maxParticipants: { type: Number }
         },
-        infoText: { type: String },
-        options: [{ type: String }], // 객관식 선택지
+        infoText: { type: Object }, // 다국어 지원을 위한 객체
+        options: [{ type: Object }], // 다국어 지원을 위한 객체 배열
         minValue: { type: Number },
         maxValue: { type: Number },
         rankLimit: { type: Number },
         isRequired: { type: Boolean, default: false },
         allowOther: { type: Boolean, default: false },
-        prefixText: { type: String }, // 입력 필드 앞에 붙일 텍스트
-        suffixText: { type: String }  // 입력 필드 뒤에 붙일 텍스트
+        prefixText: { type: Object }, // 다국어 지원을 위한 객체
+        suffixText: { type: Object }  // 다국어 지원을 위한 객체
     }],  
-    startDate: { type: Date }, // 설문 시작 날짜
-    endDate: { type: Date },   // 설문 종료 날짜
+    startDate: { type: Date },
+    endDate: { type: Date },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     createdAt: { type: Date, default: Date.now }
 });

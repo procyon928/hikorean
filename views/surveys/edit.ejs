@@ -18,12 +18,23 @@
 
     <div class="container-fluid p-0" style="max-width: 960px; margin-bottom: 100px;">
         <div class="content-wrapper p-3">
-            <h1 class="mb-4"><%= survey.title %> 수정하기</h1>
-            <form action="/surveys/<%= survey._id %>" method="POST">
-                <div class="mb-3">
-                    <label for="title" class="form-label">설문조사 제목:</label>
-                    <input type="text" name="title" class="form-control" value="<%= survey.title %>" required>
-                </div>
+          <h1 class="mb-4"><%= survey.title.ko %> 수정하기</h1>
+          <form action="/surveys/<%= survey._id %>" method="POST">
+              <div class="mb-3">
+                  <label for="lang" class="form-label">언어 선택:</label>
+                  <select name="lang" id="lang" class="form-select mb-3">
+                      <option value="ko" selected>한국어</option>
+                      <option value="en">영어</option>
+                      <option value="sc">간체 중국어</option>
+                      <option value="tc">번체 중국어</option>
+                      <option value="jp">일본어</option>
+                      <option value="vi">베트남어</option>
+                  </select>
+              </div>
+              <div class="mb-3">
+                  <label for="title" class="form-label">설문조사 제목:</label>
+                  <input type="text" name="title[<%= lang %>]" class="form-control" value="<%= survey.title[lang] || '' %>" required>
+              </div>          
                 <div class="mb-3 row">
                     <div class="col">
                         <label for="startDate" class="form-label">응답 시작 날짜:</label>
@@ -45,8 +56,14 @@
                 <div id="questions">
                     <% survey.questions.forEach((question, index) => { %>
                     <div class="question mb-3 p-3 border rounded">
+                      <div class="form-floating">
                         <input type="text" name="questions[<%= index %>][questionText]" class="form-control mb-2" value="<%= question.questionText %>" placeholder="문항 내용" required>
+                        <label for="floatingInput"><%= question.questionText %></label>
+                      </div>
+                      <div class="form-floating">
                         <input type="text" name="questions[<%= index %>][questionDescription]" class="form-control mb-2" value="<%= question.questionDescription %>" placeholder="문항 설명">
+                        <label for="floatingInput"><%= question.questionDescription %></label>
+                      </div>
                         <div class="mb-3 d-flex align-items-center">
                             <div class="form-check me-2 ps-0 flex-grow-1 text-nowrap">
                                 <input type="checkbox" name="questions[<%= index %>][isRequired]" value="true" <%= question.isRequired ? 'checked' : '' %>>
@@ -78,8 +95,10 @@
                         <div class="options" style="<%= ['single_choice', 'multiple_choice', 'dropdown', 'preference'].includes(question.questionType) ? 'block' : 'none' %>">
                             <% question.options.forEach((option, optionIndex) => { %>
                             <div class="option mb-2 d-flex align-items-center">
+                              <div class="form-floating w-100">
                                 <input type="text" name="questions[<%= index %>][options][]" class="form-control me-2" value="<%= option %>" placeholder="선택지 입력">
-                                <!-- <button type="button" class="btn px-0" onclick="removeOption(this)"><i class="bi bi-x-lg"></i></button> -->
+                                <label for="floatingInput"><%= option %></label>
+                              </div>
                             </div>
                             <% }); %>
                             <!-- <button type="button" class="btn btn-primary" onclick="addOption(this)">선택지 추가</button> -->
@@ -89,9 +108,15 @@
                         <div class="short-answer" style="<%= question.questionType === 'short_answer' ? 'block' : 'none' %>">
                             <label>단답형 답변:</label>
                             <div class="d-flex my-2">
+                              <div class="form-floating d-flex">
                                 <input type="text" name="questions[<%= index %>][prefixText]" class="form-control me-2 flex-grow-1" value="<%= question.prefixText || '' %>" placeholder="접두사">
+                                <label for="floatingInput"><%= question.prefixText || '' %></label>
+                              </div>
                                 <input type="text" name="questions[<%= index %>][shortAnswer]" class="form-control me-2 flex-grow-1" value="<%= question.shortAnswer || '' %>" placeholder="단답형 답변 입력" disabled>
+                              <div class="form-floating d-flex">
                                 <input type="text" name="questions[<%= index %>][suffixText]" class="form-control me-2 flex-grow-1" value="<%= question.suffixText || '' %>" placeholder="접미사">
+                                <label for="floatingInput"><%= question.suffixText || '' %></label>
+                              </div>
                             </div>
                             <select name="questions[<%= index %>][inputType]" class="form-select mb-2" onchange="updateInputType(this)">
                                 <option value="all" <%= question.inputType === 'all' ? 'selected' : '' %>>모든 값</option>
@@ -220,7 +245,7 @@
             }
         }
 
-        // 입력도니 시작 날짜, 종료 날짜 삭제
+        // 입력된 시작 날짜, 종료 날짜 삭제
         function clearStartDate() {
             document.querySelector('input[name="startDate"]').value = ''; // 시작 날짜 입력값 삭제
         }

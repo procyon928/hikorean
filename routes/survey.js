@@ -27,45 +27,46 @@ router.post('/surveys', isAdmin, async (req, res) => {
       return res.status(400).send('Invalid questions format');
   }
 
-  // 각 문항에 대해 설명과 필수 여부를 추가하여 저장
+  // 다국어 제목 및 질문 처리
+  const formattedTitle = { ko: title }; // 기본값 한국어
   const formattedQuestions = questions.map(question => ({
-      questionText: question.questionText,
-      questionDescription: question.questionDescription, // 문항 설명 추가
+      questionText: { ko: question.questionText }, // 한국어
+      questionDescription: { ko: question.questionDescription }, // 한국어
       questionType: question.questionType,
       inputType: question.inputType,
-      options: question.options || [],
+      options: question.options.map(option => ({ ko: option })), // 각 옵션도 한국어로 저장
       minValue: question.minValue,
       maxValue: question.maxValue,
       isRequired: question.isRequired === 'true',
       allowOther: question.allowOther === 'true',
       rankLimit: question.rankLimit,
-      prefixText: question.prefixText,
-      suffixText: question.suffixText,
+      prefixText: { ko: question.prefixText || '' }, // 한국어
+      suffixText: { ko: question.suffixText || '' }, // 한국어
       reservation: {
           startDate: question.reservation ? question.reservation.startDate.split('T')[0] : null,
           endDate: question.reservation ? question.reservation.endDate.split('T')[0] : null,
           maxParticipants: question.reservation ? question.reservation.maxParticipants : null,
           exceptionDates: question.reservation && question.reservation.exceptionDates 
               ? question.reservation.exceptionDates.split(',').map(date => date.trim())
-              : []  // 기본값은 빈 배열
+              : []  
       },
       time_reservation: {
           availableDates: question.time_reservation && question.time_reservation.availableDates 
           ? question.time_reservation.availableDates.split(',').map(date => date.trim())
-              : [], // 기본값은 빈 배열
+              : [],
           startTime: question.time_reservation ? question.time_reservation.startTime : null,
           endTime: question.time_reservation ? question.time_reservation.endTime : null,
           interval: question.time_reservation ? question.time_reservation.interval : null,
           maxParticipants: question.time_reservation ? question.time_reservation.maxParticipants : null
       },
-      infoText: question.infoText || null
+      infoText: { ko: question.infoText || null } // 한국어
   }));
 
   const survey = new Survey({
-      title,
+      title: formattedTitle,
       questions: formattedQuestions,
-      startDate: startDate ? new Date(startDate) : null, // 비어있으면 null로 설정
-      endDate: endDate ? new Date(endDate) : null, // 비어있으면 null로 설정
+      startDate: startDate ? new Date(startDate) : null,
+      endDate: endDate ? new Date(endDate) : null,
       createdBy: req.user._id
   });
   await survey.save();
@@ -254,7 +255,7 @@ router.get('/surveys/:id/edit', isAdmin, async (req, res) => {
 
 // 설문조사 수정 처리
 router.post('/surveys/:id', isAdmin, async (req, res) => {
-  const { title, questions, startDate, endDate } = req.body;
+  const { title, questions, startDate, endDate, lang } = req.body;
 
   // 비어있는 필드 확인
   if (!questions || !Array.isArray(questions)) {
@@ -264,16 +265,34 @@ router.post('/surveys/:id', isAdmin, async (req, res) => {
 
   // 기존 설문조사 업데이트
   await Survey.findByIdAndUpdate(req.params.id, {
-      title,
+      title: {
+          ...req.body.title, // 각 언어의 제목을 포함
+          [lang]: title[lang] // 선택된 언어의 제목을 업데이트
+      },
       questions: questions.map((question) => ({
-          questionText: question.questionText,
-          questionDescription: question.questionDescription,
+          questionText: {
+              ...question.questionText,
+              [lang]: question.questionText[lang] // 선택된 언어의 질문 텍스트를 업데이트
+          },
+          questionDescription: {
+              ...question.questionDescription,
+              [lang]: question.questionDescription[lang] // 선택된 언어의 질문 설명을 업데이트
+          },
           questionType: question.questionType,
-          options: question.options || [],
+          options: question.options.map(option => ({
+              ...option,
+              [lang]: option[lang] // 선택지 텍스트도 다국어로 저장
+          })),
           isRequired: question.isRequired === 'true',
           allowOther: question.allowOther === 'true',
-          prefixText: question.prefixText || '',
-          suffixText: question.suffixText || '',
+          prefixText: {
+              ...question.prefixText,
+              [lang]: question.prefixText[lang] // 선택된 언어의 prefixText를 업데이트
+          },
+          suffixText: {
+              ...question.suffixText,
+              [lang]: question.suffixText[lang] // 선택된 언어의 suffixText를 업데이트
+          },
           inputType: question.inputType || 'all',
           minValue: question.minValue || null,
           maxValue: question.maxValue || null,
@@ -282,7 +301,7 @@ router.post('/surveys/:id', isAdmin, async (req, res) => {
               startDate: question.reservation ? question.reservation.startDate : null,
               endDate: question.reservation ? question.reservation.endDate : null,
               maxParticipants: question.reservation ? question.reservation.maxParticipants : null,
-              exceptionDates: question.reservation ? question.reservation.exceptionDates : [] // 기본값은 빈 배열
+              exceptionDates: question.reservation ? question.reservation.exceptionDates : []
           },
           time_reservation: {
               availableDates: question.time_reservation ? question.time_reservation.availableDates : [],
@@ -291,7 +310,10 @@ router.post('/surveys/:id', isAdmin, async (req, res) => {
               interval: question.time_reservation ? question.time_reservation.interval : null,
               maxParticipants: question.time_reservation ? question.time_reservation.maxParticipants : null
           },
-          infoText: question.infoText
+          infoText: {
+              ...question.infoText,
+              [lang]: question.infoText[lang] // 선택된 언어의 infoText를 업데이트
+          }
       })),
       startDate: startDate ? new Date(startDate) : null,
       endDate: endDate ? new Date(endDate) : null
@@ -299,7 +321,6 @@ router.post('/surveys/:id', isAdmin, async (req, res) => {
 
   res.redirect('/admin/surveys');
 });
-
 
 // 설문조사 삭제 처리
 router.post('/surveys/:id/delete', isAdmin, async (req, res) => {
