@@ -49,7 +49,7 @@
                         <td class="original-url-cell" title="<%= url.originalUrl %>">
                             <%= url.originalUrl.length > 30 ? url.originalUrl.substring(0, 30) + '...' : url.originalUrl %>
                         </td>
-                        <td><%= 'http://localhost:8000/' + url.shortUrl %></td>
+                        <td><%= 'https://hikorean.co.kr/' + url.shortUrl %></td>
                         <td><img src="<%= url.qrCode %>" alt="QR Code" width="100"></td>
                         <td class="edit-buttons">
                             <button type="button" class="btn btn-warning" onclick="editUrl('<%= url._id %>', '<%= url.title %>', '<%= url.originalUrl %>')">수정</button>

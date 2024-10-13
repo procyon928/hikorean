@@ -41,7 +41,7 @@ router.post('/admin/short-url', isAdmin, async (req, res) => {
     scale: 4 // QR 코드의 스케일
   };
 
-  const qrCode = await QRCode.toDataURL(`http://localhost:8000/${shortUrl}`, qrCodeOptions);
+  const qrCode = await QRCode.toDataURL(`https://hikorean.co.kr/${shortUrl}`, qrCodeOptions);
 
   if (existingShortUrl) {
       return res.render('admin/short-url', { error: '이미 등록된 짧은 URL입니다.' });
