@@ -50,6 +50,11 @@
               
               <div id="questions"></div> <!-- 처음에는 빈 상태로 시작 -->
 
+              <div class="mb-3">
+                  <label for="submitResult" class="form-label">결과 메시지:</label>
+                  <textarea class="form-control" name="submitResult" id="submitResult" rows="3"></textarea>
+              </div>
+
               <div class="d-flex justify-content-center mt-4 pt-4">
                   <button type="button" class="btn btn-outline-secondary me-2" data-bs-toggle="modal" data-bs-target="#confirmModal"><i class="bi bi-arrow-left"></i> 목록으로</button>
                   <button type="button" class="btn btn-primary me-2" onclick="addQuestion()"><i class="bi bi-plus-lg"></i> 문항 추가</button>

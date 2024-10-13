@@ -116,7 +116,7 @@ passport.serializeUser((user, done) => {
 
 passport.deserializeUser(async (id, done) => {
     const user = await User.findById(id);
-    console.log('세션에서 가져온 사용자:', user);
+    // console.log('세션에서 가져온 사용자:', user);
     done(null, user);
 });
 

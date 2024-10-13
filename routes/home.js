@@ -19,8 +19,6 @@ router.get('/', async (req, res) => {
   const lang = req.query.lang || 'ko'; // 쿼리 파라미터가 없으면 기본값으로 'ko' 설정
   const texts = res.locals.texts || {};
 
-  console.log('Texts:', texts);
-
   // lang 파라미터가 없을 때만 리다이렉트
   if (!req.query.lang) {
       return res.redirect(`/?lang=${lang}`); // 기본 언어로 리다이렉트

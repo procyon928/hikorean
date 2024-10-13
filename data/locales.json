@@ -10,7 +10,7 @@
     "etc": ["기타", "其他", "其他", "その他", "Etc", "Khác"]
   },
   "home": {
-    "instituteInfo": ["교육원 정보", "教育院信息", "教育院資訊", "教育機関情報", "Institute Infor", "Thông tin viện"],
+    "instituteInfo": ["교육원 정보", "办公室信息", "辦公室資訊", "行政室情報", "Office Info", "Thông tin văn phòng"],
     "myinfoPage": ["수강지원", "在校生服务", "在校生服务", "学生ポータル", "My Info Page", "Cổng thông tin"],
     "forms": ["양식 다운로드", "表格下载", "表格下載", "フォームのダウンロード", "Download Forms", "Tải mẫu"],
     "certificate": ["증명서 신청", "证书申请", "證書申請", "証明書の申請", "Certificate Application", "Đăng ký chứng chỉ"],
@@ -19,7 +19,7 @@
     "wednesday": ["수", "三", "三", "水", "W", "T4"],
     "thursday": ["목", "四", "四", "木", "T", "T5"],
     "friday": ["금", "五", "五", "金", "F", "T6"],
-    "saturday": ["토", "六", "六", "土", "Sy", "T7"],
+    "saturday": ["토", "六", "六", "土", "S", "T7"],
     "sunday": ["일", "日", "日", "日", "S", "CN"],
     "announcements": ["공지사항", "公告", "公告", "お知らせ", "Announcements", "Thông báo"],
     "latestPosts": ["최신 글", "最新文章", "最新文章", "最新の投稿", "Latest Posts", "Bài viết mới"]

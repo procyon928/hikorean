@@ -76,7 +76,20 @@ const translateWithDeepl = async (text, targetLang) => {
 };
 
 // 번역 요청 처리
-router.post('/', async (req, res) => {
+router.get('/translate', isAdmin, async (req, res) => {
+  const { text, targetLang } = req.query;
+
+  try {
+      const translation = await translateWithGoogle(text, languageCodes[targetLang].google);
+      res.json({ translatedText: translation });
+  } catch (error) {
+      console.error('번역 오류:', error);
+      res.status(500).json({ error: '번역 중 오류가 발생했습니다.' });
+  }
+});
+
+// 번역 요청 처리
+router.post('/', isAdmin, async (req, res) => {
   const { text, targetLang } = req.body;
 
   try {

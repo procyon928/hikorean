@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>제목</title>
+    <title><%= survey.title['ko'] %> 수정하기</title>
     <meta name="theme-color" content="#254B7A"> <!-- Android Chrome -->
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"> <!-- iOS Safari -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
@@ -18,23 +18,19 @@
 
     <div class="container-fluid p-0" style="max-width: 960px; margin-bottom: 100px;">
         <div class="content-wrapper p-3">
-          <h1 class="mb-4"><%= survey.title.ko %> 수정하기</h1>
+          <h1 class="mb-4"><%= survey.title['ko'] %> 수정하기</h1>
           <form action="/surveys/<%= survey._id %>" method="POST">
-              <div class="mb-3">
-                  <label for="lang" class="form-label">언어 선택:</label>
-                  <select name="lang" id="lang" class="form-select mb-3">
-                      <option value="ko" selected>한국어</option>
-                      <option value="en">영어</option>
-                      <option value="sc">간체 중국어</option>
-                      <option value="tc">번체 중국어</option>
-                      <option value="jp">일본어</option>
-                      <option value="vi">베트남어</option>
-                  </select>
-              </div>
-              <div class="mb-3">
+              <input type="hidden" name="lang" value="<%= lang %>">
+                <div class="mb-3">
                   <label for="title" class="form-label">설문조사 제목:</label>
-                  <input type="text" name="title[<%= lang %>]" class="form-control" value="<%= survey.title[lang] || '' %>" required>
-              </div>          
+                  <div class="input-group">
+                    <div class="form-floating">
+                      <input type="text" name="title[<%= lang %>]" class="form-control" value="<%= survey.title && survey.title[lang] ? survey.title[lang] : '' %>" placeholder="설문조사 제목" required>
+                      <label for="floatingInput"><%= survey.title && survey.title['ko'] ? survey.title['ko'] : '' %></label>
+                    </div>
+                    <button class="btn btn-outline-secondary" type="button" onclick="translateTitle('<%= survey.title && survey.title['ko'] ? survey.title['ko'].replace(/'/g, '\\\'') : '' %>', '<%= lang %>', 'input[name=\'title[<%= lang %>]\']')"><i class="bi bi-arrow-repeat"></i></button>
+                  </div>                
+                </div>          
                 <div class="mb-3 row">
                     <div class="col">
                         <label for="startDate" class="form-label">응답 시작 날짜:</label>
@@ -51,19 +47,33 @@
                       </div>
                     </div>
                 </div>
+                <div class="mb-3">
+                  <label class="form-label">결과 메시지 :</label>
+                  <p><%= survey.submitResult && survey.submitResult['ko'] ? survey.submitResult['ko'] : '' %></p>
+                  <div class="input-group">
+                    <textarea class="form-control" name="submitResult[<%= lang %>]" rows="4" placeholder="결과 메시지 입력"><%= survey.submitResult && survey.submitResult[lang] ? survey.submitResult[lang] : '' %></textarea>
+                    <button class="btn btn-outline-secondary" type="button" onclick="translateTitle('<%= survey.submitResult && survey.submitResult['ko'] ? survey.submitResult['ko'].replace(/[\r\n]+/g, ' ').replace(/'/g, '\\\'').replace(/&lt;/g, '<').replace(/&gt;/g, '>') : '' %>', '<%= lang %>', 'textarea[name=\'submitResult[<%= lang %>]\']')"><i class="bi bi-arrow-repeat"></i></button>
+                  </div>
+                </div>
 
                 <h2 class="mb-3">문항 수정</h2>
                 <div id="questions">
                     <% survey.questions.forEach((question, index) => { %>
                     <div class="question mb-3 p-3 border rounded">
-                      <div class="form-floating">
-                        <input type="text" name="questions[<%= index %>][questionText]" class="form-control mb-2" value="<%= question.questionText %>" placeholder="문항 내용" required>
-                        <label for="floatingInput"><%= question.questionText %></label>
-                      </div>
-                      <div class="form-floating">
-                        <input type="text" name="questions[<%= index %>][questionDescription]" class="form-control mb-2" value="<%= question.questionDescription %>" placeholder="문항 설명">
-                        <label for="floatingInput"><%= question.questionDescription %></label>
-                      </div>
+                        <div class="input-group mb-2">
+                          <div class="form-floating">
+                            <input type="text" name="questions[<%= index %>][questionText][<%= lang %>]" class="form-control" value="<%= question.questionText && question.questionText[lang] ? question.questionText[lang] : '' %>" placeholder="문항 내용" required>
+                            <label for="floatingInput"><%= question.questionText && question.questionText['ko'] ? question.questionText['ko'] : '' %></label>
+                          </div>
+                          <button class="btn btn-outline-secondary" type="button" onclick="translateTitle('<%= question.questionText && question.questionText['ko'] ? question.questionText['ko'].replace(/'/g, '\\\'') : '' %>', '<%= lang %>', 'input[name=\'questions[<%= index %>][questionText][<%= lang %>]\']')"><i class="bi bi-arrow-repeat"></i></button>                          
+                        </div>
+                        <div class="input-group mb-2">
+                          <div class="form-floating">
+                            <input type="text" name="questions[<%= index %>][questionDescription][<%= lang %>]" class="form-control" value="<%= question.questionDescription && question.questionDescription[lang] ? question.questionDescription[lang] : '' %>" placeholder="문항 설명">
+                            <label for="floatingInput"><%= question.questionDescription && question.questionDescription['ko'] ? question.questionDescription['ko'] : '' %></label>
+                          </div>
+                          <button class="btn btn-outline-secondary" type="button" onclick="translateTitle('<%= question.questionDescription && question.questionDescription['ko'] ? question.questionDescription['ko'].replace(/'/g, '\\\'') : '' %>', '<%= lang %>', 'input[name=\'questions[<%= index %>][questionDescription][<%= lang %>]\']')"><i class="bi bi-arrow-repeat"></i></button>
+                        </div>
                         <div class="mb-3 d-flex align-items-center">
                             <div class="form-check me-2 ps-0 flex-grow-1 text-nowrap">
                                 <input type="checkbox" name="questions[<%= index %>][isRequired]" value="true" <%= question.isRequired ? 'checked' : '' %>>
@@ -95,10 +105,13 @@
                         <div class="options" style="<%= ['single_choice', 'multiple_choice', 'dropdown', 'preference'].includes(question.questionType) ? 'block' : 'none' %>">
                             <% question.options.forEach((option, optionIndex) => { %>
                             <div class="option mb-2 d-flex align-items-center">
-                              <div class="form-floating w-100">
-                                <input type="text" name="questions[<%= index %>][options][]" class="form-control me-2" value="<%= option %>" placeholder="선택지 입력">
-                                <label for="floatingInput"><%= option %></label>
-                              </div>
+                              <div class="input-group">
+                                <div class="form-floating">
+                                  <input type="text" name="questions[<%= index %>][options][<%= optionIndex %>][<%= lang %>]" class="form-control" value="<%= option && option[lang] ? option[lang] : '' %>" placeholder="선택지 입력">
+                                  <label for="floatingInput"><%= option && option['ko'] ? option['ko'] : '' %></label>
+                                </div>
+                                <button class="btn btn-outline-secondary" type="button" onclick="translateTitle('<%= option && option['ko'] ? option['ko'].replace(/'/g, '\\\'') : '' %>', '<%= lang %>', 'input[name=\'questions[<%= index %>][options][<%= optionIndex %>][<%= lang %>]\']')"><i class="bi bi-arrow-repeat"></i></button>
+                              </div>                              
                             </div>
                             <% }); %>
                             <!-- <button type="button" class="btn btn-primary" onclick="addOption(this)">선택지 추가</button> -->
@@ -109,13 +122,13 @@
                             <label>단답형 답변:</label>
                             <div class="d-flex my-2">
                               <div class="form-floating d-flex">
-                                <input type="text" name="questions[<%= index %>][prefixText]" class="form-control me-2 flex-grow-1" value="<%= question.prefixText || '' %>" placeholder="접두사">
-                                <label for="floatingInput"><%= question.prefixText || '' %></label>
+                                <input type="text" name="questions[<%= index %>][prefixText][<%= lang %>]" class="form-control me-2 flex-grow-1" value="<%= question.prefixText && question.prefixText[lang] ? question.prefixText[lang] : '' %>" placeholder="접두사">
+                                <label for="floatingInput"><%= question.prefixText && question.prefixText['ko'] ? question.prefixText['ko'] : '' %></label>                                
                               </div>
                                 <input type="text" name="questions[<%= index %>][shortAnswer]" class="form-control me-2 flex-grow-1" value="<%= question.shortAnswer || '' %>" placeholder="단답형 답변 입력" disabled>
                               <div class="form-floating d-flex">
-                                <input type="text" name="questions[<%= index %>][suffixText]" class="form-control me-2 flex-grow-1" value="<%= question.suffixText || '' %>" placeholder="접미사">
-                                <label for="floatingInput"><%= question.suffixText || '' %></label>
+                                <input type="text" name="questions[<%= index %>][suffixText][<%= lang %>]" class="form-control me-2 flex-grow-1" value="<%= question.suffixText && question.suffixText[lang] ? question.suffixText[lang] : '' %>" placeholder="접미사">
+                                <label for="floatingInput"><%= question.suffixText && question.suffixText['ko'] ? question.suffixText['ko'] : '' %></label>
                               </div>
                             </div>
                             <select name="questions[<%= index %>][inputType]" class="form-select mb-2" onchange="updateInputType(this)">
@@ -155,7 +168,11 @@
                         <!-- infoText 수정 필드 추가 -->
                         <div class="info" style="<%= question.questionType === 'info' ? 'block' : 'none' %>">
                             <label class="form-label">안내문:</label>
-                            <textarea class="form-control mb-2" name="questions[<%= index %>][infoText]" rows="4" placeholder="안내문 입력"><%= question.infoText %></textarea>
+                            <p><%= question.infoText && question.infoText['ko'] ? question.infoText['ko'] : '' %></p>
+                            <div class="input-group mb-2">
+                              <textarea class="form-control" name="questions[<%= index %>][infoText][<%= lang %>]" rows="4" placeholder="안내문 입력"><%= question.infoText && question.infoText[lang] ? question.infoText[lang] : '' %></textarea>
+                              <button class="btn btn-outline-secondary" type="button" onclick="translateTitle('<%= question.infoText && question.infoText['ko'] ? question.infoText['ko'].replace(/[\r\n]+/g, ' ').replace(/'/g, '\\\'').replace(/&lt;/g, '<').replace(/&gt;/g, '>') : '' %>', '<%= lang %>', 'textarea[name=\'questions[<%= index %>][infoText][<%= lang %>]\']')"><i class="bi bi-arrow-repeat"></i></button>
+                            </div>
                         </div>
                     </div>
                     <% }); %>
@@ -172,6 +189,7 @@
         document.documentElement.dataset.lang = '<%= lang %>';
     </script>
     <script src="/js/lang.js"></script>
+    <script src="/js/googleTranslate.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
         // 페이지 로드 시 각 질문의 유형에 따라 선택지 옵션 표시 여부 결정

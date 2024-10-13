@@ -1,12 +1,14 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const Survey = require('../models/Survey');
 const Response = require('../models/Response');
-const { ensureAuthenticated, isAdmin } = require('../middleware/auth');
+const { isAdmin } = require('../middleware/auth');
+const { translateWithGoogle } = require('./translate');
 
 const router = express.Router();
 
 // 설문조사 목록 페이지
-router.get('/admin/surveys', ensureAuthenticated, async (req, res) => {
+router.get('/admin/surveys', isAdmin, async (req, res) => {
     const surveys = await Survey.find().populate('createdBy', 'username').sort({ createdAt: -1 });
     res.render('surveys/list', { surveys });
 });
@@ -19,7 +21,7 @@ router.get('/surveys/new', isAdmin, (req, res) => {
 // 설문조사 생성 처리
 router.post('/surveys', isAdmin, async (req, res) => {
   console.log(req.body); // 요청 본문 출력
-  const { title, questions, startDate, endDate } = req.body;
+  const { title, questions, startDate, endDate, submitResult } = req.body;
 
   // 비어있는 필드 확인
   if (!questions || !Array.isArray(questions)) {
@@ -67,7 +69,8 @@ router.post('/surveys', isAdmin, async (req, res) => {
       questions: formattedQuestions,
       startDate: startDate ? new Date(startDate) : null,
       endDate: endDate ? new Date(endDate) : null,
-      createdBy: req.user._id
+      createdBy: req.user._id,
+      submitResult: { ko: submitResult }
   });
   await survey.save();
   res.redirect('/admin/surveys');
@@ -92,7 +95,7 @@ router.post('/surveys/verify-code', async (req, res) => {
 
 // 응답 처리
 router.post('/surveys/:id/respond', async (req, res) => {
-  const { answers, startedAt, email } = req.body;
+  const { answers, startedAt, email, lang } = req.body;
   console.log('Answers received:', answers);
   const survey = await Survey.findById(req.params.id);
 
@@ -118,8 +121,12 @@ router.post('/surveys/:id/respond', async (req, res) => {
           return res.status(400).send(`문항 ${i + 1}은 필수입니다.`);
       }
   
-      // 포맷팅된 답변 추가
-      const otherAnswer = answerObj.otherAnswer || "";
+      // '기타' 응답 검증 추가
+      let otherAnswer = answerObj.otherAnswer || "";
+      if (question.allowOther && !answerObj.otherAnswer) {
+          // '기타' 응답이 선택되지 않은 경우, otherAnswer를 비워서 전송
+          otherAnswer = "";
+      }
 
       // 기존 문항 유형에 대한 처리
       if (question.questionType === 'preference') {
@@ -160,17 +167,37 @@ router.post('/surveys/:id/respond', async (req, res) => {
       answerIndex++;
   }
 
+  // 응답 객체 생성
+  const userId = req.user ? req.user._id : new mongoose.Types.ObjectId(); // 로그인한 경우 userId 설정, 비회원일 경우 임시 ObjectId 생성
   const response = new Response({
       surveyId: req.params.id,
-      userId: req.user ? req.user._id : null, // 로그인한 경우 userId 설정
+      userId: userId, // userId에 회원 ID 또는 임시 ObjectId 설정
       answers: formattedAnswers, // 포맷팅된 answers 사용
       startedAt: new Date(startedAt),
-      email
+      submittedAt: new Date(),
+      email,
+      lang
   });
   await response.save();
-  
-  // 설문조사 목록 페이지로 리디렉션
-  res.redirect('/admin/surveys');
+    
+  // 결과 페이지로 리다이렉트
+  res.redirect(`/surveys/${req.params.id}/confirm?lang=${lang}`);
+});
+
+// 확인 페이지 라우터 추가
+router.get('/surveys/:id/confirm', async (req, res) => {
+  const survey = await Survey.findById(req.params.id);
+  if (!survey) {
+      return res.status(404).send('설문을 찾을 수 없습니다.');
+  }
+
+  const submitResult = survey.submitResult || {}; // 기본값 설정
+
+  res.render('surveys/confirm', {
+      survey: survey,
+      submitResult: submitResult,
+      lang: req.query.lang || 'ko' // 언어 설정
+  });
 });
 
 // 설문조사 응답 페이지
@@ -189,16 +216,16 @@ router.get('/surveys/:id/respond', async (req, res) => {
     const endDate = survey.endDate ? new Date(survey.endDate) : null;
 
     if (startDate && now < startDate) {
-        return res.render('surveys/respond', { survey, message: '설문 가능 기간이 아닙니다.' });
+        return res.render('surveys/respond', { survey, message: '설문 가능 기간이 아닙니다.', formattedStartDate: null, formattedEndDate: null });
     }
     if (endDate && now > endDate) {
-        return res.render('surveys/respond', { survey, message: '설문 기간이 종료되었습니다.' });
+        return res.render('surveys/respond', { survey, message: '설문 기간이 종료되었습니다.', formattedStartDate: null, formattedEndDate: null });
     }
   }
 
   // 쿼리 파라미터에서 언어 가져오기
   const lang = req.query.lang || 'ko'; // 기본값 한국어
-  let formattedStartDate, formattedEndDate;
+  let formattedStartDate = null, formattedEndDate = null; // 초기화
 
   // 언어에 따른 locale 설정
   const localeMap = {
@@ -219,7 +246,6 @@ router.get('/surveys/:id/respond', async (req, res) => {
   // 설문조사 응답 페이지 렌더링
   res.render('surveys/respond', { survey, startedAt, message, formattedStartDate, formattedEndDate });
 });
-
 
 router.get('/surveys/:id/countResponses', async (req, res) => {
   const { date, time } = req.query;
@@ -255,7 +281,8 @@ router.get('/surveys/:id/edit', isAdmin, async (req, res) => {
 
 // 설문조사 수정 처리
 router.post('/surveys/:id', isAdmin, async (req, res) => {
-  const { title, questions, startDate, endDate, lang } = req.body;
+  console.log(req.body);
+  const { title, questions, startDate, endDate, lang, submitResult } = req.body;
 
   // 비어있는 필드 확인
   if (!questions || !Array.isArray(questions)) {
@@ -263,64 +290,112 @@ router.post('/surveys/:id', isAdmin, async (req, res) => {
       return res.status(400).send('Invalid questions format');
   }
 
-  // 기존 설문조사 업데이트
-  await Survey.findByIdAndUpdate(req.params.id, {
-      title: {
-          ...req.body.title, // 각 언어의 제목을 포함
-          [lang]: title[lang] // 선택된 언어의 제목을 업데이트
-      },
-      questions: questions.map((question) => ({
+  // 기존 설문조사 객체를 가져옵니다.
+  const survey = await Survey.findById(req.params.id);
+
+  // 기존 제목을 업데이트합니다.
+  const updatedTitle = {
+      ...survey.title,
+      [lang]: title[lang] !== undefined && title[lang] !== '' ? title[lang] : survey.title[lang] // 기존 값 유지
+  };
+
+  // 결과 메시지를 업데이트합니다.
+  const updatedSubmitResult = {
+      ...survey.submitResult,
+      [lang]: submitResult && submitResult[lang] !== undefined && submitResult[lang] !== '' ? submitResult[lang] : survey.submitResult[lang] // 기존 값 유지
+  };
+
+  // 질문을 업데이트합니다.
+  const updatedQuestions = questions.map((question, index) => {
+      const existingQuestion = survey.questions[index]; // 기존 질문을 가져옵니다.
+      
+      return {
           questionText: {
-              ...question.questionText,
-              [lang]: question.questionText[lang] // 선택된 언어의 질문 텍스트를 업데이트
+              ...existingQuestion.questionText,
+              [lang]: question.questionText[lang] !== undefined && question.questionText[lang] !== '' ? question.questionText[lang] : existingQuestion.questionText[lang] // 기존 값 유지
           },
           questionDescription: {
-              ...question.questionDescription,
-              [lang]: question.questionDescription[lang] // 선택된 언어의 질문 설명을 업데이트
+              ...existingQuestion.questionDescription,
+              [lang]: question.questionDescription[lang] !== undefined && question.questionDescription[lang] !== '' ? question.questionDescription[lang] : existingQuestion.questionDescription[lang] // 기존 값 유지
           },
           questionType: question.questionType,
-          options: question.options.map(option => ({
-              ...option,
-              [lang]: option[lang] // 선택지 텍스트도 다국어로 저장
-          })),
+          options: question.options.map((option, optionIndex) => {
+              const existingOption = existingQuestion.options[optionIndex]; // 기존 옵션을 가져옵니다.
+              return {
+                  ...existingOption,
+                  [lang]: option[lang] !== undefined && option[lang] !== '' ? option[lang] : existingOption[lang] // 기존 값 유지
+              };
+          }),
           isRequired: question.isRequired === 'true',
           allowOther: question.allowOther === 'true',
           prefixText: {
-              ...question.prefixText,
-              [lang]: question.prefixText[lang] // 선택된 언어의 prefixText를 업데이트
+              ...existingQuestion.prefixText,
+              [lang]: question.prefixText[lang] !== undefined && question.prefixText[lang] !== '' ? question.prefixText[lang] : existingQuestion.prefixText[lang] // 기존 값 유지
           },
           suffixText: {
-              ...question.suffixText,
-              [lang]: question.suffixText[lang] // 선택된 언어의 suffixText를 업데이트
+              ...existingQuestion.suffixText,
+              [lang]: question.suffixText[lang] !== undefined && question.suffixText[lang] !== '' ? question.suffixText[lang] : existingQuestion.suffixText[lang] // 기존 값 유지
           },
           inputType: question.inputType || 'all',
           minValue: question.minValue || null,
           maxValue: question.maxValue || null,
           rankLimit: question.rankLimit || null,
           reservation: {
-              startDate: question.reservation ? question.reservation.startDate : null,
-              endDate: question.reservation ? question.reservation.endDate : null,
-              maxParticipants: question.reservation ? question.reservation.maxParticipants : null,
-              exceptionDates: question.reservation ? question.reservation.exceptionDates : []
+              startDate: existingQuestion.reservation ? existingQuestion.reservation.startDate : null,
+              endDate: existingQuestion.reservation ? existingQuestion.reservation.endDate : null,
+              maxParticipants: existingQuestion.reservation ? existingQuestion.reservation.maxParticipants : null,
+              exceptionDates: existingQuestion.reservation ? existingQuestion.reservation.exceptionDates : []
           },
           time_reservation: {
-              availableDates: question.time_reservation ? question.time_reservation.availableDates : [],
-              startTime: question.time_reservation ? question.time_reservation.startTime : null,
-              endTime: question.time_reservation ? question.time_reservation.endTime : null,
-              interval: question.time_reservation ? question.time_reservation.interval : null,
-              maxParticipants: question.time_reservation ? question.time_reservation.maxParticipants : null
+              availableDates: existingQuestion.time_reservation ? existingQuestion.time_reservation.availableDates : [],
+              startTime: existingQuestion.time_reservation ? existingQuestion.time_reservation.startTime : null,
+              endTime: existingQuestion.time_reservation ? existingQuestion.time_reservation.endTime : null,
+              interval: existingQuestion.time_reservation ? existingQuestion.time_reservation.interval : null,
+              maxParticipants: existingQuestion.time_reservation ? existingQuestion.time_reservation.maxParticipants : null
           },
           infoText: {
-              ...question.infoText,
-              [lang]: question.infoText[lang] // 선택된 언어의 infoText를 업데이트
+              ...existingQuestion.infoText,
+              [lang]: question.infoText[lang] !== undefined && question.infoText[lang] !== '' ? question.infoText[lang] : existingQuestion.infoText[lang] // 기존 값 유지
           }
-      })),
+      };
+  });
+
+  // tc 번역 업데이트
+  if (lang === 'sc' && !survey.title.tc) {
+    // 제목 번역
+    updatedTitle.tc = updatedTitle[lang] ? await translateWithGoogle(updatedTitle[lang], 'zh-TW') : ''; // sc 값이 없으면 tc도 빈 문자열로 설정
+
+    // 결과 메시지 번역
+    updatedSubmitResult.tc = updatedSubmitResult[lang] ? await translateWithGoogle(updatedSubmitResult[lang], 'zh-TW') : ''; // sc 값이 없으면 tc도 빈 문자열로 설정
+
+    // 질문 번역
+    await Promise.all(updatedQuestions.map(async (question) => {
+        question.questionText.tc = question.questionText[lang] ? await translateWithGoogle(question.questionText[lang], 'zh-TW') : ''; // sc 값이 없으면 tc도 빈 문자열로 설정
+        question.questionDescription.tc = question.questionDescription[lang] ? await translateWithGoogle(question.questionDescription[lang], 'zh-TW') : ''; // sc 값이 없으면 tc도 빈 문자열로 설정
+
+        // infoText 번역
+        question.infoText.tc = question.infoText[lang] ? await translateWithGoogle(question.infoText[lang], 'zh-TW') : ''; // sc 값이 없으면 tc도 빈 문자열로 설정
+
+        // 옵션 번역
+        await Promise.all(question.options.map(async (option) => {
+            option.tc = option[lang] ? await translateWithGoogle(option[lang], 'zh-TW') : ''; // sc 값이 없으면 tc도 빈 문자열로 설정
+        }));
+    }));
+  }
+
+  // 설문조사를 업데이트합니다.
+  await Survey.findByIdAndUpdate(req.params.id, {
+      title: updatedTitle,
+      questions: updatedQuestions,
       startDate: startDate ? new Date(startDate) : null,
-      endDate: endDate ? new Date(endDate) : null
+      endDate: endDate ? new Date(endDate) : null,
+      submitResult: updatedSubmitResult,
+      lang: req.query.lang || 'ko'
   });
 
   res.redirect('/admin/surveys');
 });
+
 
 // 설문조사 삭제 처리
 router.post('/surveys/:id/delete', isAdmin, async (req, res) => {
@@ -343,12 +418,17 @@ router.post('/surveys/:id/clone', isAdmin, async (req, res) => {
   }
 
   const clonedSurvey = new Survey({
-      title: originalSurvey.title + ' (복제)', // 제목에 '(복제)' 추가
+      title: {
+          ...originalSurvey.title,
+          ko: originalSurvey.title.ko + ' (복사본)' // 제목에 '(복제)' 추가
+      },
       questions: originalSurvey.questions.map(question => ({
           questionText: question.questionText,
           questionDescription: question.questionDescription,
           questionType: question.questionType,
-          options: question.options,
+          options: question.options.map(option => ({
+              ...option // 다국어 지원을 위한 객체
+          })),
           isRequired: question.isRequired,
           allowOther: question.allowOther,
           prefixText: question.prefixText,
@@ -370,9 +450,12 @@ router.post('/surveys/:id/clone', isAdmin, async (req, res) => {
   res.redirect('/admin/surveys');
 });
 
+
 // 설문조사 결과 보기 페이지 (관리자용)
 router.get('/surveys/:id/results', isAdmin, async (req, res) => {
-  const responses = await Response.find({ surveyId: req.params.id }).populate('userId', 'username');
+  const responses = await Response.find({ surveyId: req.params.id })
+    .populate('userId', 'username'); // userId가 ObjectId로 변경되었으므로 populate 가능
+
   const survey = await Survey.findById(req.params.id);
   res.render('surveys/results', { responses, survey });
 });

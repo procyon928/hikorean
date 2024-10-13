@@ -75,7 +75,7 @@ router.get('/notices/new', isAdmin, (req, res) => {
 
 // 안내문 작성
 router.post('/notices', isAdmin, async (req, res) => {
-  const { title, content, category, sticky } = req.body;
+  const { title, content, category, sticky, shortId } = req.body;
   const username = req.user.username;
 
   const sanitizedContent = removeSpecialCharacters(content);
@@ -222,10 +222,10 @@ router.post('/notices/delete/:id', isAdmin, async (req, res) => {
 
 // 스타일 적용 함수 (서버 측)
 function applyStyles(text) {
-    text = text.replace(/\*\*(.*?)\*\*/g, '<span class="fw-bold">$1</span>');
-    text = text.replace(/__(.*?)__/g, '<span class="text-decoration-underline">$1</span>');
-    text = text.replace(/\#(.*?)\#/g, '<span class="text-danger">$1</span>'); //style="color: #FF1744;"
-    text = text.replace(/\[(.*?)\]/g, '<span class="bg-warning-subtle">&nbsp;$1&nbsp;</span>'); //style="background-color: #FBF595;"
+    text = text.replace(/\+\+(.*?)\+\+/g, '<span class="fw-bold">$1</span>');
+    text = text.replace(/\|\|(.*?)\|\|/g, '<span class="text-decoration-underline">$1</span>');
+    text = text.replace(/\%\%(.*?)\%\%/g, '<span class="text-danger">$1</span>'); //style="color: #FF1744;"
+    text = text.replace(/;;(.*?);;/g, '<span class="bg-warning-subtle">&nbsp;$1&nbsp;</span>'); //style="background-color: #FBF595;"
 
     // Bootstrap 클래스 추가
     text = text.replace(/<h1\s*/g, '<h1 class="fs-3 fw-bold py-3 mt-3 mb-2 border-bottom" '); // 제목

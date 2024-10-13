@@ -13,7 +13,6 @@
 </head>
 <body>
   <%- include('../partials/navbar') %> 
-  <%- include('../partials/bottom-navbar') %>
   
   <div class="container-fluid p-0" style="max-width: 960px; margin-bottom: 100px;">
       <div class="content-wrapper p-3">
@@ -36,5 +35,15 @@
     document.documentElement.dataset.lang = '<%= lang %>';
 </script>
 <script src="/js/lang.js"></script> 
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      const images = document.querySelectorAll('.content-wrapper img'); // 이미지 선택
+      images.forEach(img => {
+          img.style.maxWidth = '100%'; // 최대 너비를 100%로 설정
+          img.style.height = 'auto'; // 높이를 자동으로 설정
+      });
+  });
+</script>
+
 </body>
 </html>

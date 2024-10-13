@@ -3,8 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= survey.title %> 결과</title>
+    <title><%= survey.title['ko'] %> 결과</title>
+    <meta name="theme-color" content="#254B7A"> <!-- Android Chrome -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"> <!-- iOS Safari -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css"> <!-- CSS 파일 경로 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
     <style>
         #resultsTable {
             width: 100%;
@@ -13,8 +20,18 @@
     </style>
 </head>
 <body>
-    <h1><%= survey.title %> 결과</h1>
-    <div id="resultsTable"></div>
+    <%- include('../partials/navbar') %> 
+    <%- include('../partials/bottom-navbar') %>
+    <%- include('../partials/managebar') %>
+    <div class="container-fluid p-0" style="max-width: 960px; margin-bottom: 100px;">
+        <div class="content-wrapper p-3">
+            <h1><%= survey.title['ko'] %> 결과</h1>
+            <button id="exportButton" class="btn btn-success mb-3 btn-sm"><i class="bi bi-download"></i></button>
+            <input type="text" id="filterInput" class="form-control" placeholder="응답자 검색" />
+
+            <div id="resultsTable"></div>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
     <script>
@@ -27,8 +44,21 @@
                 response.answers.forEach(answer => {
                     answerData[answer.questionId] = answer.answer;
                 });
+
+                // 소요 시간 계산
+                const startedAt = new Date(response.startedAt);
+                const submittedAt = new Date(response.submittedAt);
+                const duration = Math.abs(submittedAt - startedAt); // 밀리초 단위
+
+                // 분과 초로 변환
+                const durationMinutes = Math.floor((duration / 1000) / 60); // 분 단위
+                const durationSeconds = Math.floor((duration / 1000) % 60); // 초 단위
+
                 return {
-                    userId: response.userId ? response.userId.username : '익명',
+                    userId: response.userId ? response.userId.username : '비회원', // 사용자 이름 또는 비회원 표시
+                    duration: `${durationMinutes} 분 ${durationSeconds} 초`, // 소요 시간 표시
+                    submittedAt: submittedAt.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }), // 제출 시간 변환
+                    lang: response.lang, // 언어 추가
                     ...answerData
                 };
             });
@@ -40,12 +70,65 @@
                 colHeaders: true,
                 columns: [
                     { data: 'userId', title: '응답자' },
+                    { data: 'lang', title: '언어' },
+                    { data: 'submittedAt', title: '제출 시간' }, // 제출 시간 열 유지
+                    { data: 'duration', title: '소요 시간' }, // 소요 시간 열 추가
                     <% survey.questions.forEach(question => { %>
-                        { data: '<%= question._id %>', title: '<%= question.questionText %>' },
+                        { data: '<%= question._id %>', title: '<%= question.questionText['ko'] %>' },
                     <% }); %>
                 ],
                 rowHeaders: true,
-                licenseKey: 'non-commercial-and-evaluation' // 라이센스 키
+                licenseKey: 'non-commercial-and-evaluation', // 라이센스 키
+                columnSorting: true, // 정렬 기능 활성화
+            });
+
+            // 엑셀 다운로드 기능
+            document.getElementById('exportButton').addEventListener('click', function() {
+                // 데이터 배열 생성
+                const exportData = tableData.map((row, index) => {
+                    const rowData = {
+                        '순번': index + 1,
+                        '응답자': row.userId,
+                        '언어': row.lang,
+                        '제출 시간': row.submittedAt,
+                        '소요 시간': row.duration,
+                    };
+
+                    // 질문에 대한 답변 추가
+                    <% survey.questions.forEach(question => { %>
+                        rowData['<%= question.questionText['ko'] %>'] = row['<%= question._id %>'];
+                    <% }); %>
+
+                    return rowData;
+                });
+
+                // 파일 이름 생성
+                const responseCount = tableData.length;
+                const currentDate = new Date();
+                const koreanTime = new Date(currentDate.getTime() + 9 * 60 * 60 * 1000); // UTC 기준으로 9시간 더하기
+                const formattedDate = koreanTime.toISOString().slice(0, 19).replace(/-/g, '').replace(/T/, '_').replace(/:/g, ''); // YYYYMMDD_HHMMSS 형식
+                const fileName = `${'<%= survey.title["ko"] %>'}(${responseCount}명)_${formattedDate}.xlsx`;
+
+                // 워크북 생성
+                const worksheet = XLSX.utils.json_to_sheet(exportData);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, '설문 결과');
+
+                // 엑셀 파일 다운로드
+                XLSX.writeFile(workbook, fileName);
+            });
+
+
+            // 필터링 로직
+            document.getElementById('filterInput').addEventListener('input', function() {
+                const filterValue = this.value.toLowerCase();
+
+                const filteredData = tableData.filter(row => {
+                    return row.userId.toLowerCase().includes(filterValue); // 사용자 이름 필터링
+                });
+
+                // Handsontable 데이터 업데이트
+                hot.loadData(filteredData);
             });
         });
     </script>

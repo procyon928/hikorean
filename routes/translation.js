@@ -226,7 +226,7 @@ router.post('/notices/translate/save/:id', isAdmin, async (req, res) => {
             notice.translations.tc = {
                 ...notice.translations.tc,
                 translatedContent: tcFinalTranslationString,
-                finalSavedAt: new Date(), // 현재 시간 저장
+                // finalSavedAt: new Date(), // 현재 시간 저장
                 finalSavedBy: username // 저장한 사용자
             };
         }
