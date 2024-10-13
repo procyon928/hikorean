@@ -363,22 +363,22 @@ router.post('/surveys/:id', isAdmin, async (req, res) => {
   // tc 번역 업데이트
   if (lang === 'sc' && !survey.title.tc) {
     // 제목 번역
-    updatedTitle.tc = updatedTitle[lang] ? await translateWithGoogle(updatedTitle[lang], 'zh-TW') : ''; // sc 값이 없으면 tc도 빈 문자열로 설정
+    updatedTitle.tc = updatedTitle[lang] ? await translateWithGoogle(updatedTitle[lang], 'zh-TW', 'zh-CN') : ''; // sc 값이 없으면 tc도 빈 문자열로 설정
 
     // 결과 메시지 번역
-    updatedSubmitResult.tc = updatedSubmitResult[lang] ? await translateWithGoogle(updatedSubmitResult[lang], 'zh-TW') : ''; // sc 값이 없으면 tc도 빈 문자열로 설정
+    updatedSubmitResult.tc = updatedSubmitResult[lang] ? await translateWithGoogle(updatedSubmitResult[lang], 'zh-TW', 'zh-CN') : ''; // sc 값이 없으면 tc도 빈 문자열로 설정
 
     // 질문 번역
     await Promise.all(updatedQuestions.map(async (question) => {
-        question.questionText.tc = question.questionText[lang] ? await translateWithGoogle(question.questionText[lang], 'zh-TW') : ''; // sc 값이 없으면 tc도 빈 문자열로 설정
-        question.questionDescription.tc = question.questionDescription[lang] ? await translateWithGoogle(question.questionDescription[lang], 'zh-TW') : ''; // sc 값이 없으면 tc도 빈 문자열로 설정
+        question.questionText.tc = question.questionText[lang] ? await translateWithGoogle(question.questionText[lang], 'zh-TW', 'zh-CN') : ''; // sc 값이 없으면 tc도 빈 문자열로 설정
+        question.questionDescription.tc = question.questionDescription[lang] ? await translateWithGoogle(question.questionDescription[lang], 'zh-TW', 'zh-CN') : ''; // sc 값이 없으면 tc도 빈 문자열로 설정
 
         // infoText 번역
-        question.infoText.tc = question.infoText[lang] ? await translateWithGoogle(question.infoText[lang], 'zh-TW') : ''; // sc 값이 없으면 tc도 빈 문자열로 설정
+        question.infoText.tc = question.infoText[lang] ? await translateWithGoogle(question.infoText[lang], 'zh-TW', 'zh-CN') : ''; // sc 값이 없으면 tc도 빈 문자열로 설정
 
         // 옵션 번역
         await Promise.all(question.options.map(async (option) => {
-            option.tc = option[lang] ? await translateWithGoogle(option[lang], 'zh-TW') : ''; // sc 값이 없으면 tc도 빈 문자열로 설정
+            option.tc = option[lang] ? await translateWithGoogle(option[lang], 'zh-TW', 'zh-CN') : ''; // sc 값이 없으면 tc도 빈 문자열로 설정
         }));
     }));
   }

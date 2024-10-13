@@ -20,7 +20,7 @@ const languageCodes = {
 // DeepL 지원 언어 목록 https://developers.deepl.com/docs/resources/supported-languages#source-languages
 
 // 구글 번역 API 호출 코드
-const translateWithGoogle = async (text, targetLang) => {
+const translateWithGoogle = async (text, targetLang, sourceLang = 'ko') => {
   const apiKey = process.env.GOOGLE_API_KEY;
   const url = `https://translation.googleapis.com/language/translate/v2?key=${apiKey}`;
 
@@ -28,6 +28,7 @@ const translateWithGoogle = async (text, targetLang) => {
     const response = await axios.post(url, {
       q: text,
       target: targetLang,
+      source: sourceLang, // 출발어를 설정
       format: 'text'
     });
     return response.data.data.translations[0].translatedText;
@@ -38,9 +39,9 @@ const translateWithGoogle = async (text, targetLang) => {
 };
 
 // 마이크로소프트 번역 API 호출 코드
-const translateWithMicrosoft = async (text, targetLang) => {
+const translateWithMicrosoft = async (text, targetLang, sourceLang = 'ko') => {
   const apiKey = process.env.MICROSOFT_API_KEY;
-  const endpoint = 'https://api.cognitive.microsofttranslator.com/translate?api-version=3.0&from=ko&textType=html';
+  const endpoint = `https://api.cognitive.microsofttranslator.com/translate?api-version=3.0&from=${sourceLang}&textType=html`;
 
   try {
     const response = await axios.post(`${endpoint}&to=${targetLang}`, [{
