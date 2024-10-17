@@ -13,6 +13,7 @@
 </head>
 <body>
     <%- include('../partials/navbar') %> 
+    <%- include('../partials/bottom-navbar') %>
 
     <div class="container-fluid p-0" style="max-width: 960px; margin-bottom: 100px;">
       <div class="content-wrapper p-3">
@@ -21,19 +22,13 @@
             <div class="alert alert-warning mb-3 text-black" role="alert">
                 <% if (survey.startDate) { %>
                   <div class="my-1 align-items-center">
-                      <p class="mb-1"><i class="bi bi-play-btn-fill"></i>
-                      <span class="ms-2">
-                          <%= formattedStartDate %> <!-- 서버에서 포맷된 날짜 사용 -->
-                      </span></p>
+                      <p class="mb-1">시작 시간 : <%= formattedStartDate %></p>
                   </div>
               <% } %>
               
               <% if (survey.endDate) { %>
                   <div class="my-1 align-items-center">
-                      <p class="mb-1"><i class="bi bi-stop-btn-fill"></i>
-                      <span class="ms-2">
-                          <%= formattedEndDate %> <!-- 서버에서 포맷된 날짜 사용 -->
-                      </span></p>
+                      <p class="mb-1">종료 시간 : <%= formattedEndDate %></p>
                       <span id="remaining-time" class="text-danger"></span>
                   </div>
       
@@ -43,8 +38,12 @@
                           const endTime = new Date(endDate);
                           const currentTime = new Date();
                           const remainingTime = endTime - currentTime;
-      
-                          if (remainingTime > 0) {
+                  
+                          // 12시간을 밀리초로 정의
+                          const twelveHoursInMilliseconds = 12 * 60 * 60 * 1000; // 12 * 60분 * 60초 * 1000밀리초
+                  
+                          // 12시간 이내인지 확인
+                          if (remainingTime > 0 && remainingTime <= twelveHoursInMilliseconds) {
                               const hours = Math.floor((remainingTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                               const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
                               const seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
@@ -54,7 +53,7 @@
                               document.getElementById("remaining-time").style.display = "none"; // 숨김
                           }
                       }
-      
+                  
                       // 페이지 로드 시 남은 시간을 업데이트
                       window.onload = function() {
                           const endDate = new Date("<%= survey.endDate.toISOString() %>");
@@ -70,7 +69,7 @@
         <% } else { %>
           <form action="/surveys/<%= survey._id %>/respond" method="POST" onsubmit="return submitForm(event)">
                 <% survey.questions.forEach(function(question, index) { %>
-                    <div class="mb-3 border rounded-2 shadow-sm p-3">
+                    <div class="mb-3 rounded-3 shadow-sm bg-white p-3">
                         <% if (question.questionType === 'info') { %>
                             <label class="fs-5 fw-bold mb-2"><%= question.questionText[lang] || question.questionText['ko'] %></label>
                             <p class="rounded bg-danger-subtle small p-2 d-flex align-items-start">
@@ -314,7 +313,7 @@
                                                   label.classList.add('btn', 'btn-outline-secondary', 'col-6', 'col-md-3', 'mb-2', 'mx-1'); // 버튼 스타일과 그리드 클래스 추가
                               
                                                   // 버튼 폭 조정
-                                                  label.style.flex = '1 0 21%'; // PC에서 4개가 들어가도록 조정
+                                                  label.style.flex = '1 0 15%'; // PC에서 4개가 들어가도록 조정
                                                   label.style.minWidth = '130px'; // 최소 폭 설정
                               
                                                   // 라디오 버튼과 레이블을 DOM에 추가

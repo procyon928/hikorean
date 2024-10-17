@@ -18,10 +18,11 @@ const noticeRoutes = require('./routes/notice');
 const translationRoutes = require('./routes/translation');
 const { router: translateRouter } = require('./routes/translate');
 const surveyRoutes = require('./routes/survey');
-const shortUrlRoutes = require('./routes/shortUrl');
 const admissionRoutes = require('./routes/admission');
 const scheduleRoutes = require('./routes/schedule');
+const cafeteriaRoute = require('./routes/cafeteria');
 const homeRoutes = require('./routes/home');
+const shortUrlRoutes = require('./routes/shortUrl');
 const passport = require('passport');
 const flash = require('connect-flash');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
@@ -167,6 +168,7 @@ app.use(surveyRoutes);
 app.use('/', boardSettingRoutes.router);
 app.use('/admission', admissionRoutes);
 app.use('/admin/schedule', scheduleRoutes);
+app.use('/cafeteria', cafeteriaRoute)
 app.use('/', homeRoutes);
 app.use(shortUrlRoutes); // 제일 하위에 두기
 

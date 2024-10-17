@@ -148,13 +148,16 @@ router.post('/surveys/:id/respond', async (req, res) => {
           const inputType = question.inputType; // inputType 사용
 
           if (inputType === 'integer') {
-              const minValue = parseInt(answerObj.minValue, 10); // 최소값 가져오기
-              const maxValue = parseInt(answerObj.maxValue, 10); // 최대값 가져오기
+              // 필수 문항이 아닐 경우, 응답이 없으면 검증을 생략
+              if (question.isRequired || answer.trim() !== "") {
+                  const minValue = parseInt(answerObj.minValue, 10); // 최소값 가져오기
+                  const maxValue = parseInt(answerObj.maxValue, 10); // 최대값 가져오기
 
-              // 정수 입력 유효성 검사
-              const answerValue = parseInt(answer, 10);
-              if (!Number.isInteger(answerValue) || answerValue < minValue || answerValue > maxValue) {
-                  return res.status(400).send(`문항 ${i + 1}의 입력값은 ${minValue}와 ${maxValue} 사이의 정수여야 합니다.`);
+                  // 정수 입력 유효성 검사
+                  const answerValue = parseInt(answer, 10);
+                  if (!Number.isInteger(answerValue) || answerValue < minValue || answerValue > maxValue) {
+                      return res.status(400).send(`문항 ${i + 1}의 입력값은 ${minValue}와 ${maxValue} 사이의 정수여야 합니다.`);
+                  }
               }
           } else if (inputType === 'letters') {
               // 영문자 입력 유효성 검사
@@ -211,16 +214,13 @@ router.get('/surveys/:id/respond', async (req, res) => {
   const startedAt = new Date();
 
   // 시작 날짜와 종료 날짜 확인
-  if (survey.startDate || survey.endDate) {
-    const startDate = survey.startDate ? new Date(survey.startDate) : null;
-    const endDate = survey.endDate ? new Date(survey.endDate) : null;
+  const startDate = survey.startDate ? new Date(survey.startDate) : null;
+  const endDate = survey.endDate ? new Date(survey.endDate) : null;
 
-    if (startDate && now < startDate) {
-        return res.render('surveys/respond', { survey, message: '설문 가능 기간이 아닙니다.', formattedStartDate: null, formattedEndDate: null });
-    }
-    if (endDate && now > endDate) {
-        return res.render('surveys/respond', { survey, message: '설문 기간이 종료되었습니다.', formattedStartDate: null, formattedEndDate: null });
-    }
+  if (startDate && now < startDate) {
+      message = '설문 가능 기간이 아닙니다.';
+  } else if (endDate && now > endDate) {
+      message = '설문 기간이 종료되었습니다.';
   }
 
   // 쿼리 파라미터에서 언어 가져오기
@@ -240,12 +240,14 @@ router.get('/surveys/:id/respond', async (req, res) => {
   // 날짜 형식 결정 (모두 Asia/Seoul로 통일)
   const locale = localeMap[lang] || 'ko-KR'; // 기본값 한국어
 
+  // 항상 날짜 형식 변환
   formattedStartDate = survey.startDate ? new Date(survey.startDate).toLocaleString(locale, { timeZone: 'Asia/Seoul' }) : null;
   formattedEndDate = survey.endDate ? new Date(survey.endDate).toLocaleString(locale, { timeZone: 'Asia/Seoul' }) : null;
 
   // 설문조사 응답 페이지 렌더링
   res.render('surveys/respond', { survey, startedAt, message, formattedStartDate, formattedEndDate });
 });
+
 
 router.get('/surveys/:id/countResponses', async (req, res) => {
   const { date, time } = req.query;
@@ -383,14 +385,26 @@ router.post('/surveys/:id', isAdmin, async (req, res) => {
     }));
   }
 
-  // 설문조사를 업데이트합니다.
+  // 수정 시간과 수정한 사람 기록
+  const now = new Date(); // 현재 시간
+  const userId = req.user.username; // 수정한 사람 (로그인한 사용자 이름 또는 '관리자')
+
+  // Survey 업데이트
   await Survey.findByIdAndUpdate(req.params.id, {
       title: updatedTitle,
       questions: updatedQuestions,
       startDate: startDate ? new Date(startDate) : null,
       endDate: endDate ? new Date(endDate) : null,
       submitResult: updatedSubmitResult,
-      lang: req.query.lang || 'ko'
+      lang: req.query.lang || 'ko',
+      updatedAt: {
+          ...survey.updatedAt, // 기존 값을 유지
+          [lang]: now // 수정 시간 기록
+      },
+      updatedBy: {
+          ...survey.updatedBy, // 기존 값을 유지
+          [lang]: userId // 수정한 사람 기록
+      }
   });
 
   res.redirect('/admin/surveys');

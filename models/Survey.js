@@ -43,8 +43,8 @@ const SurveySchema = new mongoose.Schema({
     endDate: { type: Date },
     createdAt: { type: Date, default: Date.now },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    updatedAt: { type: Date },
-    updatedBy: { type: String },
+    updatedAt: { type: Object },
+    updatedBy: { type: Object },
     submitResult: { type: Object }
 });
 
