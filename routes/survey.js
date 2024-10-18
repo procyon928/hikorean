@@ -113,13 +113,20 @@ router.post('/surveys/:id/respond', async (req, res) => {
   
       const answerObj = answers[answerIndex] || {}; // answers[answerIndex]가 없을 경우 빈 객체로 초기화
   
-      const answer = answerObj.answer || ""; // 응답이 없으면 빈 문자열로 처리
+      const answer = Array.isArray(answerObj.answer) ? answerObj.answer : [answerObj.answer]; 
       const questionId = answerObj.questionId || question._id; // questionId 초기화
   
       // 필수 문항 체크
-      if (question.isRequired && (!answer || answer.trim() === "")) {
-          return res.status(400).send(`문항 ${i + 1}은 필수입니다.`);
-      }
+      if (question.isRequired) {
+        if (question.questionType === 'multiple_choice') {
+            // 다중 선택의 경우 최소 하나 이상의 선택이 필요
+            if (!answer || answer.length === 0 || answer.every(a => a.trim() === "")) {
+                return res.status(400).send(`문항 ${i + 1}은 필수입니다.`);
+            }
+        } else if (!answer[0] || answer[0].trim() === "") {
+            return res.status(400).send(`문항 ${i + 1}은 필수입니다.`);
+        }
+    }
   
       // '기타' 응답 검증 추가
       let otherAnswer = answerObj.otherAnswer || "";

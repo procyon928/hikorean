@@ -82,7 +82,7 @@
                             <% if (question.isRequired) { %>
                                 <span class="text-danger"><SUP><i class="bi bi-asterisk" style="font-size: 9px;"></i></SUP></span>
                             <% } %>
-                            <% if (question.questionDescription[lang]) { %>
+                            <% if (question.questionDescription['ko']) { %>
                                 <p class="rounded bg-warning-subtle small p-2 d-flex align-items-start">
                                     <i class="bi bi-lightbulb-fill text-warning opacity-75 ms-1 me-2"></i>
                                     <span class="flex-grow-1"><%= question.questionDescription[lang] || question.questionDescription['ko'] %></span>
@@ -91,7 +91,7 @@
 
                             <% if (question.questionType === 'short_answer') { %>
                                 <div class="input-group mb-2">
-                                    <% if (question.prefixText[lang]) { %>
+                                    <% if (question.prefixText['ko']) { %>
                                         <span class="input-group-text"><%= question.prefixText[lang] || question.prefixText['ko'] %></span>
                                     <% } %>
                             
@@ -113,7 +113,7 @@
                                         >
                                     <% } %>
                             
-                                    <% if (question.suffixText[lang]) { %>
+                                    <% if (question.suffixText['ko']) { %>
                                         <span class="input-group-text"><%= question.suffixText[lang] || question.suffixText['ko'] %></span>
                                     <% } %>
                                 </div>
@@ -130,35 +130,67 @@
                                 <% if (question.isRequired) { %> required <% } %>
                                 ></textarea>
                                 <input type="hidden" name="answers[<%= index %>][questionId]" value="<%= question._id %>">
-                            <% } else if (question.questionType === 'single_choice' || question.questionType === 'multiple_choice') { %>
-                                <% question.options.forEach(function(option) { %>
-                                    <div class="form-check my-3">
-                                        <input type="<%= question.questionType === 'single_choice' ? 'radio' : 'checkbox' %>" 
-                                        name="answers[<%= index %>][answer]" value="<%= option[lang] || option['ko'] %>"
-                                        <% if (question.isRequired) { %> required <% } %>
-                                        class="form-check-input" id="option-<%= index %>-<%= option[lang] || option['ko'] %>">
-                                        <label class="form-check-label" for="option-<%= index %>-<%= option[lang] || option['ko'] %>"><%= option[lang] || option['ko'] %></label>
-                                    </div>
-                                <% }); %>
-                                <% if (question.allowOther) { %>
-                                    <div class="form-check mt-2">
-                                        <input type="<%= question.questionType === 'single_choice' ? 'radio' : 'checkbox' %>" 
-                                        name="answers[<%= index %>][answer]" value="기타 응답" 
-                                        id="otherOption<%= index %>" 
-                                        <% if (question.isRequired) { %> required <% } %>
-                                        class="form-check-input">
-                                        <input type="text" class="form-control mt-1" id="otherAnswer<%= index %>" name="answers[<%= index %>][otherAnswer]" placeholder="<%= texts.survey.otherAnswer[lang] %>" 
-                                        oninput="document.getElementById('otherOption<%= index %>').checked = true;">
-                                    </div>
-                                <% } %>
-                                <input type="hidden" name="answers[<%= index %>][questionId]" value="<%= question._id %>">
+                            <% } else if (question.questionType === 'single_choice') { %>
+                              <% question.options.forEach(function(option) { %>
+                                  <div class="form-check my-3">
+                                      <input type="radio" 
+                                          name="answers[<%= index %>][answer]" value="<%= option[lang] || option['ko'] %>"
+                                          <% if (question.isRequired) { %> required <% } %>
+                                          class="form-check-input" id="option-<%= index %>-<%= option[lang] || option['ko'] %>">
+                                      <label class="form-check-label" for="option-<%= index %>-<%= option[lang] || option['ko'] %>">
+                                          <%= option[lang] || option['ko'] %>
+                                      </label>
+                                  </div>
+                              <% }); %>
+                              <% if (question.allowOther) { %>
+                                  <div class="form-check mt-2">
+                                      <input type="radio" 
+                                          name="answers[<%= index %>][answer]" value="기타 응답" 
+                                          id="otherOption<%= index %>" 
+                                          <% if (question.isRequired) { %> required <% } %>
+                                          class="form-check-input">
+                                      <input type="text" class="form-control mt-1" 
+                                          id="otherAnswer<%= index %>" 
+                                          name="answers[<%= index %>][otherAnswer]" 
+                                          placeholder="<%= texts.survey.otherAnswer[lang] %>" 
+                                          oninput="document.getElementById('otherOption<%= index %>').checked = true;">
+                                  </div>
+                              <% } %>
+                          <input type="hidden" name="answers[<%= index %>][questionId]" value="<%= question._id %>">
+                          <% } else if (question.questionType === 'multiple_choice') { %>
+                              <% question.options.forEach(function(option) { %>
+                                  <div class="form-check my-3">
+                                      <input type="checkbox" 
+                                          name="answers[<%= index %>][answer][]" value="<%= option[lang] || option['ko'] %>"
+                                          <% if (question.isRequired) { %> required <% } %>
+                                          class="form-check-input" id="option-<%= index %>-<%= option[lang] || option['ko'] %>">
+                                      <label class="form-check-label" for="option-<%= index %>-<%= option[lang] || option['ko'] %>">
+                                          <%= option[lang] || option['ko'] %>
+                                      </label>
+                                  </div>
+                              <% }); %>
+                              <% if (question.allowOther) { %>
+                                  <div class="form-check mt-2">
+                                      <input type="checkbox" 
+                                          name="answers[<%= index %>][answer][]" value="기타 응답" 
+                                          id="otherOption<%= index %>" 
+                                          <% if (question.isRequired) { %> required <% } %>
+                                          class="form-check-input">
+                                      <input type="text" class="form-control mt-1" 
+                                          id="otherAnswer<%= index %>" 
+                                          name="answers[<%= index %>][otherAnswer]" 
+                                          placeholder="<%= texts.survey.otherAnswer[lang] %>" 
+                                          oninput="document.getElementById('otherOption<%= index %>').checked = true;">
+                                  </div>
+                              <% } %>
+                            <input type="hidden" name="answers[<%= index %>][questionId]" value="<%= question._id %>">
                             <% } else if (question.questionType === 'dropdown') { %>
                                 <select name="answers[<%= index %>][answer]" class="form-select" 
                                 <% if (question.isRequired) { %> required <% } %>
                                 >
                                     <option value="" selected><%= texts.survey.select[lang] %></option>
                                     <% question.options.forEach(function(option) { %>
-                                        <option value="<%= option[lang] %>"><%= option[lang] %></option>
+                                        <option value="<%= option[lang] || option['ko'] %>"><%= option[lang] || option['ko'] %></option>
                                     <% }); %>
                                 </select>
                                 <input type="hidden" name="answers[<%= index %>][questionId]" value="<%= question._id %>">
@@ -443,8 +475,31 @@
         document.documentElement.dataset.lang = '<%= lang %>';
     </script>
     <script src="/js/lang.js"></script> 
-
     <script>
+function submitForm(event) {
+    event.preventDefault(); // 기본 제출 방지
+    const form = event.target;
+    let valid = true;
+
+    // 모든 다중 선택 질문 검증
+    const multipleChoiceQuestions = form.querySelectorAll('input[name$="[answer][]"]');
+    multipleChoiceQuestions.forEach((question) => {
+        const questionIndex = question.name.match(/\[(\d+)\]/)[1]; // 문항 인덱스 추출
+        const isChecked = Array.from(form.querySelectorAll(`input[name="answers[${questionIndex}][answer][]"]`))
+            .some(input => input.checked);
+
+        // 필수 문항이면서 체크된 항목이 없을 경우
+        if (isChecked === false && question.required) {
+            valid = false;
+            alert(`문항 ${parseInt(questionIndex) + 1}은 필수로 선택해야 합니다.`);
+        }
+    });
+
+    if (valid) {
+        form.submit(); // 유효한 경우, 폼 제출
+    }
+}
+
       function updateRank(select) {
           const selectedValue = select.value;
           const allSelects = document.querySelectorAll(`select[name^="answers[${select.name.split('[')[1].split(']')[0]}][answer]"]`);

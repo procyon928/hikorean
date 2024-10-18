@@ -17,10 +17,12 @@
       <div class="content-wrapper p-3">
 
         <h1>응답 확인</h1>
-        <div class="alert alert-success">
+        <div class="alert alert-warning">
             <%= submitResult[lang] || submitResult['ko'] %>
         </div>
-        <a href="/surveys/<%= survey._id %>/respond?lang=[lang]" class="btn btn-primary">돌아가기</a>
+        <div class="text-center">
+            <a href="/surveys/<%= survey._id %>/respond?lang=[lang]" class="btn btn-primary">돌아가기</a>
+        </div>
 
       </div>
     </div>
