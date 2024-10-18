@@ -36,7 +36,7 @@
     "verificationCode": ["검증 코드 입력", "输入验证码", "輸入驗證碼", "認証コード", "Enter verification code", "Mã xác minh"],
     "emailVerify": ["검증하기", "验证", "驗證", "認証する", "Verify", "Xác minh"],
     "submit": ["제출하기", "提交", "提交", "提出する", "Submit", "Nộp"],
-    "responseSubmitted": ["응답이 제출되었습니다.", "您的回复已提交。", "您的回覆已提交。", "応答が送信されました。", "Your response has been submitted.", "Phản hồi của bạn đã được gửi."],
+    "responseSubmitted": ["응답이 제출되었습니다.", "您的回复已成功提交", "您的回覆已成功提交。", "応答が送信されました。", "Your response has been submitted.", "Phản hồi của bạn đã được gửi."],
     "return": ["돌아가기", "返回上一页", "回上一頁", "全ページに戻る", "Back to previous page", "Quay lại trang trước"]
   },
   "notice": {

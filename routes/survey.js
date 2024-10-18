@@ -99,6 +99,7 @@ router.post('/surveys/:id/respond', async (req, res) => {
   console.log('Answers received:', answers);
   const survey = await Survey.findById(req.params.id);
 
+
   // 응답 검증
   const formattedAnswers = []; // 빈 배열 생성
   let answerIndex = 0; // 실제 답변 인덱스
@@ -113,26 +114,43 @@ router.post('/surveys/:id/respond', async (req, res) => {
   
       const answerObj = answers[answerIndex] || {}; // answers[answerIndex]가 없을 경우 빈 객체로 초기화
   
-      const answer = Array.isArray(answerObj.answer) ? answerObj.answer : [answerObj.answer]; 
+      let answer = answerObj.answer; // 응답이 없으면 빈 문자열로 처리
       const questionId = answerObj.questionId || question._id; // questionId 초기화
-  
+      const otherAnswer = answerObj.otherAnswer || ""; // otherAnswer 초기화
+
+      // '기타 응답'이 포함된 경우, answer를 otherAnswer와 함께 설정
+      if (Array.isArray(answer) && answer.includes('기타 응답')) {
+          answer = answer.filter(item => item !== '기타 응답'); // '기타 응답' 제거
+          if (otherAnswer.trim() !== "") {
+              answer.push(otherAnswer); // otherAnswer 추가
+          }
+      } else if (answer === '기타 응답') {
+          answer = otherAnswer; // otherAnswer의 값을 사용
+      }
+
       // 필수 문항 체크
       if (question.isRequired) {
+        // 다중 선택 질문의 경우
         if (question.questionType === 'multiple_choice') {
-            // 다중 선택의 경우 최소 하나 이상의 선택이 필요
-            if (!answer || answer.length === 0 || answer.every(a => a.trim() === "")) {
+            // 최소 하나 이상의 선택이 필요
+            if (!Array.isArray(answer) || answer.length === 0) {
+                if (question.allowOther && otherAnswer.trim() !== "") {
+                    // '기타 응답'이 선택되었고 값이 입력된 경우 유효
+                    formattedAnswers.push({
+                        questionId,
+                        answer: otherAnswer,
+                    });
+                    answerIndex++;
+                    continue; // 다음 질문으로 넘어감
+                }
+    
                 return res.status(400).send(`문항 ${i + 1}은 필수입니다.`);
             }
-        } else if (!answer[0] || answer[0].trim() === "") {
-            return res.status(400).send(`문항 ${i + 1}은 필수입니다.`);
+        } else { // 단일 선택 질문의 경우
+            if (typeof answer === 'string' && answer.trim() === "") {
+                return res.status(400).send(`문항 ${i + 1}은 필수입니다.`);
+            }
         }
-    }
-  
-      // '기타' 응답 검증 추가
-      let otherAnswer = answerObj.otherAnswer || "";
-      if (question.allowOther && !answerObj.otherAnswer) {
-          // '기타' 응답이 선택되지 않은 경우, otherAnswer를 비워서 전송
-          otherAnswer = "";
       }
 
       // 기존 문항 유형에 대한 처리
@@ -145,7 +163,7 @@ router.post('/surveys/:id/respond', async (req, res) => {
       } else {
           formattedAnswers.push({
               questionId: questionId,
-              answer: answer, // 항상 빈 값이거나 실제 응답이 들어가게 됩니다.
+              answer: answer, // '기타 응답'이 포함된 경우, 기존 답변과 otherAnswer를 사용
               otherAnswer: otherAnswer
           });
       }
@@ -189,6 +207,9 @@ router.post('/surveys/:id/respond', async (req, res) => {
       lang
   });
   await response.save();
+
+  // 제출 후 세션 초기화
+  req.session.formData = null; // 세션에서 폼 데이터 삭제
     
   // 결과 페이지로 리다이렉트
   res.redirect(`/surveys/${req.params.id}/confirm?lang=${lang}`);
