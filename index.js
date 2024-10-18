@@ -136,7 +136,6 @@ app.use(async (req, res, next) => {
   try {
     const hasStickyNotice = await Notice.findOne({ sticky: true }); // findOne 사용
     res.locals.hasStickyNotice = hasStickyNotice !== null; // 문서가 존재하면 true
-    console.log("hasStickyNotice:", res.locals.hasStickyNotice); // true 또는 false로 로그 출력
   } catch (error) {
     console.error('오류:', error);
     res.locals.hasStickyNotice = false; // 오류 발생 시 기본값 설정

@@ -162,24 +162,37 @@ const parseAndReplaceText = (htmlContent, translations) => {
   handler.dom.forEach(replaceTextInNode);
 
   // 수정된 DOM을 다시 HTML 문자열로 변환
+  const selfClosingTags = ['br', 'img', 'hr', 'input', 'meta', 'link']; // 자기 닫힘 태그 목록
+
   return handler.dom.map(node => {
       if (node.type === 'text') {
           return node.data;
       } else if (node.type === 'tag') {
           const openingTag = `<${node.name}${Object.entries(node.attribs).map(([key, value]) => ` ${key}="${value}"`).join('')}>`;
+
+          // 자기 닫힘 태그인 경우
+          if (selfClosingTags.includes(node.name)) {
+              return openingTag; // closingTag 반환하지 않음
+          }
+
           const closingTag = `</${node.name}>`;
           const innerHTML = node.children.map(child => {
               if (child.type === 'text') {
                   return child.data;
               } else if (child.type === 'tag') {
+                  // 자기 닫힘 태그 처리
+                  if (selfClosingTags.includes(child.name)) {
+                      return `<${child.name}${Object.entries(child.attribs).map(([key, value]) => ` ${key}="${value}"`).join('')}>`;
+                  }
                   return `<${child.name}${Object.entries(child.attribs).map(([key, value]) => ` ${key}="${value}"`).join('')}>${child.children.map(grandChild => grandChild.data).join('')}</${child.name}>`;
               }
               return '';
           }).join('');
+
           return `${openingTag}${innerHTML}${closingTag}`;
       }
       return '';
-  }).join('');
+  }).join('');  
 };
 
 // 안내문 최종 번역 저장

@@ -15,20 +15,32 @@ const languageIndex = {
     vi: 5
 };
 
+// 페이지 텍스트 설정 함수
+function setPageTexts(page, localizedTexts) {
+    const texts = locales[page] || locales.home; // 페이지에 해당하는 텍스트 가져오기
+
+    // 각 페이지에 대한 텍스트 설정
+    for (const key in texts) {
+        localizedTexts[page][key] = {
+            ko: texts[key][languageIndex.ko],
+            sc: texts[key][languageIndex.sc],
+            tc: texts[key][languageIndex.tc],
+            jp: texts[key][languageIndex.jp],
+            en: texts[key][languageIndex.en],
+            vi: texts[key][languageIndex.vi]
+        };
+    }
+}
+
 // 미들웨어
 function setLanguageTexts(req, res, next) {
     const lang = req.query.lang || 'ko'; // 기본값 한국어
+    const page = req.path.split('/')[1] || 'home'; // URL 경로에서 페이지 이름 추출
 
-    // 특정 페이지의 텍스트를 가져오기
-    const page = req.path.split('/')[1] || 'home'; // URL 경로에서 페이지 이름 추출 (예: /home -> home)
-
-    // 페이지에 해당하는 텍스트 가져오기
-    const texts = locales[page] || locales.home; // 기본값으로 home 페이지 텍스트 설정
-
-    // 언어에 맞게 텍스트 가져오기
     const localizedTexts = {
         common: {}, // common 속성 초기화
-        [page]: {} // home 속성 초기화
+        survey: {}, // survey 속성 초기화
+        [page]: {} // 현재 페이지 속성 초기화
     };
 
     // common 텍스트 설정
@@ -43,17 +55,13 @@ function setLanguageTexts(req, res, next) {
         };
     }
 
-    // 각 페이지에 대한 텍스트 설정
-    for (const key in texts) {
-        localizedTexts[page][key] = {
-            ko: texts[key][languageIndex.ko],
-            sc: texts[key][languageIndex.sc],
-            tc: texts[key][languageIndex.tc],
-            jp: texts[key][languageIndex.jp],
-            en: texts[key][languageIndex.en],
-            vi: texts[key][languageIndex.vi]
-        };
+    // survey 페이지에 대한 텍스트 설정
+    if (page.startsWith('surveys')) {
+        setPageTexts('survey', localizedTexts);
     }
+
+    // 페이지 텍스트 설정
+    setPageTexts(page, localizedTexts);
 
     // localizedTexts 객체를 응답 객체에 추가
     res.locals.texts = localizedTexts;

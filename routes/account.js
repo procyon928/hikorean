@@ -6,7 +6,7 @@ const axios = require('axios'); // axios 패키지 추가
 
 // 회원 페이지
 router.get('/account', (req, res) => {
-    console.log('세션 정보:', req.session);
+    // console.log('세션 정보:', req.session);
     if (!req.user) {
         return res.redirect('/login'); // 로그인하지 않은 경우 로그인 페이지로 리다이렉트
     }
