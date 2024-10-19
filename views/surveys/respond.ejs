@@ -82,7 +82,7 @@
                             <% if (question.isRequired) { %>
                                 <span class="text-danger"><SUP><i class="bi bi-asterisk" style="font-size: 9px;"></i></SUP></span>
                             <% } %>
-                            <% if (question.questionDescription[lang]) { %>
+                            <% if (question.questionDescription['ko']) { %>
                                 <p class="rounded bg-warning-subtle small p-2 d-flex align-items-start">
                                     <i class="bi bi-lightbulb-fill text-warning opacity-75 ms-1 me-2"></i>
                                     <span class="flex-grow-1"><%= question.questionDescription[lang] || question.questionDescription['ko'] %></span>
@@ -91,7 +91,7 @@
 
                             <% if (question.questionType === 'short_answer') { %>
                                 <div class="input-group mb-2">
-                                    <% if (question.prefixText[lang]) { %>
+                                    <% if (question.prefixText['ko']) { %>
                                         <span class="input-group-text"><%= question.prefixText[lang] || question.prefixText['ko'] %></span>
                                     <% } %>
                             
@@ -113,7 +113,7 @@
                                         >
                                     <% } %>
                             
-                                    <% if (question.suffixText[lang]) { %>
+                                    <% if (question.suffixText['ko']) { %>
                                         <span class="input-group-text"><%= question.suffixText[lang] || question.suffixText['ko'] %></span>
                                     <% } %>
                                 </div>
@@ -193,7 +193,7 @@
                                 >
                                     <option value="" selected><%= texts.survey.select[lang] %></option>
                                     <% question.options.forEach(function(option) { %>
-                                        <option value="<%= option[lang] %>"><%= option[lang] %></option>
+                                        <option value="<%= option[lang] || option['ko'] %>"><%= option[lang] || option['ko'] %></option>
                                     <% }); %>
                                 </select>
                                 <input type="hidden" name="answers[<%= index %>][questionId]" value="<%= question._id %>">
