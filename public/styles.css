@@ -6,17 +6,20 @@ body {
 @keyframes blinkEffect {
   0% {
     color: white;
+    opacity: 1;
   }
   50% {
-    color: #254B7A; /* 점등할 색상 */
+    color: #ffc107; /* 점등할 색상 */
+    opacity: 1;
   }
   100% {
     color: white;
+    opacity: 1;
   }
 }
 
 .blink {
-  animation: blinkEffect 1s infinite; /* 1초 동안 애니메이션 반복 */
+  animation: blinkEffect 0.5s infinite; /* 1초 동안 애니메이션 반복 */
 }
 
 /* public/styles.css */

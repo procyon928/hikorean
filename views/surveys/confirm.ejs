@@ -43,21 +43,11 @@
   <script>
       document.documentElement.dataset.lang = '<%= lang %>';
 
-      // 사용자가 '뒤로 가기'를 클릭했을 때 새로 고침
-      window.onpopstate = function(event) {
-          window.location.reload(); // 페이지를 새로 고침
-      };
+      window.onbeforeunload = function() {
+    // 폼 초기화
+    window.history.forward();
+};
 
-      // 페이지가 언로드될 때 새로 고침을 강제하는 이벤트 리스너 추가
-      window.addEventListener('beforeunload', function (event) {
-          event.preventDefault(); // 기본 동작 방지
-          event.returnValue = ''; // 크롬에서 메시지를 표시할 수 없지만, 이 코드는 필요합니다.
-      });
-
-      function redirectToForm() {
-          // 폼 페이지로 리다이렉트
-          window.location.href = '/surveys/<%= survey._id %>/respond?lang=<%= lang %>';
-      }
   </script>
   <script src="/js/lang.js"></script> 
 </body>

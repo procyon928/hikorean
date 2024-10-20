@@ -13,11 +13,10 @@
 </head>
 <body>
     <%- include('../partials/navbar') %> 
-    <%- include('../partials/bottom-navbar') %>
 
     <div class="container-fluid p-0" style="max-width: 960px; margin-bottom: 100px;">
       <div class="content-wrapper p-3">
-        <h1 class="mb-4"><%= survey.title[lang] || survey.title['ko'] %></h1>
+        <h4 class="mb-4 fw-bold"><%= survey.title[lang] || survey.title['ko'] %></h4>
           <% if (survey.startDate || survey.endDate) { %>
             <div class="alert alert-warning mb-3 text-black" role="alert">
                 <% if (survey.startDate) { %>
@@ -526,16 +525,23 @@
     }
 }
 
-
-    // 페이지 로드 시 새로 고침
-    window.onload = function() {
-        if (performance.navigation.type === performance.navigation.TYPE_BACK_FORWARD) {
-            location.reload(); // 페이지가 뒤로 가기 또는 앞으로 가기일 경우 새로 고침
+window.onload = function() {
+    const form = document.querySelector('form');
+    
+    // 새로고침 여부를 체크
+    if (!sessionStorage.getItem('formReloaded')) {
+        if (form) {
+            form.reset(); // 폼 초기화
         }
-    };
-    </script>
+        sessionStorage.setItem('formReloaded', 'true'); // 상태 저장
+        location.reload(); // 페이지 새로고침
+    } else {
+        // 새로고침 후에는 상태를 초기화
+        sessionStorage.removeItem('formReloaded');
+    }
+};
 
-    <script>
+
       function updateRank(select) {
           const selectedValue = select.value;
           const allSelects = document.querySelectorAll(`select[name^="answers[${select.name.split('[')[1].split(']')[0]}][answer]"]`);

@@ -211,8 +211,6 @@ router.post('/surveys/:id/respond', async (req, res) => {
   // 제출 후 세션에 formattedAnswers 저장
   req.session.formattedAnswers = formattedAnswers; // 세션에 저장
   
-  // 제출 후 세션 초기화
-  req.session.formData = null; // 세션에서 폼 데이터 삭제
   
   // 결과 페이지로 리다이렉트
   res.redirect(`/surveys/${req.params.id}/confirm?lang=${lang}`);
@@ -249,6 +247,7 @@ router.get('/surveys/:id/respond', async (req, res) => {
   const now = new Date();
 
   let message = null;
+  
 
   // 현재 시간을 시작 시간으로 설정
   const startedAt = new Date();
@@ -284,10 +283,11 @@ router.get('/surveys/:id/respond', async (req, res) => {
   formattedStartDate = survey.startDate ? new Date(survey.startDate).toLocaleString(locale, { timeZone: 'Asia/Seoul' }) : null;
   formattedEndDate = survey.endDate ? new Date(survey.endDate).toLocaleString(locale, { timeZone: 'Asia/Seoul' }) : null;
 
+  res.set('Cache-Control', 'no-store');
+
   // 설문조사 응답 페이지 렌더링
   res.render('surveys/respond', { survey, startedAt, message, formattedStartDate, formattedEndDate });
 });
-
 
 router.get('/surveys/:id/countResponses', async (req, res) => {
   const { date, time } = req.query;
