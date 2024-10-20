@@ -30,13 +30,16 @@
     "otherAnswer": ["기타 응답 입력", "输入其他回复", "輸入其他回复", "その他の応答入力", "Enter other responses", "Nhập câu trả lời khác"],
     "select": ["선택", "选择", "選擇", "選択", "Select", "Lựa chọn"],
     "ranking": ["순위", "排行", "排行", "ランク", "Rank", "Xếp hạng"],
-    "selectDate": ["날짜 선택", "选择日期", "選擇日期", "日付を選択", "Select date", "Chọn ngày"],
+    "alertKoreanTime": ["제시된 날짜와 시간은 모두 한국 시간 기준입니다.", "所有日期和时间均以韩国时间为准。", "所有日期和時間均以韓國時間為準。", "提示された日時はすべて韓国時間基準です。", "All dates and times presented are based on Korean time(GMT+9).", "Tất cả ngày và giờ được trình bày đều dựa trên giờ Hàn Quốc."],
     "emailAddress": ["이메일 주소", "电子邮件", "電子郵件", "メールアドレス", "Email Address", "địa chỉ email"],
     "sendEmail": ["검증 코드 발송", "传送", "傳送", "送信", "Send email", "Gửi mã xác minh"],
     "verificationCode": ["검증 코드 입력", "输入验证码", "輸入驗證碼", "認証コード", "Enter verification code", "Mã xác minh"],
     "emailVerify": ["검증하기", "验证", "驗證", "認証する", "Verify", "Xác minh"],
+    "validDate": ["날짜를 선택해 주세요", "请选择日期。", "請選擇日期。", "日付を選択してください。", "Please select a date.", "Vui lòng chọn một ngày."],
+    "validTime": ["시간을 선택해 주세요", "请选择时间。", "請選擇時間。", "時間を選択してください。", "Please select a time.", "Vui lòng chọn thời gian."],
     "submit": ["제출하기", "提交", "提交", "提出する", "Submit", "Nộp"],
     "responseSubmitted": ["응답이 제출되었습니다.", "您的回复已成功提交", "您的回覆已成功提交。", "応答が送信されました。", "Your response has been submitted.", "Phản hồi của bạn đã được gửi."],
+    "submittedResponse": ["제출된 응답", "您提交的回复", "您提交的回复", "提出された回答", "Response you submitted", "Phản hồi bạn đã gửi"],
     "return": ["돌아가기", "返回上一页", "回上一頁", "全ページに戻る", "Back to previous page", "Quay lại trang trước"]
   },
   "notice": {

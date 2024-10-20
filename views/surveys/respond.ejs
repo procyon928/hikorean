@@ -152,41 +152,7 @@
                                     </div>
                                 <% } %>
                                 <input type="hidden" name="answers[<%= index %>][questionId]" value="<%= question._id %>">
-                                <script>
-                                    function submitForm(event) {
-                                        event.preventDefault(); // 기본 제출 방지
-                                        const form = event.target;
-                                        let valid = true;
-                                        let alertShown = false;
-                                
-                                        // 모든 질문 검증
-                                        const questions = form.querySelectorAll('input[name$="[answer]"]');
-                                        questions.forEach((question) => {
-                                            const questionIndex = question.name.match(/\[(\d+)\]/)[1]; // 문항 인덱스 추출
-                                            const isMultipleChoice = question.type === 'checkbox'; // 다중 선택 여부 확인
-                                            const isChecked = Array.from(form.querySelectorAll(`input[name="answers[${questionIndex}][answer][]"]`))
-                                                .some(input => input.checked);
-                                            
-                                            // 기타 응답 체크 여부 및 입력값 확인
-                                            const otherChecked = form.querySelector(`input[name="answers[${questionIndex}][answer]"][value="기타 응답"]`);
-                                            const otherAnswerInput = form.querySelector(`input[name="answers[${questionIndex}][otherAnswer]"]`);
-                                            const otherAnswer = otherAnswerInput ? otherAnswerInput.value : ""; // null 체크 추가
-                                
-                                            // '기타 응답'이 체크되어 있는데 입력란이 비어있는 경우
-                                            if (otherChecked && otherChecked.checked && otherAnswer.trim() === "") {
-                                                valid = false; // 유효성 검사를 통과하지 못함
-                                                if (!alertShown) { // 경고가 아직 표시되지 않은 경우
-                                                    alert(`문항 ${parseInt(questionIndex) + 1}의 '기타 응답' 입력란이 비어있습니다.`);
-                                                    alertShown = true; // 경고 표시됨
-                                                }
-                                            }
-                                        });
-                                
-                                        if (valid) {
-                                            form.submit(); // 유효한 경우, 폼 제출
-                                        }
-                                    }
-                                </script>
+
                             <% } else if (question.questionType === 'dropdown') { %>
                                 <select name="answers[<%= index %>][answer]" class="form-select" 
                                 <% if (question.isRequired) { %> required <% } %>
@@ -203,13 +169,10 @@
                                 >
                                 <input type="hidden" name="answers[<%= index %>][questionId]" value="<%= question._id %>">
                             <% } else if (question.questionType === 'reservation') { %>
-                              <div class="mb-2">
-                                <labe><%= texts.survey.selectDate[lang] %> :</label>
-                            </div>
-                              <div id="calendar" class="d-flex flex-wrap" style="margin-top: 10px;"></div>
+                              <div id="calendar" class="d-flex flex-wrap p" style="margin-top: 10px;"></div>
+                              <div id="message-<%= index %>" class="text-danger mt-2" style="display: none;"><i class="bi bi-exclamation-triangle-fill text-danger me-2"></i><%= texts.survey.validDate[lang] %></div>
                               <input type="hidden" name="answers[<%= index %>][questionId]" value="<%= question._id %>">
                               <script>
-                                  console.log('Index:', <%= index %>);
                                   function displayCalendar(startDate, endDate, maxParticipants, surveyId, exceptionDates, index) {
                                       const calendarDiv = document.getElementById('calendar');
                                       calendarDiv.innerHTML = ''; // 기존 내용 초기화
@@ -285,80 +248,112 @@
                                   );
                               </script>
                               
-                            <% } else if (question.questionType === 'time_reservation') { %>
-                              <select name="timeReservationDate" onchange="handleTimeReservationDateChange(this, <%= index %>)" class="form-select">
-                                  <option value=""><%= texts.survey.selectDate[lang] %></option>
-                                  <% question.time_reservation.availableDates.forEach(date => { %>
-                                      <option value="<%= date %>"><%= date %></option>
-                                  <% }); %>
-                              </select>
-                              <div id="timeSlots<%= index %>" class="mt-3 d-flex flex-wrap justify-content-start" style="max-width: 100%;"></div>
-                              <input type="hidden" name="answers[<%= index %>][questionId]" value="<%= question._id %>">
-                              <script>
-                                  console.log('Index:', <%= index %>);
-                                  function handleTimeReservationDateChange(select, questionIndex) {
-                                      const selectedDate = select.value;
-                                      const timeSlotsDiv = document.getElementById(`timeSlots${questionIndex}`);
-                                      timeSlotsDiv.innerHTML = ''; // 기존 내용 초기화
-                              
-                                      if (selectedDate) {
-                                          const startTime = '<%= question.time_reservation.startTime %>';
-                                          const endTime = '<%= question.time_reservation.endTime %>';
-                                          const interval = <%= question.time_reservation.interval %>;
-                              
-                                          // 시작 시간과 종료 시간을 Date 객체로 변환
-                                          const startDateTime = new Date(`1970-01-01T${startTime}:00`);
-                                          const endDateTime = new Date(`1970-01-01T${endTime}:00`);
-                                          const timeSlots = [];
-                              
-                                          // 시간 슬롯 배열 생성
-                                          for (let time = startDateTime; time <= endDateTime; time.setMinutes(time.getMinutes() + interval)) {
-                                              timeSlots.push(time.toTimeString().split(' ')[0].substring(0, 5)); // HH:mm 형식으로 저장
-                                          }
-                              
-                                          // fetch 요청을 Promise 배열로 변환
-                                          const fetchPromises = timeSlots.map(time => {
-                                              return fetch(`/surveys/<%= survey._id %>/countResponses?date=${selectedDate}&time=${time}`)
-                                                  .then(response => response.json())
-                                                  .then(data => {
-                                                      return { time, count: data.count }; // 시간과 응답 수를 객체로 반환
-                                                  });
-                                          });
-                              
-                                          // 모든 fetch 요청이 완료된 후 처리
-                                          Promise.all(fetchPromises).then(results => {
-                                              results.forEach(result => {
-                                                  const { time, count } = result;
-                              
-                                                  const radio = document.createElement('input');
-                                                  radio.type = 'radio';
-                                                  radio.name = `answers[${questionIndex}][answer]`;
-                                                  radio.value = `${selectedDate} ${time}`;
-                                                  radio.id = `time-${selectedDate}-${time}`;
-                                                  radio.classList.add('btn-check'); // 부트스트랩 버튼 체크 클래스 추가
-                              
-                                                  if (count >= <%= question.time_reservation.maxParticipants %>) {
-                                                      radio.disabled = true; // 최대 인원 초과 시 비활성화 'label.classList.add('disabled');'
-                                                  }
-                              
-                                                  const label = document.createElement('label');
-                                                  label.htmlFor = `time-${selectedDate}-${time}`;
-                                                  label.innerHTML = `${time} <span class="d-block d-md-inline small">(${count}/${<%= question.time_reservation.maxParticipants %>})</span>`;
-                                                  label.classList.add('btn', 'btn-outline-secondary', 'col-6', 'col-md-3', 'mb-2', 'mx-1'); // 버튼 스타일과 그리드 클래스 추가
-                              
-                                                  // 버튼 폭 조정
-                                                  label.style.flex = '1 0 15%'; // PC에서 4개가 들어가도록 조정
-                                                  label.style.minWidth = '130px'; // 최소 폭 설정
-                              
-                                                  // 라디오 버튼과 레이블을 DOM에 추가
-                                                  timeSlotsDiv.appendChild(radio);
-                                                  timeSlotsDiv.appendChild(label);
-                                              });
-                                          });
-                                      }
-                                  }
-                              </script>
-                              
+                              <% } else if (question.questionType === 'time_reservation') { %>
+                                <div>
+                                  <div class="mb-2">
+                                    <label class="small"><%= texts.survey.alertKoreanTime[lang] %></label>
+                                </div>
+                                    <ul class="nav nav-tabs" id="dateTabs<%= index %>" role="tablist">
+                                        <% question.time_reservation.availableDates.forEach((date, dateIndex) => { %>
+                                            <li class="nav-item" role="presentation">
+                                                <a class="nav-link <%= dateIndex === 0 ? 'active' : '' %>" 
+                                                   id="tab-<%= date %>" 
+                                                   data-bs-toggle="tab" 
+                                                   href="#time-slot-<%= date %>" 
+                                                   role="tab" 
+                                                   aria-controls="time-slot-<%= date %>" 
+                                                   aria-selected="<%= dateIndex === 0 %>">
+                                                    <%= date %>
+                                                </a>
+                                            </li>
+                                        <% }); %>
+                                    </ul>
+                                    <div class="tab-content mt-3">
+                                        <% question.time_reservation.availableDates.forEach((date, dateIndex) => { %>
+                                            <div class="tab-pane fade <%= dateIndex === 0 ? 'show active' : '' %>" 
+                                                 id="time-slot-<%= date %>" 
+                                                 role="tabpanel" 
+                                                 aria-labelledby="tab-<%= date %>">
+                                                <div id="timeSlots<%= index %>-<%= date %>" class="mt-3 d-flex flex-wrap justify-content-start"></div>
+                                            </div>
+                                        <% }); %>
+                                    </div>
+                                </div>
+                                <div id="message-<%= index %>" class="text-danger mt-2" style="display: none;"><i class="bi bi-exclamation-triangle-fill text-danger me-2"></i><%= texts.survey.validTime[lang] %></div>
+                                <input type="hidden" name="answers[<%= index %>][questionId]" value="<%= question._id %>">
+                                <script>
+                                    // 모든 날짜의 시간 슬롯을 로드
+                                    <% question.time_reservation.availableDates.forEach((date) => { %>
+                                        handleTimeReservationDateChange({ value: '<%= date %>' }, <%= index %>, true);
+                                    <% }); %>
+                            
+                                    function handleTimeReservationDateChange(select, questionIndex, initialLoad = false) {
+                                        const selectedDate = select.value;
+                                        const timeSlotsDiv = document.getElementById(`timeSlots${questionIndex}-${selectedDate}`);
+                                        timeSlotsDiv.innerHTML = ''; // 기존 내용 초기화
+                            
+                                        const startTime = '<%= question.time_reservation.startTime %>';
+                                        const endTime = '<%= question.time_reservation.endTime %>';
+                                        const interval = <%= question.time_reservation.interval %>;
+                            
+                                        // 시작 시간과 종료 시간을 Date 객체로 변환
+                                        const startDateTime = new Date(`1970-01-01T${startTime}:00`);
+                                        const endDateTime = new Date(`1970-01-01T${endTime}:00`);
+                                        const timeSlots = [];
+                            
+                                        // 시간 슬롯 배열 생성
+                                        for (let time = startDateTime; time <= endDateTime; time.setMinutes(time.getMinutes() + interval)) {
+                                            timeSlots.push(time.toTimeString().split(' ')[0].substring(0, 5)); // HH:mm 형식으로 저장
+                                        }
+                            
+                                        // fetch 요청을 Promise 배열로 변환
+                                        const fetchPromises = timeSlots.map(time => {
+                                            return fetch(`/surveys/<%= survey._id %>/countResponses?date=${selectedDate}&time=${time}`)
+                                                .then(response => response.json())
+                                                .then(data => {
+                                                    return { time, count: data.count }; // 시간과 응답 수를 객체로 반환
+                                                });
+                                        });
+                            
+                                        // 모든 fetch 요청이 완료된 후 처리
+                                        Promise.all(fetchPromises).then(results => {
+                                            results.forEach(result => {
+                                                const { time, count } = result;
+                            
+                                                const radio = document.createElement('input');
+                                                radio.type = 'radio';
+                                                radio.name = `answers[${questionIndex}][answer]`;
+                                                radio.value = `${selectedDate} ${time}`;
+                                                radio.id = `time-${selectedDate}-${time}`;
+                                                radio.classList.add('btn-check'); // 부트스트랩 버튼 체크 클래스 추가
+                            
+                                                if (count >= <%= question.time_reservation.maxParticipants %>) {
+                                                    radio.disabled = true; // 최대 인원 초과 시 비활성화
+                                                }
+                            
+                                                const label = document.createElement('label');
+                                                label.htmlFor = `time-${selectedDate}-${time}`;
+                                                label.innerHTML = `${time} <span class="d-block d-md-inline small">(${count}/${<%= question.time_reservation.maxParticipants %>})</span>`;
+                                                label.classList.add('btn', 'btn-outline-secondary', 'col-6', 'col-md-3', 'mt-2', 'me-2'); // 버튼 스타일과 그리드 클래스 추가
+                            
+                                                // 버튼 폭 조정
+                                                label.style.flex = '1 0 15%'; // PC에서 4개가 들어가도록 조정
+                                                label.style.minWidth = '130px'; // 최소 폭 설정
+                            
+                                                // 라디오 버튼과 레이블을 DOM에 추가
+                                                timeSlotsDiv.appendChild(radio);
+                                                timeSlotsDiv.appendChild(label);
+                                            });
+                                        });
+                                    }
+                            
+                                    // 모든 탭에 대해 클릭 이벤트 추가
+                                    document.querySelectorAll('.nav-link').forEach(link => {
+                                        link.addEventListener('click', function () {
+                                            handleTimeReservationDateChange(this, <%= index %>);
+                                        });
+                                    });
+                                </script>
                             <% } else if (question.questionType === 'preference') { %>
                                 <% question.options.forEach((option, optionIndex) => { %>
                                     <div class="mb-3 d-flex align-items-center">
@@ -480,19 +475,65 @@
     <script src="/js/lang.js"></script> 
 
     <script>
-        window.onload = function() {
-            // 세션 스토리지에 폼 데이터가 있으면 초기화
-            const formData = sessionStorage.getItem('formData');
-            if (!formData) {
-                document.querySelectorAll('input[type="text"], input[type="number"], textarea').forEach(input => {
-                    input.value = '';
-                });
-                document.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach(input => {
-                    input.checked = false;
-                });
+      const survey = <%- JSON.stringify(survey) %>;
+
+      function submitForm(event) {
+    event.preventDefault(); // 기본 제출 방지
+    const form = event.target;
+    let valid = true;
+
+    // 모든 질문 검증
+    const questions = form.querySelectorAll('input[name$="[answer]"]');
+    questions.forEach((question) => {
+        const questionIndex = question.name.match(/\[(\d+)\]/)[1]; // 문항 인덱스 추출
+        const questionType = survey.questions[questionIndex].questionType; // 질문 타입 추출
+        const isRequired = survey.questions[questionIndex].isRequired; // 필수 여부 추출
+
+        // reservation 및 time-reservation 체크
+        if ((questionType === 'reservation' || questionType === 'time_reservation') && isRequired) {
+            const reservationChecked = Array.from(form.querySelectorAll(`input[name="answers[${questionIndex}][answer]"]`))
+                .some(input => input.checked);
+            
+            if (!reservationChecked) {
+                valid = false; // 유효성 검사를 통과하지 못함
+                const messageDiv = document.getElementById(`message-${questionIndex}`); // 메시지 표시 div
+                messageDiv.style.display = 'block'; // 메시지 보이기
+                
+                // 해당 질문으로 스크롤 이동
+                messageDiv.scrollIntoView({ behavior: 'smooth', block: 'center' }); // 스크롤 이동
             }
-        };
-  </script>
+        }
+
+        // 기타 응답 체크 여부 및 입력값 확인
+        const otherChecked = form.querySelector(`input[name="answers[${questionIndex}][answer]"][value="기타 응답"]`);
+        const otherAnswerInput = form.querySelector(`input[name="answers[${questionIndex}][otherAnswer]"]`);
+        const otherAnswer = otherAnswerInput ? otherAnswerInput.value : ""; // null 체크 추가
+
+        // '기타 응답'이 체크되어 있는데 입력란이 비어있는 경우
+        if (otherChecked && otherChecked.checked && otherAnswer.trim() === "") {
+            valid = false; // 유효성 검사를 통과하지 못함
+            const messageDiv = document.getElementById(`message-${questionIndex}`); // 메시지 표시 div
+            messageDiv.style.display = 'block'; // 메시지 보이기
+            messageDiv.innerText = '기타 응답을 입력해 주세요.'; // 메시지 내용 설정
+            
+            // 해당 질문으로 스크롤 이동
+            messageDiv.scrollIntoView({ behavior: 'smooth', block: 'center' }); // 스크롤 이동
+        }
+    });
+
+    if (valid) {
+        form.submit(); // 유효한 경우, 폼 제출
+    }
+}
+
+
+    // 페이지 로드 시 새로 고침
+    window.onload = function() {
+        if (performance.navigation.type === performance.navigation.TYPE_BACK_FORWARD) {
+            location.reload(); // 페이지가 뒤로 가기 또는 앞으로 가기일 경우 새로 고침
+        }
+    };
+    </script>
 
     <script>
       function updateRank(select) {

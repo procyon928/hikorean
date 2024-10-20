@@ -22,7 +22,7 @@
         <ul class="navbar-nav">
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle p-0" href="#" id="navbarScrollingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="color: white; opacity: 0.75;">
-              <i class="bi bi-translate" style="font-size: 22px;"></i>
+              <i class="bi bi-translate" style="font-size: 22px; color: white;"></i>
             </a>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarScrollingDropdown" style="position: absolute; z-index: 1000; min-width: auto;">
                 <li><a class="dropdown-item" href="javascript:void(0);" onclick="changeLanguage('ko')">한국어</a></li>
@@ -67,10 +67,29 @@
   
     window.location.href = baseUrl + '?' + params.toString(); // 새로운 URL로 이동
   }
+
+  // 페이지가 로드될 때 현재 언어 확인
+  window.addEventListener('load', function() {
+      const params = new URLSearchParams(window.location.search);
+      const lang = params.get('lang') || 'ko'; // 기본값을 'ko'로 설정
+
+      const translateIcon = document.querySelector('.bi-translate');
+      console.log(translateIcon);
+
+      // 현재 언어가 'ko'일 경우 아이콘에 애니메이션 클래스 추가
+      if (lang === 'ko') {
+          translateIcon.classList.add('blink');
+          console.log('blink class added');
+
+          // 3초 후에 애니메이션 클래스 제거
+          setTimeout(() => {
+              translateIcon.classList.remove('blink');
+              console.log('blink class removed');
+          }, 3000);
+      }
+  });
   </script>
   
-
-
 <script>
   (function(){
     var w=window;

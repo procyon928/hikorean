@@ -208,9 +208,12 @@ router.post('/surveys/:id/respond', async (req, res) => {
   });
   await response.save();
 
+  // 제출 후 세션에 formattedAnswers 저장
+  req.session.formattedAnswers = formattedAnswers; // 세션에 저장
+  
   // 제출 후 세션 초기화
   req.session.formData = null; // 세션에서 폼 데이터 삭제
-    
+  
   // 결과 페이지로 리다이렉트
   res.redirect(`/surveys/${req.params.id}/confirm?lang=${lang}`);
 });
@@ -223,10 +226,19 @@ router.get('/surveys/:id/confirm', async (req, res) => {
   }
 
   const submitResult = survey.submitResult || {}; // 기본값 설정
+  const formattedAnswers = req.session.formattedAnswers || []; // 세션에서 답변 가져오기
+
+  // 질문 제목을 가져옵니다.
+  const questionTitles = survey.questions.map(question => question.questionText[req.query.lang] || question.questionText['ko']);
+
+  // 세션에서 formattedAnswers 삭제 (한 번만 사용하도록)
+  req.session.formattedAnswers = null;
 
   res.render('surveys/confirm', {
       survey: survey,
       submitResult: submitResult,
+      formattedAnswers: formattedAnswers, // 응답 결과
+      questionTitles: questionTitles, // 질문 제목 전달
       lang: req.query.lang || 'ko' // 언어 설정
   });
 });

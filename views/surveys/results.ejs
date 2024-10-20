@@ -28,8 +28,10 @@
             <h1><%= survey.title['ko'] %> 결과</h1>
             <button id="exportButton" class="btn btn-success mb-3 btn-sm"><i class="bi bi-download"></i></button>
             <input type="text" id="filterInput" class="form-control" placeholder="응답자 검색" />
-
-            <div id="resultsTable"></div>
+            
+            <div class="table-responsive" style="height: auto;">
+              <div id="resultsTable"></div>
+            </div>
         </div>
     </div>
 
