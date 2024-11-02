@@ -272,36 +272,23 @@
             document.querySelector('input[name="endDate"]').value = ''; // 종료 날짜 입력값 삭제
         }
 
-        // UTC 변환 저장
-        document.querySelector('form').addEventListener('submit', function(event) {
-            const startDateInput = document.querySelector('input[name="startDate"]');
-            const endDateInput = document.querySelector('input[name="endDate"]');
+    // UTC 변환 저장
+    document.querySelector('form').addEventListener('submit', function(event) {
+        const startDateInput = document.querySelector('input[name="startDate"]');
+        const endDateInput = document.querySelector('input[name="endDate"]');
 
-            // 입력된 시간을 UTC 또는 한국 시간으로 처리
-            if (startDateInput.value) {
-                const localStartDate = new Date(startDateInput.value);
-                // UTC와 한국 시간 판단
-                if (localStartDate.getTimezoneOffset() === -540) {
-                    // 한국 시간인 경우 UTC로 변환
-                    startDateInput.value = new Date(localStartDate.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 16);
-                } else {
-                    // UTC인 경우 그대로 사용
-                    startDateInput.value = localStartDate.toISOString().slice(0, 16);
-                }
-            }
+        if (startDateInput.value) {
+            const localStartDate = new Date(startDateInput.value);
+            // UTC로 변환
+            startDateInput.value = new Date(localStartDate.getTime() - (localStartDate.getTimezoneOffset() * 60000)).toISOString(); // UTC로 변환
+        }
 
-            if (endDateInput.value) {
-                const localEndDate = new Date(endDateInput.value);
-                // UTC와 한국 시간 판단
-                if (localEndDate.getTimezoneOffset() === -540) {
-                    // 한국 시간인 경우 UTC로 변환
-                    endDateInput.value = new Date(localEndDate.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 16);
-                } else {
-                    // UTC인 경우 그대로 사용
-                    endDateInput.value = localEndDate.toISOString().slice(0, 16);
-                }
-            }
-        });
+        if (endDateInput.value) {
+            const localEndDate = new Date(endDateInput.value);
+            // UTC로 변환
+            endDateInput.value = new Date(localEndDate.getTime() - (localEndDate.getTimezoneOffset() * 60000)).toISOString(); // UTC로 변환
+        }
+    });
     </script>
 </body>
 </html>
