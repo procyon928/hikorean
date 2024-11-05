@@ -102,6 +102,16 @@
 
       // KST로 저장되는 값에서 9시간을 뺀 UTC로 db에 저장하는 과정
       document.querySelector('form').addEventListener('submit', function(event) {
+          const questionsDiv = document.getElementById('questions');
+          const questionsCount = questionsDiv.children.length; // 문항 수 확인
+
+          if (questionsCount === 0) {
+              // 문항이 없을 경우 경고 메시지 표시
+              alert("하나 이상의 문항을 추가해 주세요.");
+              event.preventDefault(); // 폼 제출 방지
+              return; // 함수 종료
+          }
+
           const startDateInput = document.getElementById('startDate');
           const endDateInput = document.getElementById('endDate');
 

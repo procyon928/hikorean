@@ -4,6 +4,7 @@ const Survey = require('../models/Survey');
 const Response = require('../models/Response');
 const { isAdmin } = require('../middleware/auth');
 const { translateWithGoogle } = require('./translate');
+const marked = require('marked');
 
 const router = express.Router();
 
@@ -264,6 +265,14 @@ router.get('/surveys/:id/respond', async (req, res) => {
 
   // 쿼리 파라미터에서 언어 가져오기
   const lang = req.query.lang || 'ko'; // 기본값 한국어
+
+  // 질문에 대한 마크다운 변환
+  // survey.questions = survey.questions.map(question => ({
+  //     ...question,
+  //     questionDescription: question.questionDescription ? marked.marked(question.questionDescription[lang] || question.questionDescription['ko']) : '',
+  //     infoText: question.questionType === 'info' && question.infoText ? marked.marked(question.infoText[lang] || question.infoText['ko']) : ''
+  // }));
+
   let formattedStartDate = null, formattedEndDate = null; // 초기화
 
   // 언어에 따른 locale 설정

@@ -52,13 +52,6 @@
                               document.getElementById("remaining-time").style.display = "none"; // 숨김
                           }
                       }
-                  
-                      // 페이지 로드 시 남은 시간을 업데이트
-                      window.onload = function() {
-                          const endDate = new Date("<%= survey.endDate.toISOString() %>");
-                          updateRemainingTime(endDate);
-                          setInterval(() => updateRemainingTime(endDate), 1000); // 1초마다 업데이트
-                      };
                   </script>
               <% } %>
             </div>
@@ -75,7 +68,7 @@
                                 <i class="bi bi-exclamation-triangle-fill text-danger opacity-75 ms-1 me-2"></i>
                                 <span class="flex-grow-1"><%= question.questionDescription[lang] || question.questionDescription['ko'] %></span>
                             </p>
-                            <p class="mb-0"><%- question.infoText[lang] || question.infoText['ko'] %></p>
+                            <p class="mb-0"><%= question.infoText[lang] || question.infoText['ko'] %></p>
                         <% } else { %>
                             <label class="form-label fs-5 fw-bold"><%= question.questionText[lang] || question.questionText['ko'] %></label>
                             <% if (question.isRequired) { %>
@@ -472,6 +465,7 @@
         document.documentElement.dataset.lang = '<%= lang %>';
     </script>
     <script src="/js/lang.js"></script> 
+    <script src="https://cdn.jsdelivr.net/npm/marked@2.0.0/marked.min.js"></script>
 
     <script>
       const survey = <%- JSON.stringify(survey) %>;
@@ -525,23 +519,6 @@
     }
 }
 
-window.onload = function() {
-    const form = document.querySelector('form');
-    
-    // 새로고침 여부를 체크
-    if (!sessionStorage.getItem('formReloaded')) {
-        if (form) {
-            form.reset(); // 폼 초기화
-        }
-        sessionStorage.setItem('formReloaded', 'true'); // 상태 저장
-        location.reload(); // 페이지 새로고침
-    } else {
-        // 새로고침 후에는 상태를 초기화
-        sessionStorage.removeItem('formReloaded');
-    }
-};
-
-
       function updateRank(select) {
           const selectedValue = select.value;
           const allSelects = document.querySelectorAll(`select[name^="answers[${select.name.split('[')[1].split(']')[0]}][answer]"]`);
@@ -552,6 +529,41 @@ window.onload = function() {
               }
           });
       }
+
+    // 초기화 함수 정의
+    function initForm() {
+        const form = document.querySelector('form');
+        
+        // 새로고침 여부를 체크
+        if (!sessionStorage.getItem('formReloaded')) {
+            if (form) {
+                form.reset(); // 폼 초기화
+            }
+            sessionStorage.setItem('formReloaded', 'true'); // 상태 저장
+            location.reload(); // 페이지 새로고침
+        } else {
+            // 새로고침 후에는 상태를 초기화
+            sessionStorage.removeItem('formReloaded');
+        }
+    }
+
+    function initRemainingTime() {
+        // EJS에서 endDate가 null인지 체크
+        const endDateString = "<%= survey.endDate ? survey.endDate.toISOString() : null %>";
+        
+        // endDate가 존재하는 경우에만 처리
+        if (endDateString) {
+            const endDate = new Date(endDateString);
+            updateRemainingTime(endDate);
+            setInterval(() => updateRemainingTime(endDate), 1000); // 1초마다 업데이트
+        }
+    }
+
+    // window.onload에 함수들을 호출
+    window.onload = function() {
+        initForm(); // 폼 초기화 함수 호출
+        initRemainingTime(); // 남은 시간 업데이트 함수 호출
+    };
     </script> 
 </body>
 </html>
